@@ -55,7 +55,7 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public abstract class PanelProgressSupport extends SvnProgressSupport {
 

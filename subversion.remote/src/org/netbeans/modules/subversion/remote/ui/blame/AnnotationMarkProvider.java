@@ -53,7 +53,7 @@ import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 /**
  * ErrorStripe liason, real work is done in AnnotationBar.
  *
- * @author Petr Kuzel
+ * 
  */
 final class AnnotationMarkProvider extends MarkProvider {
 

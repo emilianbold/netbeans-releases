@@ -74,7 +74,7 @@ import org.openide.util.MutexException;
 /**
  *
  *
- * @author Tomas Stupka 
+ *  
  */
 public class SvnClientInvocationHandler implements InvocationHandler {    
 

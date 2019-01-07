@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
 /**
  * Handles the UI for repository browsing.
  *
- * @author Tomas Stupka
+ * 
  */
 public final class Browser implements VetoableChangeListener, BrowserClient, TreeExpansionListener {
 

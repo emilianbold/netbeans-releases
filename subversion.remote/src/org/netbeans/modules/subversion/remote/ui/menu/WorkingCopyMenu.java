@@ -63,7 +63,7 @@ import org.openide.util.actions.SystemAction;
 /**
  * Container menu for working copy actions.
  *
- * @author Ondra Vrabec
+ * 
  */
 public final class WorkingCopyMenu extends DynamicMenu {
     private final ActionDestination dest;

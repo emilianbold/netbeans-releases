@@ -71,7 +71,7 @@ import org.openide.util.WeakSet;
 
 /**
  * Notifies about external changes on the given files.
- * @author Ondra Vrabec
+ * 
  */
 public class NotificationsManager {
 

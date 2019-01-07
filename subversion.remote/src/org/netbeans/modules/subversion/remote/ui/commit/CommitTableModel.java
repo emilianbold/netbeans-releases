@@ -57,7 +57,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 /**
  * Table model for the Commit dialog table.
  *
- * @author Maros Sandor
+ * 
  */
 public class CommitTableModel extends AbstractTableModel {
 

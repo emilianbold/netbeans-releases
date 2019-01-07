@@ -63,7 +63,7 @@ import org.netbeans.modules.versioning.diff.AbstractDiffSetup;
 /**
  * Represents on DIFF setup.
  *
- * @author Maros Sandor
+ * 
  */
 public final class Setup extends AbstractDiffSetup {
 

@@ -53,7 +53,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author alsimon
+ * 
  */
 @ClassForAllEnvironments(section = "remote.svn")
 public class InterceptorRenameFOTest extends RemoteVersioningTestBase {

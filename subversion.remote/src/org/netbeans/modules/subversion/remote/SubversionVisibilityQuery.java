@@ -53,7 +53,7 @@ import org.netbeans.modules.versioning.util.VersioningListener;
 /**
  * Hides folders that have 'Localy removed' status.
  * 
- * @author Maros Sandor
+ * 
  */
 public class SubversionVisibilityQuery extends VCSVisibilityQuery implements VersioningListener {
 

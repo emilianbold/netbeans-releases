@@ -59,7 +59,7 @@ import org.openide.nodes.*;
 
 /**
  *
- * @author Petr Kuzel
+ * 
  */
 public final class ExcludeFromCommitAction extends ContextAction {
 

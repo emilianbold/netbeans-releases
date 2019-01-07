@@ -69,7 +69,7 @@ import org.openide.util.NbPreferences;
 /**
  * Stores Subversion module configuration.
  *
- * @author Maros Sandor
+ * 
  */
 public class SvnModuleConfig {
     

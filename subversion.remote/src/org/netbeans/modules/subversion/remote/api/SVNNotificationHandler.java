@@ -47,7 +47,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author Alexander Simon
+ * 
  */
 public class SVNNotificationHandler {
     private Set<ISVNNotifyListener> notifylisteners = new HashSet<>();

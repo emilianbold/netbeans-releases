@@ -46,7 +46,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author Alexander Simon
+ * 
  */
 public class SVNStatusUnversioned implements ISVNStatus {
     private final VCSFileProxy file;

@@ -65,7 +65,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * Adds/removes files to svn:ignore property.
  * It does not support patterns.
  *
- * @author Maros Sandor
+ * 
  */
 public class IgnoreAction extends ContextAction {
     

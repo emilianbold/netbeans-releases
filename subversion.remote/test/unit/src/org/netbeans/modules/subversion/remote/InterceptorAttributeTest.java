@@ -54,7 +54,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author alsimon
+ * 
  */
 @ClassForAllEnvironments(section = "remote.svn")
 public class InterceptorAttributeTest extends RemoteVersioningTestBase {

@@ -70,7 +70,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * Delete action enabled for new local files (not yet in repository).
  * It eliminates <tt>.svn/entries</tt> scheduling if exists too.
  *
- * @author Petr Kuzel
+ * 
  */
 public final class DeleteLocalAction extends ContextAction {
 

@@ -55,7 +55,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class CLIStatus implements ISVNStatus {
     private final Status status;

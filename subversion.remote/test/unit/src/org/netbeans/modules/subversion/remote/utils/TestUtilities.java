@@ -53,8 +53,8 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author ondra.vrabec
- * @author Marian Petras
+ * 
+ * 
  */
 public final class TestUtilities {
 

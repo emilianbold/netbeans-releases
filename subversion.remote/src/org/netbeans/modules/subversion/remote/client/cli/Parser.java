@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class Parser {
 

@@ -73,7 +73,7 @@ import org.openide.filesystems.FileSystem;
 /**
  * Executes searches in Search History panel.
  *
- * @author Maros Sandor
+ * 
  */
 class SearchExecutor extends SvnProgressSupport {
 

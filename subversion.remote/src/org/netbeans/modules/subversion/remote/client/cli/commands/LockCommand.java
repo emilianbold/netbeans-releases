@@ -49,7 +49,7 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author as204739
+ * 204739
  */
 public class LockCommand extends SvnCommand {
 

@@ -73,7 +73,7 @@ import org.openide.util.TaskListener;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 @ActionID(id = "org.netbeans.modules.subversion.remote.ui.checkout.CheckoutAction", category = "SubversionRemote")
 @ActionRegistration(displayName = "#LBL_CheckoutAction_Name")

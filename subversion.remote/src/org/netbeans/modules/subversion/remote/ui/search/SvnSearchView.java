@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 /**
  * Shows Search results in a JList.
  *
- * @author Tomas Stupka
+ * 
  */
 class SvnSearchView implements ComponentListener {
 

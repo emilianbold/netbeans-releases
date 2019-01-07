@@ -57,7 +57,7 @@ import org.openide.util.actions.SystemAction;
  * Keeps some information about working copies as:
  * 1) working copy is incompatible with the current client
  *
- * @author Ondrej Vrabec
+ * 
  */
 public final class WorkingCopyAttributesCache {
     private static WorkingCopyAttributesCache instance;

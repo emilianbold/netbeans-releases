@@ -68,7 +68,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class RevertModifications implements PropertyChangeListener {
 

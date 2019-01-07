@@ -95,7 +95,7 @@ import org.openide.util.lookup.Lookups;
  * Annotates names for display in Files and Projects view (and possible elsewhere). Uses
  * Filesystem support for this feature (to be replaced later in Core by something more generic).
  *
- * @author Maros Sandor
+ * 
  */
 public class Annotator extends VCSAnnotator {
     private static final String badgeModified = "org/netbeans/modules/subversion/remote/resources/icons/modified-badge.png"; //NOI18N

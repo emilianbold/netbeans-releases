@@ -104,7 +104,7 @@ import org.openide.util.NbBundle.Messages;
  *   <li> {@link #annotate} message
  * </ul>
  *
- * @author Petr Kuzel
+ * 
  */
 final class AnnotationBar extends JComponent implements Accessible, PropertyChangeListener, DocumentListener, ChangeListener, ActionListener, Runnable, ComponentListener {
 

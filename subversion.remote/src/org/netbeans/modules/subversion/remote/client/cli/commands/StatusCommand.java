@@ -72,7 +72,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class StatusCommand extends SvnCommand {
 

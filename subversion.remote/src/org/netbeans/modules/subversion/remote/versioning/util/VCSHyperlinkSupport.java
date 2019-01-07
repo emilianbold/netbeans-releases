@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 /**
  * Implementation provides hyperlink support for VCS anotation bar and history views
  *
- * @author Tomas Stupka
+ * 
  */
 public class VCSHyperlinkSupport {
     private static final Logger LOG = Logger.getLogger(VCSHyperlinkSupport.class.getName());

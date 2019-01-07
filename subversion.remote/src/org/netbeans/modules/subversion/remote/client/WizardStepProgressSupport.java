@@ -59,7 +59,7 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public abstract class WizardStepProgressSupport extends SvnProgressSupport {   
 

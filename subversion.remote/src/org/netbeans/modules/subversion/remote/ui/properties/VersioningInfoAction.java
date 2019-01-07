@@ -74,7 +74,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  * 
- * @author Peter Pis
+ * 
  */
 @Messages({
     "CTL_MenuItem_VersioningInfoAction=Versionin&g Info",

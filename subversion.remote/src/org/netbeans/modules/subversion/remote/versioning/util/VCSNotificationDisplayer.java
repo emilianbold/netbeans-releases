@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Displays VCS notifications
- * @author Tomas Stupka, Ondra Vrabec
+ * 
  */
 public abstract class VCSNotificationDisplayer {
 

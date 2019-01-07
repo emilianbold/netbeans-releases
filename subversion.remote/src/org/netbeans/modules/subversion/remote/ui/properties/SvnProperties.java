@@ -84,8 +84,8 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Peter Pis
- * @author Marian Petras
+ * 
+ * 
  */
 public final class SvnProperties implements ActionListener {
 

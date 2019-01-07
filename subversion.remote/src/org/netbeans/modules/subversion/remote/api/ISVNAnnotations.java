@@ -46,7 +46,7 @@ import org.netbeans.modules.subversion.remote.api.Annotations.Annotation;
 
 /**
  *
- * @author Alexander Simon
+ * 
  */
 public interface ISVNAnnotations {
 

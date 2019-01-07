@@ -52,7 +52,7 @@ import javax.swing.JTextArea;
  * Small notification dialog similar to ErrorManager's one. The main purpose is to show (possibly long) list
  * of warning and error messages.
  *
- * @author Maros Sandor
+ * 
  */
 public class CommandReport extends javax.swing.JPanel {
 

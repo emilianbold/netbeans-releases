@@ -69,7 +69,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class MissingClient implements ActionListener, HyperlinkListener {
     

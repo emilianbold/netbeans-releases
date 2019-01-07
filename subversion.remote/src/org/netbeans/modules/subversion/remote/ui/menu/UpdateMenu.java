@@ -63,7 +63,7 @@ import org.openide.util.actions.SystemAction;
 /**
  * Container menu for update actions.
  *
- * @author Ondra Vrabec
+ * 
  */
 public final class UpdateMenu extends DynamicMenu {
     private final ActionDestination dest;

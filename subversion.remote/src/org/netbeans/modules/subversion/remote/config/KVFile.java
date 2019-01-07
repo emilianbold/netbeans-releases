@@ -62,7 +62,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 /**
  * Handles the credential or property files used by Subversion.
  *
- * @author Tomas Stupka
+ * 
  *
  */
 public class KVFile {

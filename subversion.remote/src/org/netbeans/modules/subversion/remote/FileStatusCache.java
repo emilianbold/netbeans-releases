@@ -89,7 +89,7 @@ import org.openide.util.Task;
 /**
  * Central part of Subversion status management, deduces and caches statuses of files under version control.
  * 
- * @author Maros Sandor
+ * 
  */
 public class FileStatusCache {
 

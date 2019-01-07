@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 /**
  * Diff action between revisions
  *
- * @author Petr Kuzel
+ * 
  */
 public class DiffToAction extends ContextAction {
 

@@ -52,7 +52,7 @@ import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPathNode.Repo
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public interface BrowserClient {
     public List<RepositoryPathEntry> listRepositoryPath(RepositoryPathEntry entry, SvnProgressSupport support) throws SVNClientException;

@@ -69,7 +69,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Petr Kuzel
+ * 
  */
 public class SwitchToAction extends ContextAction {
     

@@ -54,7 +54,7 @@ import org.netbeans.modules.subversion.remote.api.SVNConflictVersion;
 
 /**
  *
- * @author ondra
+ * 
  */
 class ConflictDescriptionParser {
 

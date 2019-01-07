@@ -50,7 +50,7 @@ import org.openide.nodes.Children;
 /**
  * Subclassed to get custom icon.
  *
- * @author Petr Kuzel
+ * 
  */
 final class WaitNode extends AbstractNode {
     public WaitNode(String name) {

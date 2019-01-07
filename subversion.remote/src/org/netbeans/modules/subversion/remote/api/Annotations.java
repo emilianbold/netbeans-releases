@@ -47,7 +47,7 @@ import java.util.List;
 
 /**
  *
- * @author Alexander Simon
+ * 
  */
 public class Annotations implements ISVNAnnotations {
 

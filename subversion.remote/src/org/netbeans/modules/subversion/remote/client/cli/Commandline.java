@@ -57,7 +57,7 @@ import org.openide.filesystems.FileSystem;
 /**
  * Encapsulates svn shell process. 
  * 
- * @author Tomas Stupka
+ * 
  */
 class Commandline {
 

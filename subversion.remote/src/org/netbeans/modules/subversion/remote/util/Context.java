@@ -61,7 +61,7 @@ import org.openide.filesystems.FileSystem;
  * - list of files (f/b.txt, f/c.txt, f/e.txt)
  * - list of roots (top folders) plus list of exclusions (f),(a.txt, d.txt)
  *
- * @author Maros Sandor
+ * 
  */
 public class Context {
 

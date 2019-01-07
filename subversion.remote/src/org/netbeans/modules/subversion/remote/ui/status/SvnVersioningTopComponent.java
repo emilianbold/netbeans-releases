@@ -65,7 +65,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 /**
  * Top component of the Versioning view.
  * 
- * @author Maros Sandor
+ * 
  */
 public class SvnVersioningTopComponent extends TopComponent implements Externalizable {
    

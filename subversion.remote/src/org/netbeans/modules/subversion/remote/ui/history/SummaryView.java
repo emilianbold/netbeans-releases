@@ -77,12 +77,12 @@ import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMa
 import org.openide.util.WeakListeners;
 
 /**
- * @author Maros Sandor
+ * 
  */
 /**
  * Shows Search History results in a JList.
  *
- * @author Maros Sandor
+ * 
  */
 class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 

@@ -83,7 +83,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 class RevisionSetupsSupport {
     private final RepositoryFile repositoryTreeLeft;

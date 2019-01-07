@@ -87,7 +87,7 @@ import org.netbeans.modules.subversion.remote.versioning.util.VCSHyperlinkSuppor
 
 /**
  * Window displaying the line annotation with links to bugtracking in the commit message.
- * @author Ondrej Vrabec
+ * 
  */
 class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListener, WindowFocusListener {
 

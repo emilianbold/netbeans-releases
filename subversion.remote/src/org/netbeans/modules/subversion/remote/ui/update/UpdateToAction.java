@@ -57,7 +57,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author ondra
+ * 
  */
 public class UpdateToAction extends UpdateAction {
 

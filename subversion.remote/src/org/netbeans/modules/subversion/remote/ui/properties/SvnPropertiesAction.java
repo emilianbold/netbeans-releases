@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 
 /**
  * 
- * @author Peter Pis
+ * 
  */
 public final class SvnPropertiesAction extends ContextAction {
 

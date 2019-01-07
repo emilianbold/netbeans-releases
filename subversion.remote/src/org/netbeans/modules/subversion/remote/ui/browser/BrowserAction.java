@@ -50,7 +50,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public abstract class BrowserAction extends AbstractAction {
     private Browser browser;

@@ -59,7 +59,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 /**
  * Open files in editor.
  *
- * @author Maros Sandor
+ * 
  */
 public class OpenInEditorAction extends AbstractAction {
     

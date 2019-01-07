@@ -106,7 +106,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class SvnClientExceptionHandler {
     private final CommandlineClient adapter;

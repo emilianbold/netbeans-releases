@@ -75,7 +75,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class Merge extends CopyDialog implements ItemListener {
         

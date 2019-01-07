@@ -63,7 +63,7 @@ import org.netbeans.modules.subversion.remote.Subversion;
  * Abstract wizard panel with <codE>valid</code>
  * and <codE>errorMessage</code> bound properties.
  *
- * @author Petr Kuzel
+ * 
  */
 public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
 

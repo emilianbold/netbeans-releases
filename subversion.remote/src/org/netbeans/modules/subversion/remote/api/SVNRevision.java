@@ -48,7 +48,7 @@ import java.util.Locale;
 
 /**
  *
- * @author Alexander Simon
+ * 
  */
 public class SVNRevision {
     public enum Kind {

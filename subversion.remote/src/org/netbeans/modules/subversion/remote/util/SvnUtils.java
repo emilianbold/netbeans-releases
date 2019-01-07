@@ -124,7 +124,7 @@ import org.openide.windows.TopComponent;
 /**
  * Subversion-specific utilities.
  *
- * @author Maros Sandor
+ * 
  */
 public class SvnUtils {
 

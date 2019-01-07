@@ -45,7 +45,7 @@ import java.util.Date;
 
 /**
  *
- * @author Alexander Simon
+ * 
  */
 public interface ISVNDirEntry {
 

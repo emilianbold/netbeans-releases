@@ -56,7 +56,7 @@ import org.openide.util.Exceptions;
  * Prevents refactoring from creating DataObjects for .svn folders and
  * therefore touching (copying/moving) them.
  *
- * @author Tomas Stupka
+ * 
  */
 public class SvnMetadataFolderLoader extends DataLoader {
 

@@ -43,7 +43,7 @@ package org.netbeans.modules.subversion.remote.api;
 
 /**
  *
- * @author Alexander Simon
+ * 
  */
 public interface ISVNDirEntryWithLock {
     ISVNDirEntry getDirEntry();

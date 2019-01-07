@@ -59,7 +59,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author ondra
+ * 
  */
 public class UpdateTo implements PropertyChangeListener {
 

@@ -53,7 +53,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author alsimon
+ * 
  */
 @ClassForAllEnvironments(section = "remote.svn")
 public class InterceptorMoveFOTest extends RemoteVersioningTestBase {

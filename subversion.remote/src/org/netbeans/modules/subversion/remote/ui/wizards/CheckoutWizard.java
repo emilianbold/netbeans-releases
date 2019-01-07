@@ -63,7 +63,7 @@ import org.openide.filesystems.FileSystem;
 /*
  *
  *
- * @author Tomas Stupka
+ * 
  */
 public final class CheckoutWizard implements ChangeListener {
     

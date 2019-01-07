@@ -72,7 +72,7 @@ import org.openide.nodes.Node;
 /**
  * Reverts local changes.
  *
- * @author Petr Kuzel
+ * 
  */
 public class RevertModificationsAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/remote/resources/icons/get_clean.png"; //NOI18N

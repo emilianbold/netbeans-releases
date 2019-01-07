@@ -66,7 +66,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class CreateCopyAction extends ContextAction {
     

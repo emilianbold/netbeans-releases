@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
 /**
  * Diff action shows local changes
  *
- * @author Petr Kuzel
+ * 
  */
 public class DiffAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/remote/resources/icons/diff.png"; //NOI18N

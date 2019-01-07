@@ -45,7 +45,7 @@ package org.netbeans.modules.subversion.remote.ui.properties;
 
 /**
  *
- * @author Peter Pis
+ * 
  */
 public class SvnPropertiesNode {
 

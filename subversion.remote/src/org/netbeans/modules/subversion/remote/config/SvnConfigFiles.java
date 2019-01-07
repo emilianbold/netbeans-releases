@@ -82,7 +82,7 @@ import org.openide.util.NetworkSettings;
  * the remaining values are always taken from the commandline clients configuration files. 
  * The only exception is the 'store-auth-creds' key, which is always set to 'no'.
  * 
- * @author Tomas Stupka
+ * 
  */
 public class SvnConfigFiles {
     public static final boolean USE_LOCAL_PROXY_SETTINGS = "true".equals(System.getProperty("remote.subversion.manage.proxy", "false"));

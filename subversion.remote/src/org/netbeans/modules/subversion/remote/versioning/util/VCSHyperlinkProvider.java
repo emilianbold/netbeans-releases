@@ -48,7 +48,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * Implementations provide hyperlinking functionality in the VCS Annotatoion
  * bar and History views
  *
- * @author Tomas Stupka
+ * 
  */
 public abstract class VCSHyperlinkProvider {
 

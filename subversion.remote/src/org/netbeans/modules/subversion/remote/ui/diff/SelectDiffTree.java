@@ -66,7 +66,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class SelectDiffTree extends CopyDialog implements PropertyChangeListener {
 

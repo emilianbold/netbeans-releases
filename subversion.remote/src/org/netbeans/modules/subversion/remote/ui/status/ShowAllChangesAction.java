@@ -58,7 +58,7 @@ import org.netbeans.modules.subversion.remote.util.SvnUtils;
 /**
  * Open the Versioning status view for all projects.
  *
- * @author Maros Sandor
+ * 
  */
 public class ShowAllChangesAction extends AbstractAllAction {
 

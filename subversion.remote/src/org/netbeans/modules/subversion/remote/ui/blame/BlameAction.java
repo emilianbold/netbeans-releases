@@ -77,7 +77,7 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Maros Sandor
+ * 
  */
 @Messages({
     "CTL_MenuItem_HideAnnotations=Hide A&nnotations",

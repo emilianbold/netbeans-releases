@@ -46,7 +46,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author Alexander Simon
+ * 
  */
 public interface ISVNStatus {
 

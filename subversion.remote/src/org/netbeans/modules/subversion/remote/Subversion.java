@@ -86,7 +86,7 @@ import org.openide.util.RequestProcessor;
  * A singleton Subversion manager class, center of Subversion module. Use {@link #getInstance()} to get access
  * to Subversion module functionality.
  *
- * @author Maros Sandor
+ * 
  */
 public class Subversion {
     

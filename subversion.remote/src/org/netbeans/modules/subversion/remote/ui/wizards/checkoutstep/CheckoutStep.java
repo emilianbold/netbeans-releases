@@ -75,7 +75,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * @author Tomas Stupka
+ * 
  */
 public class CheckoutStep extends AbstractStep implements ActionListener, DocumentListener, FocusListener, ItemListener {
 

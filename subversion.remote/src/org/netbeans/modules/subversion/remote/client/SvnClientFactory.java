@@ -64,7 +64,7 @@ import org.openide.filesystems.FileSystem;
 /**
  * A SvnClient factory
  *
- * @author Tomas Stupka
+ * 
  */
 public class SvnClientFactory {
     

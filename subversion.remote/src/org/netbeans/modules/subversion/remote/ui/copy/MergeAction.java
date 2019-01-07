@@ -65,7 +65,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class MergeAction extends ContextAction {
 

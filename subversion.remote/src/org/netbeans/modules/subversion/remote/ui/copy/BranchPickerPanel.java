@@ -45,7 +45,7 @@ package org.netbeans.modules.subversion.remote.ui.copy;
 
 /**
  *
- * @author ondra
+ * 
  */
 class BranchPickerPanel extends javax.swing.JPanel {
 

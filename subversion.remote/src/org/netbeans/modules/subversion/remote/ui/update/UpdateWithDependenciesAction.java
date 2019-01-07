@@ -57,7 +57,7 @@ import org.netbeans.modules.subversion.remote.util.SvnUtils;
 /**
  * Updates selected projects and all projects they depend on.
  *
- * @author Maros Sandor
+ * 
  */
 public class UpdateWithDependenciesAction extends ContextAction {
     

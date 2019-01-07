@@ -67,7 +67,7 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class InfoCommand extends SvnCommand {
 

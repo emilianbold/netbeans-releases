@@ -65,7 +65,7 @@ import org.openide.util.lookup.Lookups;
 /**
  * The node that is rendered in the Update Results view.
  * 
- * @author Maros Sandor
+ * 
  */
 class UpdateResultNode extends AbstractNode {
     

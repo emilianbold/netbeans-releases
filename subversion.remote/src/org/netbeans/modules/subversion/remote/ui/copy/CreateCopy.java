@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class CreateCopy extends CopyDialog implements DocumentListener, FocusListener, ActionListener, PropertyChangeListener {
 

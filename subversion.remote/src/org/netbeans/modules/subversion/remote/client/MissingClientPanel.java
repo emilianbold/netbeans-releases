@@ -50,8 +50,8 @@ import javax.swing.text.html.HTMLDocument;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 
 /**
- * @author Tomas Stupka
- * @author Jan Stola
+ * 
+ * 
  */
 public class MissingClientPanel extends javax.swing.JPanel {
 

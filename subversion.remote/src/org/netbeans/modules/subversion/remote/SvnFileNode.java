@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 /**
  * Represents real or virtual (non-local) file.
  *
- * @author Maros Sandor
+ * 
  */
 public class SvnFileNode {
 

@@ -56,7 +56,7 @@ import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
- * @author Maros Sandor
+ * 
  */
 public class SearchHistoryTopComponent extends TopComponent implements DiffSetupSource {
 

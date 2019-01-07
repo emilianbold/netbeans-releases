@@ -43,7 +43,7 @@ package org.netbeans.modules.subversion.remote.ui.actions;
 
 /**
  *
- * @author Petr Kuzel
+ * 
  */
 public final class ActionUtils {
 

@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class Export implements DocumentListener, FocusListener, ActionListener {
     private static final String SCAN_AFTER_EXPORT = "scan_after_export";        // NOI18N

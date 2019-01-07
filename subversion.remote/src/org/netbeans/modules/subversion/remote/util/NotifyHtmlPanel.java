@@ -53,7 +53,7 @@ import org.openide.awt.HtmlBrowser;
 
 /**
  *
- * @author ondra
+ * 
  */
 public class NotifyHtmlPanel extends javax.swing.JPanel {
 

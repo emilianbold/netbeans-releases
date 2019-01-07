@@ -58,7 +58,7 @@ import org.netbeans.modules.subversion.remote.util.SvnUtils;
 /**
  * Displays files that have been updated.
  * 
- * @author Maros Sandor
+ * 
  */
 class UpdateResults extends JComponent {
         

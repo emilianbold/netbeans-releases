@@ -69,7 +69,7 @@ import org.openide.nodes.Node;
  * Context sensitive status action. It opens the Subversion
  * view and sets its context.
  *
- * @author Petr Kuzel
+ * 
  */
 public class StatusAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/remote/resources/icons/show_changes.png"; //NOI18N

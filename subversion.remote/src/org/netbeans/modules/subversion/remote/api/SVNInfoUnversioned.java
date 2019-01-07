@@ -46,7 +46,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author alsimon
+ * 
  */
 public class SVNInfoUnversioned implements ISVNInfo {
     private final VCSFileProxy file;

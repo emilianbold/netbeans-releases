@@ -43,7 +43,7 @@ package org.netbeans.modules.subversion.remote.api;
 
 /**
  *
- * @author alsimon
+ * 
  */
 public enum Depth {
     files,

@@ -83,7 +83,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author alsimon
+ * 
  */
 public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
     public static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";

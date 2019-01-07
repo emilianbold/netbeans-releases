@@ -55,7 +55,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class CheckoutCompleted {
 

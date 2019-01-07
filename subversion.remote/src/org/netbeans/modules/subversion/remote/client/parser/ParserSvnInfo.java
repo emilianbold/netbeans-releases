@@ -54,7 +54,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author Ed Hillmann
+ * 
  */
 public class ParserSvnInfo implements ISVNInfo{
     

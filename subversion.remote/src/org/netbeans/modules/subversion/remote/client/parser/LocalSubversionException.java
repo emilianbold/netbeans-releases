@@ -45,7 +45,7 @@ package org.netbeans.modules.subversion.remote.client.parser;
 
 /**
  *
- * @author Ed Hillmann
+ * 
  */
 public class LocalSubversionException extends Exception {
     

@@ -50,7 +50,7 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class RelocateCommand extends SvnCommand {
 

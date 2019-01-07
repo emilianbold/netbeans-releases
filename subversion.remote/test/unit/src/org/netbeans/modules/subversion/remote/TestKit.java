@@ -53,7 +53,7 @@ import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
- * @author pvcs
+ * 
  */
 public class TestKit {
 

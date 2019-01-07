@@ -45,7 +45,7 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public interface SvnClientDescriptor {
 

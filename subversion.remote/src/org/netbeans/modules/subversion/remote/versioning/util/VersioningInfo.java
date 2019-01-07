@@ -62,7 +62,7 @@ import org.openide.util.NbPreferences;
 
 /**
  * Shows a dialog listing all given versioning info properties
- * @author ondra
+ * 
  */
 public class VersioningInfo {
 

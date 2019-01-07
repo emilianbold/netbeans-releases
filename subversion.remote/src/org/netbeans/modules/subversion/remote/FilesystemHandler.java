@@ -76,7 +76,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Handles events fired from the filesystem such as file/folder create/delete/move.
  *
- * @author Maros Sandor
+ * 
  */
 class FilesystemHandler extends VCSInterceptor {
 

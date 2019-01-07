@@ -122,7 +122,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class CommandlineClient implements SvnClient {
 

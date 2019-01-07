@@ -62,7 +62,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author Ed Hillmann
+ * 
  */
 public class WorkingCopyDetails {
     static final String FILE_ATTRIBUTE_VALUE = "file"; //NOI18N

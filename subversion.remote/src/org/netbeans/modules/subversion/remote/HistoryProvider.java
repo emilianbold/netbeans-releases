@@ -69,7 +69,7 @@ import org.openide.util.*;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class HistoryProvider implements VCSHistoryProvider {
 

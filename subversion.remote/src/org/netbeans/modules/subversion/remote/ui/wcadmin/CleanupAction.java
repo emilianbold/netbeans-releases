@@ -63,7 +63,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Ondra Vrabec
+ * 
  */
 @ActionID(id = "org.netbeans.modules.subversion.remote.ui.wcadmin.CleanupAction", category = "SubversionRemote")
 @ActionRegistration(displayName = "CTL_Cleanup_Title")

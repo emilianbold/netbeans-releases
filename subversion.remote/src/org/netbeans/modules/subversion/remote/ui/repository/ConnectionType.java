@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author tomas
+ * 
  */
 public abstract class ConnectionType implements ActionListener, DocumentListener, FocusListener {
     

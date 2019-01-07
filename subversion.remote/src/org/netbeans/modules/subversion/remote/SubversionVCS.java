@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
+ * 
  */
 @VersioningSystem.Registration(displayName="#CTL_Subversion_DisplayName",  //NOI18N
     menuLabel="#CTL_Subversion_MainMenu",  //NOI18N

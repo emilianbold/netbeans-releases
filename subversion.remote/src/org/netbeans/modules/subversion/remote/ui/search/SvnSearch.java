@@ -79,7 +79,7 @@ import org.openide.util.TaskListener;
 /**
  * Handles the UI for revision search.
  *
- * @author Tomas Stupka
+ * 
  */
 public class SvnSearch implements ActionListener, DocumentListener {
     

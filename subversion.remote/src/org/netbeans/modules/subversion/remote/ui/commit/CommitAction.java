@@ -108,7 +108,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * Commit action
  *
- * @author Petr Kuzel
+ * 
  */
 @Messages({
     "CTL_MenuItem_Commit=Co&mmit...",

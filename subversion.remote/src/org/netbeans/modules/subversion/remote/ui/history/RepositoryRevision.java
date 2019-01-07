@@ -77,7 +77,7 @@ import org.openide.util.NbBundle.Messages;
  * cvs log command. The fields in instances of this object are populated
  * by response handlers.
  *
- * @author Maros Sandor
+ * 
  */
 final class RepositoryRevision {
 

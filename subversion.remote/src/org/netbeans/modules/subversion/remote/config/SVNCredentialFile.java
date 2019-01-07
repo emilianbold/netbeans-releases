@@ -54,7 +54,7 @@ import org.openide.util.Exceptions;
 /**
  * Handles the Subversion credential files.
  *
- * @author Tomas Stupka
+ * 
  *
  */
 public abstract class SVNCredentialFile extends KVFile {

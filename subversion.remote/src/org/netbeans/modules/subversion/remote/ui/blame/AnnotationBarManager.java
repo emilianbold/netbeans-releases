@@ -50,7 +50,7 @@ import javax.swing.*;
 import javax.swing.text.JTextComponent;
 
 /**
- * @author Maros Sandor
+ * 
  */
 public class AnnotationBarManager implements SideBarFactory {
 

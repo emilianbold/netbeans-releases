@@ -48,7 +48,7 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author ondra
+ * 
  */
 public class UpgradeCommand extends SvnCommand {
     

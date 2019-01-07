@@ -57,7 +57,7 @@ import org.openide.util.Exceptions;
 /**
  * Represents a Subversions file holding a X509Certificate for a realmstring.
  *
- * @author Tomas Stupka
+ * 
  */
 public class CertificateFile extends SVNCredentialFile {
 

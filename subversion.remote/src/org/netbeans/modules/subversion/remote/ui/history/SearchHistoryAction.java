@@ -62,7 +62,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 /**
  * Opens Search History Component.
  * 
- * @author Maros Sandor
+ * 
  */
 public class SearchHistoryAction extends ContextAction {
 

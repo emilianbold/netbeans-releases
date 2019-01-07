@@ -69,7 +69,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 /**
  * Stream source for diffing remote SVN managed files .
  *
- * @author Maros Sandor
+ * 
  */
 public class DiffStreamSource extends StreamSource implements Cancellable {
 

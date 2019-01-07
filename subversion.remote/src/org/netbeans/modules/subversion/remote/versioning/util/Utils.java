@@ -50,7 +50,7 @@ import java.util.prefs.Preferences;
 
 /**
  *
- * @author Alexander Simon
+ * 
  */
 public class Utils {
     /**

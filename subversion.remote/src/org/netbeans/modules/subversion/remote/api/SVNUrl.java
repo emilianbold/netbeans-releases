@@ -50,7 +50,7 @@ import java.util.Objects;
 
 /**
  *
- * @author Alexander Simon
+ * 
  */
 public class SVNUrl {
 

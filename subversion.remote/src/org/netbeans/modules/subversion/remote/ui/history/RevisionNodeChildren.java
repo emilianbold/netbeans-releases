@@ -55,7 +55,7 @@ import org.openide.util.WeakListeners;
 /**
  * Represents children of a Revision Node in Search history results table.
  *
- * @author Maros Sandor
+ * 
  */
 class RevisionNodeChildren extends Children.Keys<Object> implements PropertyChangeListener {
 

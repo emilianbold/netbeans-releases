@@ -93,7 +93,7 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
- * @author Tomas Stupka
+ * 
  */
 public class Repository implements ActionListener, DocumentListener, ItemListener {
     

@@ -74,7 +74,7 @@ import org.openide.util.HelpCtx;
 
 
 /**
- * @author Tomas Stupka
+ * 
  */
 public class ImportPreviewStep extends AbstractStep {
     

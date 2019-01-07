@@ -81,7 +81,7 @@ import org.openide.nodes.Sheet;
 /**
  * Represents a path in the repository.
  *
- * @author Tomas Stupka
+ * 
  *
  */
 public class RepositoryPathNode extends AbstractNode {
