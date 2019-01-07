@@ -73,7 +73,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.diff.ExportUncommittedChangesAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_ExportUncommittedChangesAction_Name")

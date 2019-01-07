@@ -45,7 +45,6 @@ package org.netbeans.modules.git.remote.cli;
 /**
  * All supported kinds of git objects.
  * 
- * @author Ondra Vrabec
  */
 public enum GitObjectType {
     COMMIT {

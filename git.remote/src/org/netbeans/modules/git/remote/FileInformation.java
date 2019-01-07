@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class FileInformation extends FileNodeInformation {
     private final EnumSet<Status> status;

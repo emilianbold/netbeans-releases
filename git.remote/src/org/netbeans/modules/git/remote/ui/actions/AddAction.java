@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.actions.AddAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_AddAction_Name")

@@ -64,7 +64,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author ondra
  */
 @VersioningSystem.Registration(
     displayName="#CTL_Git_DisplayName", 

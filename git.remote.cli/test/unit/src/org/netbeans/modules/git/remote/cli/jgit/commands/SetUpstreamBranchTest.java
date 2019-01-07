@@ -59,7 +59,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public class SetUpstreamBranchTest extends AbstractGitTestCase {
     private VCSFileProxy workDir;

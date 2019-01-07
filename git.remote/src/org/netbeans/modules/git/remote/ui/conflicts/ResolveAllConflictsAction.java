@@ -59,7 +59,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Tomas Stupka
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.conflicts.ResolveAllConflictsAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_ResolveAllConflictsAction_Name")

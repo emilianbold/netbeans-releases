@@ -43,7 +43,6 @@ package org.netbeans.modules.git.remote.cli;
 
 /**
  *
- * @author alsimon
  */
 public class GitConstants {
     public static final String HEAD = "HEAD";

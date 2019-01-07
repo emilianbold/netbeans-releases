@@ -47,7 +47,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Ondra
  */
 public interface DiffFileViewComponent<T extends Node> extends FileViewComponent<T> {
     

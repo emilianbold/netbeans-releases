@@ -49,7 +49,6 @@ import org.netbeans.modules.git.remote.cli.jgit.Utils;
  * provides instance of this class and you can get more information about the conflict.
  * Can be acquired with {@link GitStatus#getConflictDescriptor() } method.
  * 
- * @author Ondra Vrabec
  */
 public final class GitConflictDescriptor {
     private final Type type;

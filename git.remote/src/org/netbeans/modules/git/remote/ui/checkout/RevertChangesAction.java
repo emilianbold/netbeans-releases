@@ -66,7 +66,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 // XXX create tests for all possible revert settings
 @ActionID(id = "org.netbeans.modules.git.remote.ui.checkout.RevertChangesAction", category = "GitRemote")

@@ -91,7 +91,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Ondra Vrabec
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.shelve.ShelveChangesAction", category = "GitRemote")
 @ActionRegistration(displayName = "#CTL_ShelveChanges_Title")

@@ -47,7 +47,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public interface ActionProgress {
     

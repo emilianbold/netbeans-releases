@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class CreateBranch implements DocumentListener {
     private final CreateBranchPanel panel;

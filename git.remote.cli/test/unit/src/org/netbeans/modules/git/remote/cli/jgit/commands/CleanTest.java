@@ -58,7 +58,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class CleanTest extends AbstractGitTestCase {
     private JGitRepository repository;

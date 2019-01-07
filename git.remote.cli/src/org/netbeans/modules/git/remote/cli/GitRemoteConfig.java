@@ -55,7 +55,6 @@ import org.netbeans.modules.git.remote.cli.jgit.JGitConfig;
  * Contains and provides information about a remote git repository, its push and fetch URIs
  * and fetch and push reference specifications. See the help pages for git config for more information.
  * 
- * @author Ondra Vrabec
  */
 public final class GitRemoteConfig {
     

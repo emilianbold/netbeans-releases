@@ -66,7 +66,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.checkout.CheckoutPathsAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_CheckoutPathsAction_Name")

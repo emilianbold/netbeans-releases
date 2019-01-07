@@ -46,7 +46,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 /**
  * Contains information needed to construct a file's line annotation.
  * 
- * @author Ondra Vrabec
  */
 public final class GitLineDetails {
     private final GitRevisionInfo revision;

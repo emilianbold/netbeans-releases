@@ -57,7 +57,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Ondra Vrabec
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.diff.DiffCurrentToTrackedAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_DiffCurrentToTrackedAction_Name")

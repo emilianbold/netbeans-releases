@@ -107,7 +107,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Tomas Stupka
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.commit.CommitAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_CommitAction_Name")

@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class GitClientExceptionHandler {
     private final boolean handleAuthenticationIssues;

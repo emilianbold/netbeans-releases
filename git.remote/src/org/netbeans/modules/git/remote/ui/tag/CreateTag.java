@@ -68,7 +68,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author ondra
  */
 class CreateTag implements DocumentListener, ActionListener {
     private final CreateTagPanel panel;

@@ -56,7 +56,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author ondra
  */
 public abstract class SingleRepositoryAction extends GitAction {
 

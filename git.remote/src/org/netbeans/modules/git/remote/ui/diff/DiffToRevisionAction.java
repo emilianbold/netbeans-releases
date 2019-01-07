@@ -55,7 +55,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.diff.DiffToRevisionAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_DiffToRevisionAction_Name")

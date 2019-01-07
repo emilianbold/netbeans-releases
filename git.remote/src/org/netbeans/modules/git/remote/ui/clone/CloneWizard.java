@@ -67,7 +67,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Tomas Stupka
  */
 class CloneWizard  implements ChangeListener {
 

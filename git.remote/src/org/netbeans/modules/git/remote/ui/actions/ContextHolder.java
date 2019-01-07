@@ -46,7 +46,6 @@ import org.netbeans.modules.versioning.core.spi.VCSContext;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class ContextHolder {
     

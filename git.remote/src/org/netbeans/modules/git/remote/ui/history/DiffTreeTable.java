@@ -79,7 +79,6 @@ import org.openide.xml.XMLUtil;
 /**
  * Treetable to show results of Search History action.
  * 
- * @author Maros Sandor
  */
 class DiffTreeTable extends OutlineView {
     

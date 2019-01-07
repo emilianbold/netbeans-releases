@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @NbBundle.Messages({
     "# {0} - branch name", "SelectTrackedBranchPanel.error.noselection=Select tracked branch for branch \"{0}\"",

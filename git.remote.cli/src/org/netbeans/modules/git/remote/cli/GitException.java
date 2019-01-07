@@ -48,7 +48,6 @@ import org.netbeans.modules.git.remote.cli.jgit.Utils;
 /**
  * A general exception thrown when an error occurs while running git commands.
  * 
- * @author Ondra Vrabec
  */
 public class GitException extends Exception {
 

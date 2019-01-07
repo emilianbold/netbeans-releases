@@ -45,7 +45,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 @NbBundle.Messages({
     "ACSN_SaveStash_Message=Stash message",

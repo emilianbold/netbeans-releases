@@ -56,7 +56,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.commit.ExcludeFromCommitAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_ExcludeFromCommitAction_Name")

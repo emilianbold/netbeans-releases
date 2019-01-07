@@ -58,7 +58,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author ondra
  */
 @NbBundle.Messages({
     "CTL_SaveStash.okButton.text=&Stash Changes",

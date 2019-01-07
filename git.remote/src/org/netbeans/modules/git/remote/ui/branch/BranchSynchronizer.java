@@ -71,7 +71,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @NbBundle.Messages({
     "LBL_SyncBranchAction.progressName=Synchronizing with tracked branch",

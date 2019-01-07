@@ -53,7 +53,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Ondra Vrabec
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.checkout.RevertAllChangesAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_RevertAllChangesAction_Name")

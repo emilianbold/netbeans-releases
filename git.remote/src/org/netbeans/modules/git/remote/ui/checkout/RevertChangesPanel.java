@@ -50,7 +50,6 @@ package org.netbeans.modules.git.remote.ui.checkout;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class RevertChangesPanel extends javax.swing.JPanel {
 

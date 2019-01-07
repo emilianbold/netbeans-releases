@@ -55,7 +55,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.checkout.CheckoutRevisionAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_CheckoutRevisionAction_Name")

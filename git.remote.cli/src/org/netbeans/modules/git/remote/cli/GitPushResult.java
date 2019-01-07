@@ -46,7 +46,6 @@ import java.util.Map;
 /**
  * Usually returned by a git push command, represents its result.
  * 
- * @author Ondra Vrabec
  */
 public final class GitPushResult {
 

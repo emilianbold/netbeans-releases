@@ -163,7 +163,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author ondra
  */
 public class MultiDiffPanelController implements ActionListener, PropertyChangeListener, PreferenceChangeListener {
     private final VCSContext context;

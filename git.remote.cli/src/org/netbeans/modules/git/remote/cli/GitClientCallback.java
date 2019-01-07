@@ -82,7 +82,6 @@ package org.netbeans.modules.git.remote.cli;
  * </pre>
  * 
  * <p>Also note that returning <code>null</code> from the implemented methods means that you want to cancel the authentication attempt.</p>
- * @author Ondra Vrabec
  */
 public abstract class GitClientCallback {
     

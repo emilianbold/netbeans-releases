@@ -75,7 +75,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class PullBranchesStep extends AbstractWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
     private GitRemoteConfig remote;

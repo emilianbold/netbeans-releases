@@ -64,7 +64,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author ondra
  */
 public final class GitModuleConfig {
     

@@ -58,7 +58,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public class RemoveTest extends AbstractGitTestCase {
     private static final boolean KIT = RemoveCommand.KIT;

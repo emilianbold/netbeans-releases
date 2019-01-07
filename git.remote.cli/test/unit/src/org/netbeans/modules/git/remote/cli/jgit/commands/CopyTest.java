@@ -57,7 +57,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public class CopyTest extends AbstractGitTestCase {
     private JGitRepository repository;

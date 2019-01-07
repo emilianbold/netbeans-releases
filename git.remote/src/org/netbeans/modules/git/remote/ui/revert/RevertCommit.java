@@ -58,7 +58,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class RevertCommit implements ActionListener, DocumentListener {
     private final RevertCommitPanel panel;

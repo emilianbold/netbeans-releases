@@ -91,7 +91,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.fetch.PullAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_PullAction_Name")

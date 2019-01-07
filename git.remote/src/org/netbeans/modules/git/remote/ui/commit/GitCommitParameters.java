@@ -61,7 +61,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class GitCommitParameters extends DefaultCommitParameters implements ItemListener, DocumentListener {
     private CommitPanel panel;

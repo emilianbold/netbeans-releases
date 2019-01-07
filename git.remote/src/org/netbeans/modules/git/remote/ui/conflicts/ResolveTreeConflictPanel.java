@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class ResolveTreeConflictPanel extends javax.swing.JPanel {
 

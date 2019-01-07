@@ -63,7 +63,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author ondra
  */
 public abstract class GitProgressSupport implements Runnable, Cancellable {
     private volatile boolean canceled;

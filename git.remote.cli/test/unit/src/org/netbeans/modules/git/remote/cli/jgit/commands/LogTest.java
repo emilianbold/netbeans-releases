@@ -60,7 +60,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public class LogTest extends AbstractGitTestCase {
     private static final boolean KIT = LogCommand.KIT;

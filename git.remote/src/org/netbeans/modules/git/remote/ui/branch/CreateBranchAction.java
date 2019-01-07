@@ -65,7 +65,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.branch.CreateBranchAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_CreateBranchAction_Name")

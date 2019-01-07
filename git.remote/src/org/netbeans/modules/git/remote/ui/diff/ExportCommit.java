@@ -53,7 +53,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author ondra
  */
 abstract class ExportCommit extends ExportDiffSupport {
 

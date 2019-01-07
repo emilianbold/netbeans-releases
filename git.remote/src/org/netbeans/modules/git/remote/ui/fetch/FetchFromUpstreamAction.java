@@ -64,7 +64,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.fetch.FetchFromUpstreamAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_FetchFromUpstreamAction_Name")

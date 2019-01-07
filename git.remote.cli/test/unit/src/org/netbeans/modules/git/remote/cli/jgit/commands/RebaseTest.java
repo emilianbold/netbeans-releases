@@ -63,7 +63,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public class RebaseTest extends AbstractGitTestCase {
     private static final String BRANCH_NAME = "new_branch";

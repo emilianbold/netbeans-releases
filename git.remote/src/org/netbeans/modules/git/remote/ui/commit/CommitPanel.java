@@ -65,7 +65,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class CommitPanel extends javax.swing.JPanel {
     private final GitCommitParameters parameters;

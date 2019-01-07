@@ -51,7 +51,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 /**
  * Result of a blame command, wraps line annotations for a given file.
  * 
- * @author Ondra Vrabec
  */
 public final class GitBlameResult {
 

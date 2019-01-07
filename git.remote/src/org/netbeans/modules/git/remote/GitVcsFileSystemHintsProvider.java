@@ -46,7 +46,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author vkvashin
  */
 @ServiceProvider(service = RemoteVcsFileSystemHintsProvider.class )
 public class GitVcsFileSystemHintsProvider implements RemoteVcsFileSystemHintsProvider {

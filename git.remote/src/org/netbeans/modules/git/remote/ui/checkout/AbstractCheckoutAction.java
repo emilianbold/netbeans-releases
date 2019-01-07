@@ -76,7 +76,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author ondra
  */
 public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
     

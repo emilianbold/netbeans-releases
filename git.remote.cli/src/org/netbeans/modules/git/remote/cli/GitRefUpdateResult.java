@@ -45,7 +45,6 @@ package org.netbeans.modules.git.remote.cli;
 /**
  * Result of a local or remote reference update.
  * 
- * @author Ondra Vrabec
  */
 public enum GitRefUpdateResult {
     

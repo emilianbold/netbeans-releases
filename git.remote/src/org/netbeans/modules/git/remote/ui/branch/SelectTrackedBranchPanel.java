@@ -47,7 +47,6 @@ import org.netbeans.modules.git.remote.ui.repository.SelectBranchPanel;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class SelectTrackedBranchPanel extends javax.swing.JPanel {
 

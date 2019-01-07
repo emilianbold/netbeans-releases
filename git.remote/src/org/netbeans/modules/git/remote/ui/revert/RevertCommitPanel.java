@@ -51,7 +51,6 @@ import org.netbeans.modules.git.remote.ui.repository.RevisionDialog;
 
 /**
  *
- * @author ondra
  */
 public class RevertCommitPanel extends javax.swing.JPanel {
     private final RevisionDialog revisionPanel;

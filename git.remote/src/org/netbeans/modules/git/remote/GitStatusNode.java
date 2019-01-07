@@ -53,7 +53,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author ondra
  */
 public abstract class GitStatusNode<T extends GitFileNode> extends VCSStatusNode<T> {
 

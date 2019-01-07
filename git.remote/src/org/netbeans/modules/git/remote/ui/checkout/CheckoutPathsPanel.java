@@ -53,7 +53,6 @@ import org.netbeans.modules.git.remote.ui.repository.RevisionDialog;
 
 /**
  *
- * @author ondra
  */
 public class CheckoutPathsPanel extends JPanel {
     private final RevisionDialog revisionPanel;

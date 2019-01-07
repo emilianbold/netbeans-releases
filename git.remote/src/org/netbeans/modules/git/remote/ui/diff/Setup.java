@@ -59,7 +59,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public final class Setup extends AbstractDiffSetup {
 

@@ -50,7 +50,6 @@ import org.netbeans.spi.editor.SideBarFactory;
 
 
 /**
- * @author Maros Sandor
  */
 public class AnnotationBarManager implements SideBarFactory {
 

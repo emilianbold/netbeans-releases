@@ -59,7 +59,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.branch.SetTrackingAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_SetTrackingAction_Name", lazy = true)

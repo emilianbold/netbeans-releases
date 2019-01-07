@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class BranchMapping extends ItemSelector.Item {
     private final String label;

@@ -70,7 +70,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class ItemSelector<I extends Item> implements ListSelectionListener {
     private final ItemsPanel panel;

@@ -53,7 +53,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class GitCommitTable extends VCSCommitTable<GitLocalFileNode> {
 

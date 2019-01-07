@@ -52,7 +52,6 @@ import org.netbeans.modules.git.remote.ui.repository.RevisionDialog;
 
 /**
  *
- * @author ondra
  */
 public class CherryPickPanel extends javax.swing.JPanel {
     private final RevisionDialog revisionPanel;

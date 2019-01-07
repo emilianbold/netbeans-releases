@@ -70,7 +70,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author ondra
  */
 public class CherryPick {
     private final CherryPickPanel panel;

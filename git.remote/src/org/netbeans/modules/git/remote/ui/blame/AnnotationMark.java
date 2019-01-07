@@ -50,7 +50,6 @@ import org.netbeans.modules.editor.errorstripe.privatespi.Status;
 
 /**
  *
- * @author Maros Sandor
  */
 final class AnnotationMark implements Mark {
 

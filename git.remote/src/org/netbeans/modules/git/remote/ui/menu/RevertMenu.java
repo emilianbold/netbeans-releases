@@ -61,7 +61,6 @@ import org.openide.util.actions.SystemAction;
 /**
  * Container menu for export actions.
  *
- * @author Ondra
  */
 public final class RevertMenu extends DynamicMenu {
     private final ActionDestination dest;

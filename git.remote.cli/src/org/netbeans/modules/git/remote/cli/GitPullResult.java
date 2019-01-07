@@ -46,7 +46,6 @@ import java.util.Map;
 /**
  * Returned by a git pull command, represents its result.
  * 
- * @author Ondra Vrabec
  */
 public final class GitPullResult {
     private final Map<String, GitTransportUpdate> fetchResult;

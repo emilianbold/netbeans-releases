@@ -60,7 +60,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public class RenameTest extends AbstractGitTestCase {
     private JGitRepository repository;

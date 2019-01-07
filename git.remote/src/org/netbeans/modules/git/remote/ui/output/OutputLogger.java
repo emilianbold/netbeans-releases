@@ -66,7 +66,6 @@ import org.openide.windows.OutputWriter;
 
 /**
  * TODO cache output if the window is closed... Probably a limited-size list of some kind and when the window is opened, write the content of the list.
- * @author Ondra Vrabec, Tomas Stupka
  */
 public class OutputLogger {
 

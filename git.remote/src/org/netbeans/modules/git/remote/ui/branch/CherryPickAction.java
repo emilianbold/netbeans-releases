@@ -80,7 +80,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.branch.CherryPickAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_CherryPickAction_Name", lazy = false)

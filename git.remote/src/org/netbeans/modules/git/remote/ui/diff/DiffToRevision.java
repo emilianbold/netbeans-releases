@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 class DiffToRevision  implements ActionListener, PropertyChangeListener {
     static final String PROP_VALID = "diffto.propValid"; //NOI18N

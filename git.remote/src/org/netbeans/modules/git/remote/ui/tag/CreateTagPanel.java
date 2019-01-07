@@ -53,7 +53,6 @@ import org.netbeans.modules.git.remote.ui.repository.RevisionDialog;
 
 /**
  *
- * @author ondra
  */
 public class CreateTagPanel extends JPanel {
     private final RevisionDialog revisionPanel;

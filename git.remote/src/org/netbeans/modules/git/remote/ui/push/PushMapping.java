@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public abstract class PushMapping extends ItemSelector.Item {
 

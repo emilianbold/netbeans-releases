@@ -68,7 +68,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author ondra
  */
 public class DiffStreamSource extends StreamSource {
 

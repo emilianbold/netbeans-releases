@@ -81,7 +81,6 @@ import org.openide.windows.WindowManager;
 /**
  * Top component of the Versioning view.
  * 
- * @author Maros Sandor
  */
 @TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_ALWAYS, preferredID=GitVersioningTopComponent.PREFERRED_ID)
 @TopComponent.Registration(mode="output", openAtStartup=false, position=3117)

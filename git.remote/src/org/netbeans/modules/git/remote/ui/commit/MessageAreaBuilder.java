@@ -47,7 +47,6 @@ import org.netbeans.modules.versioning.util.common.CommitMessageMouseAdapter;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class MessageAreaBuilder {
     private String accessibleName;

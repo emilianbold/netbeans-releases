@@ -59,7 +59,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class SubmoduleTest extends AbstractGitTestCase {
     private VCSFileProxy workDir;

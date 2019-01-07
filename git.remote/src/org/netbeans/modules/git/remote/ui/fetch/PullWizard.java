@@ -61,7 +61,6 @@ import org.openide.WizardDescriptor.Panel;
 
 /**
  *
- * @author ondra
  */
 class PullWizard  implements ChangeListener {
 

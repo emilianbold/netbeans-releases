@@ -77,7 +77,6 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author ondra
  */
 public final class FetchUtils {
     

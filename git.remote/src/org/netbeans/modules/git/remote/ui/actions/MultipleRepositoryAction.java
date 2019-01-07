@@ -54,7 +54,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author ondra
  */
 public abstract class MultipleRepositoryAction extends GitAction {
 

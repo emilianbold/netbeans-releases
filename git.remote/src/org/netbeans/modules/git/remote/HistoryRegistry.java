@@ -65,7 +65,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class HistoryRegistry {
     private static HistoryRegistry instance;

@@ -65,7 +65,6 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author ondra
  */
 public abstract class AbstractCheckoutRevision implements DocumentListener, ActionListener, PropertyChangeListener {
     protected final CheckoutRevisionPanel panel;

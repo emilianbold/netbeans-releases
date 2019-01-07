@@ -49,7 +49,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 /**
  * Returned by a git rebase command, represents its result.
  *
- * @author Ondra Vrabec
  * @since 1.8
  */
 public final class GitRebaseResult {

@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 public abstract class GitFileNode<T extends FileNodeInformation> extends VCSFileNode {
     

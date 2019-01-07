@@ -55,7 +55,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public class StashTest extends AbstractGitTestCase {
     private VCSFileProxy workDir;

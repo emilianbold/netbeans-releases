@@ -99,7 +99,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
 

@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class MergeRevision {
     private final MergeRevisionPanel panel;

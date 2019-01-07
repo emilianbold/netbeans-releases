@@ -45,7 +45,6 @@ package org.netbeans.modules.git.remote.cli;
 /**
  * Represents a local or remote branch in the local Git repository.
  * 
- * @author Ondra Vrabec
  */
 public final class GitBranch {
 
