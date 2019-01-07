@@ -45,7 +45,7 @@ package org.netbeans.modules.mercurial.remote.ui.branch;
 
 /**
  *
- * @author  Padraig O'Briain
+ * 
  */
 final class BranchSelectorPanel extends javax.swing.JPanel {
 

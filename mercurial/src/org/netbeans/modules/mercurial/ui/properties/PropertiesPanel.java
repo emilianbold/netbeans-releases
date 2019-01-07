@@ -52,7 +52,7 @@ import org.netbeans.modules.versioning.util.ListenersSupport;
 
 /**
  *
- * @author  Peter Pis
+ * 
  */
 public class PropertiesPanel extends javax.swing.JPanel implements PreferenceChangeListener, TableModelListener {
 

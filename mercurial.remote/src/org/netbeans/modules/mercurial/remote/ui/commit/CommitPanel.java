@@ -132,8 +132,8 @@ import org.openide.util.actions.CallbackSystemAction;
 
 /**
  *
- * @author  pk97937
- * @author  Marian Petras
+ * 97937
+ * 
  */
 public class CommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener,
         ChangeListener, ActionListener, PropertyChangeListener, DocumentListener {

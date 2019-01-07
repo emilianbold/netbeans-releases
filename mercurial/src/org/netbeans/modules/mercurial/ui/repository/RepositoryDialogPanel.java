@@ -45,7 +45,7 @@ package org.netbeans.modules.mercurial.ui.repository;
 
 /**
  *
- * @author  Tomas Stupka
+ * 
  */
 public class RepositoryDialogPanel extends javax.swing.JPanel {
 

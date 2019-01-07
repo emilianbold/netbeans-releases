@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Padraig O'Briain
+ * 
  */
 public class ClonePanel extends javax.swing.JPanel implements ActionListener {
 

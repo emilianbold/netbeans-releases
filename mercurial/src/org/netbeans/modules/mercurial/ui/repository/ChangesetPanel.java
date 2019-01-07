@@ -46,7 +46,7 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 
 /**
  *
- * @author  jr140578
+ * 140578
  */
 public class ChangesetPanel extends javax.swing.JPanel {
 

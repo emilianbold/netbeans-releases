@@ -87,7 +87,7 @@ import org.openide.windows.TopComponent;
  *
  * This class is copy&pasted from javacvs
  *
- * @author  Martin Entlicher
+ * 
  */
 public class ResolveConflictsExecutor extends HgProgressSupport {
     

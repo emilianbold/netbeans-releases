@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Petr Kuzel
+ * 
  */
 public class RepositoryPanel extends javax.swing.JPanel {
 

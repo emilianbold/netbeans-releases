@@ -78,7 +78,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author  Padraig O'Briain
+ * 
  */
 public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
 

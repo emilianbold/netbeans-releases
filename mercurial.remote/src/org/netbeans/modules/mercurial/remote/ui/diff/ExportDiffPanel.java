@@ -57,7 +57,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author  Padraig O'Briain
+ * 
  */
 public class ExportDiffPanel extends ChangesetPickerPanel {
 

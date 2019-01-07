@@ -77,7 +77,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 
 /**
  *
- * @author  Padraig O'Briain
+ * 
  */
 public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
 

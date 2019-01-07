@@ -72,7 +72,7 @@ import org.netbeans.modules.versioning.util.Utils;
  *
  * This class is copy&pasted from javacvs
  *
- * @author  Martin Entlicher
+ * 
  */
 public class ResolveConflictsExecutor extends HgProgressSupport {
     

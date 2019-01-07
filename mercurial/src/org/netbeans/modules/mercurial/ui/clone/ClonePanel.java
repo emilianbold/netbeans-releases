@@ -54,7 +54,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 /**
  *
- * @author  Padraig O'Briain
+ * 
  */
 public class ClonePanel extends javax.swing.JPanel implements ActionListener {
 

@@ -56,7 +56,7 @@ import org.netbeans.modules.versioning.util.ExportDiffSupport.AbstractExportDiff
 
 /**
  *
- * @author  Padraig O'Briain
+ * 
  */
 public class ExportDiffPanel extends ChangesetPickerPanel {
 
