@@ -243,7 +243,7 @@ public class NativeTaskTest extends NativeExecutionBaseTestCase {
 ////            System.out.println("Parse exception! Pos = " + ex.getErrorOffset());
 ////        }
 //
-//        final String cmd = "/export/home/ak119685/welcome.sh"; // NOI18N
+//        final String cmd = "/export/home/welcome.sh"; // NOI18N
 //
 //        ChangeListener l = new ChangeListener() {
 //
