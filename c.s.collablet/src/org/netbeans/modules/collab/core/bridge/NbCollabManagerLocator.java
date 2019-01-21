@@ -52,7 +52,6 @@ import org.openide.util.*;
  * A simple class that proxies the use of <code>org.openide.util.Lookup</code>
  * for looking up the current <code>CollabManager</code> instance.
  *
- * @author Todd Fast, todd.fast@sun.com
  */
 public class NbCollabManagerLocator extends Object implements CollabManager.Locator {
     /**

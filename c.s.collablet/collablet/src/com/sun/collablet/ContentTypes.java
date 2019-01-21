@@ -50,7 +50,6 @@ import javax.swing.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public class ContentTypes extends Object {
     public static final String UNKNOWN_TEXT = "text";

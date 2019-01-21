@@ -76,7 +76,6 @@ import org.netbeans.modules.collab.core.bridge.NbUserInterfaceLocator;
 /**
  *
  *
- * @author        Todd Fast, todd.fast@sun.com
  * @version        jatotools/@version@ $Id$
  */
 public class Install extends ModuleInstall {

@@ -61,7 +61,6 @@ import javax.swing.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public class NbAccountManager extends AccountManager implements LookupListener {
     ////////////////////////////////////////////////////////////////////////////

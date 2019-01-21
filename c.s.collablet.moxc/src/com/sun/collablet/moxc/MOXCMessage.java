@@ -61,7 +61,6 @@ import org.xml.sax.SAXParseException;
 /**
  * Represents a MOXC protocol message
  *
- * @author Todd Fast, todd.fast@sun.com
  */
 public class MOXCMessage extends Object {
     ////////////////////////////////////////////////////////////////////////////

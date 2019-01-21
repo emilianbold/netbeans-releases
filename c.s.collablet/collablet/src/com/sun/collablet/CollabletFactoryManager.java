@@ -50,7 +50,6 @@ import java.util.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public abstract class CollabletFactoryManager extends Object {
     ////////////////////////////////////////////////////////////////////////////

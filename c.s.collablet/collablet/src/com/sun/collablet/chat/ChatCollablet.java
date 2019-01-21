@@ -53,7 +53,6 @@ import javax.swing.*;
  * treated specially, this interface is the tag indicating to other modules
  * that this channel is of a special but standard type.
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public interface ChatCollablet extends InteractiveCollablet {
     public static final String PROP_TRANSCRIPT = "transcript";

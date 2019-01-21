@@ -46,7 +46,6 @@ package com.sun.collablet;
 
 /**
  *
- * @author  todd
  */
 public class CollabException extends Exception {
     /**

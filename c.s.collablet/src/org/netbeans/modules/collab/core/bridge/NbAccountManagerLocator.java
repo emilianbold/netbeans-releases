@@ -52,7 +52,6 @@ import org.openide.util.*;
  * A simple class to return a <code>org.openide.util.Lookup</code>-enabled
  * instance of <code>AccountManager</code>.
  *
- * @author Todd Fast, todd.fast@sun.com
  */
 public class NbAccountManagerLocator extends Object implements AccountManager.Locator {
     ////////////////////////////////////////////////////////////////////////////

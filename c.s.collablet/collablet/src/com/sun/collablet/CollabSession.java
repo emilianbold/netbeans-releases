@@ -51,7 +51,6 @@ import java.util.Collection;
  * A single session to the collaboration server.  There may be multiple
  * sessions open at a time, but each one must have a different presentity.
  *
- * @author  Todd Fast <todd.fast@sun.com>
  */
 public interface CollabSession {
     ////////////////////////////////////////////////////////////////////////////

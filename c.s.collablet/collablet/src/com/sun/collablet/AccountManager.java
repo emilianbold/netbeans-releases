@@ -53,7 +53,6 @@ import java.util.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public abstract class AccountManager extends Object {
     ////////////////////////////////////////////////////////////////////////////

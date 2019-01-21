@@ -52,7 +52,6 @@ import java.io.*;
  * An account descriptor. Should be generic enough to cover important IM systems
  * and connection methods.
  *
- * @author        Todd Fast, todd.fast@sun.com
  */
 public class Account extends Object implements Cloneable, Serializable {
     ////////////////////////////////////////////////////////////////////////////

@@ -46,7 +46,6 @@ package com.sun.collablet;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public interface CollabMessage extends CollabMessagePart {
     public static final int TYPING_ON = 0;

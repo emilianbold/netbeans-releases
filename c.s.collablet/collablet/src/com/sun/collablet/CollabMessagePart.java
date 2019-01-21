@@ -48,7 +48,6 @@ import java.io.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public interface CollabMessagePart {
     /**

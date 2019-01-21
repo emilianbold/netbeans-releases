@@ -50,7 +50,6 @@ package com.sun.collablet;
  * required points of interaction according to this module's needs.  A UI
  * module would potentially have many other ways of initiating UI interactions.
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public abstract class UserInterface {
     ////////////////////////////////////////////////////////////////////////////

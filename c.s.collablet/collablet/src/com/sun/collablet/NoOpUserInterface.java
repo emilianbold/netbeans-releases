@@ -48,7 +48,6 @@ import javax.swing.*;
 
 /**
  *
- * @author  todd
  */
 public final class NoOpUserInterface extends UserInterface {
     /**

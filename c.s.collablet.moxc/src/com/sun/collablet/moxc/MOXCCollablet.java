@@ -62,7 +62,6 @@ import javax.xml.transform.stream.*;
 /**
  *
  *
- * @author Todd Fast, todd.fast@sun.com
  */
 public abstract class MOXCCollablet extends Object implements Collablet {
     ////////////////////////////////////////////////////////////////////////////

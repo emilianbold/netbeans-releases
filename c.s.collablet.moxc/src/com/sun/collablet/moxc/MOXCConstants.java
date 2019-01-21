@@ -47,8 +47,6 @@ package com.sun.collablet.moxc;
 /**
  *
  *
- * @author Todd Fast, todd.fast@sun.com
- * @author A colleague, todd.fast@sun.com
  */
 public interface MOXCConstants {
     /** The standard SOAP content type */

@@ -50,7 +50,6 @@ import javax.swing.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public interface Collablet extends PropertyChangeListener {
     ////////////////////////////////////////////////////////////////////////////

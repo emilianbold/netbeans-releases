@@ -48,7 +48,6 @@ import java.beans.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public interface ContactGroup {
     ////////////////////////////////////////////////////////////////////////////

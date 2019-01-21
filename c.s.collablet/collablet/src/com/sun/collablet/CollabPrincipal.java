@@ -52,7 +52,6 @@ import java.util.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public abstract class CollabPrincipal extends Object implements Principal, Comparable {
     ////////////////////////////////////////////////////////////////////////////

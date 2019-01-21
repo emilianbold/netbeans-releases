@@ -46,7 +46,6 @@ package com.sun.collablet;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public class ConversationPrivilege extends Object implements Cloneable {
     ////////////////////////////////////////////////////////////////////////////

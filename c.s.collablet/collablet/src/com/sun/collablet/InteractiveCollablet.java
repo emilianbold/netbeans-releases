@@ -51,7 +51,6 @@ import javax.swing.*;
 /**
  * A user-visible channel
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public interface InteractiveCollablet extends Collablet {
     ////////////////////////////////////////////////////////////////////////////

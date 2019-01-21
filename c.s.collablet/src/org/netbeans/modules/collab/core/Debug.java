@@ -61,9 +61,6 @@ import java.util.*;
 
 /**
  *
- * @author        Todd Fast, todd.fast@sun.com
- * @author        Matt Stevens, matthew.stevens@sun.com
- * @author        Mike Frisino, michael.frisino@sun.com
  */
 public class Debug extends Object {
     ////////////////////////////////////////////////////////////////////////////

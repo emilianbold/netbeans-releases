@@ -50,7 +50,6 @@ import java.util.*;
 
 /**
  *
- * @author  todd
  */
 public interface Conversation {
     // TODO: methods for moderation
