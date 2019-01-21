@@ -89,7 +89,7 @@ public class Interface_Stub implements example.serverscript.connector.Interface,
 
     public Interface_Stub() {
         _propertyNames = new String[] { ENDPOINT_ADDRESS_PROPERTY };
-        _propertyValues = new Object[] { "http://cds.cmsg.sun.com:80/serverscript/serverscript" };
+        _propertyValues = new Object[] { "" };
     }
 
     public void _setProperty(String name, Object value) {

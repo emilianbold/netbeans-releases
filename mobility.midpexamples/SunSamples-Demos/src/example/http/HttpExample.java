@@ -51,7 +51,7 @@ import javax.microedition.midlet.*;
  */
 public class HttpExample extends MIDlet implements Runnable {
     /** example URL for HTTP GET */
-    String url = "http://cds.cmsg.sun.com:80/serverscript/serverscript";
+    String url = "";
 
     /** string buffer for assembling HTTP requests. */
     StringBuffer buffer = new StringBuffer();

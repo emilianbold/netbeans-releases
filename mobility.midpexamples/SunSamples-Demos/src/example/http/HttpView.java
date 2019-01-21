@@ -363,13 +363,13 @@ public class HttpView extends MIDlet implements CommandListener, Runnable {
             urlList.append(title, null);
         }
 
-        urls.addElement("http://jse.east/Telco/HttpTest.txt");
+        urls.addElement("");
         // urls.addElement(
-        //         "http://dhcp-70-219:8080/examples/servlet/httpdbexport");
+        //         "");
         // urls.addElement(
-        //       "http://jse.east.sun.com/~kfinn/proxy.jar");
+        //       "");
         // urls.addElement(
-        //       "http://dhcp-70-219:8080/examples/servlet/HelloWorldKerry");
+        //       "");
         urlList.append("Test URL", null);
     }
 
