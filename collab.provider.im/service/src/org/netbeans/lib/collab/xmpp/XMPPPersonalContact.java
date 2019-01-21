@@ -58,7 +58,6 @@ import org.netbeans.lib.collab.xmpp.jso.iface.x.pubsub.PubSubEntityElement;
 /**
  *
  *
- * @author Vijayakumar Palaniappan
  *
  */
 public class XMPPPersonalContact extends XMPPPersonalStoreEntry

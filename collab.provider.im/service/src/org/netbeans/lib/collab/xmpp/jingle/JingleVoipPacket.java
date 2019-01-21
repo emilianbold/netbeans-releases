@@ -53,7 +53,6 @@ import java.util.List;
 
 /**
  *
- * @author jerry
  */
 public class JingleVoipPacket {
 

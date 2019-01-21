@@ -54,7 +54,6 @@ import org.netbeans.lib.collab.xmpp.XMPPSessionProvider;
 
 /**
  *
- * @author Mridul Muralidharan
  */
 public class HTTPBindSession extends XMPPSession implements 
         HTTPBindConstants , NegotiationConstants{

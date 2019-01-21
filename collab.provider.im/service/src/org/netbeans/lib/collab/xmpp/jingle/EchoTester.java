@@ -50,7 +50,6 @@ import java.util.Arrays;
  * Send UDP packets containing a randomly-generated string
  * to a given address:port, and wait for them to return. This
  * is a basic connectivity check to ensure that media can flow.
- * @author jerry
  */
 public class EchoTester  extends Thread{
 

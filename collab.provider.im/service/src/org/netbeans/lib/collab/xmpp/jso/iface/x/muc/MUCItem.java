@@ -51,7 +51,7 @@ import org.jabberstudio.jso.JID;
 /**
  *
  *
- * @author Rahul Shah
+ * 
  *
  */
 public interface MUCItem extends StreamElement {

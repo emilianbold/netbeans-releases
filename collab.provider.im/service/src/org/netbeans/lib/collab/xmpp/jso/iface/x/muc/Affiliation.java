@@ -49,7 +49,7 @@ import org.jabberstudio.jso.util.Enumerator;
 /**
  *
  *
- * @author Rahul Shah
+ * 
  *
  */
 public class Affiliation {

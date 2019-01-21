@@ -56,7 +56,7 @@ import com.sun.collablet.Conversation;
 /**
  *
  *
- * @author        Todd Fast, todd.fast@sun.com
+ * 
  */
 public class ParticipantNode extends AbstractNode implements ContactCookie, PropertyChangeListener {
     ////////////////////////////////////////////////////////////////////////////

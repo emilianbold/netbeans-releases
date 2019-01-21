@@ -46,7 +46,7 @@ import org.netbeans.lib.collab.xmpp.jso.iface.x.jingle.JingleContent;
 
 /**
  *
- * @author jerry
+ * 
  */
 public class JingleFactory extends AbstractElementFactory{
 

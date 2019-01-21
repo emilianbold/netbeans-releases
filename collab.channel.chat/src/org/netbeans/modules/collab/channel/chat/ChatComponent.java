@@ -521,7 +521,6 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
         return inputToolbar;
     }
 
-    /*author Smitha Krishna Nagesh*/
     public JPopupMenu createSmileMenu() {
         newMenu = new JPopupMenu();
         newMenu.setLayout(new GridLayout(3, 2));
@@ -1133,7 +1132,6 @@ LOOP:
     }
 
     /*Creates the popup menu
-    *author Smitha Krishna Nagesh
     */
     private void createPopupMenu() {
         JMenuItem menuItem;
@@ -1154,7 +1152,6 @@ LOOP:
         transcriptPane.addMouseListener(popupListener);
     }
 
-    /*author Smitha Krishna Nagesh*/
     protected class SmileListener implements ActionListener {
         public void actionPerformed(ActionEvent event) {
             newMenu.show(smileyButton, 10, 10);
@@ -1162,7 +1159,6 @@ LOOP:
         }
     }
 
-    /*author Smitha Krishna Nagesh*/
     protected class ButtonClickedListener implements ActionListener {
         public void actionPerformed(ActionEvent menuEvent) {
             JButton button = (JButton) menuEvent.getSource();
@@ -1692,7 +1688,6 @@ LOOP:
     // Inner class
     ////////////////////////////////////////////////////////////////////////////
 
-    /* author Smitha Krishna Nagesh*/
     protected class PopupListener extends MouseAdapter {
         public void mousePressed(MouseEvent mouseEvt) {
             showPopup(mouseEvt);
@@ -1713,8 +1708,7 @@ LOOP:
     // Inner class
     ////////////////////////////////////////////////////////////////////////////
 
-    /* author Smitha Krishna Nagesh
-    Pops up a FileChooser to choose a directory to save the file.*/
+    /* Pops up a FileChooser to choose a directory to save the file.*/
     protected class FileChooserActionListener implements ActionListener {
         JFileChooser chooseFile = new JFileChooser();
 

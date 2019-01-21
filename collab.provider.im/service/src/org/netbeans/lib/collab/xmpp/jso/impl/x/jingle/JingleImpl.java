@@ -60,7 +60,7 @@ import org.netbeans.lib.collab.xmpp.jso.iface.x.jingle.JingleTransport;
 
 /**
  *
- * @author jerry
+ * 
  */
 public class JingleImpl extends ExtensionNode implements Jingle {
     

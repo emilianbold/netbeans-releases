@@ -56,7 +56,6 @@ import java.util.List;
 /**
  *
  *
- * @author Rahul Shah
  *
  */
 public class XMPPOOBStream implements StreamingMethod {

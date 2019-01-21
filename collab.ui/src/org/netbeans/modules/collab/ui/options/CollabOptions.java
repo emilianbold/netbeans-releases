@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author catlan
  */
 public class CollabOptions extends AdvancedOption {
 

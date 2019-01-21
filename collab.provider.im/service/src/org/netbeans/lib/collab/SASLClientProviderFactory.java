@@ -60,7 +60,7 @@ package org.netbeans.lib.collab;
  * Depending on which mechanism is selected, the createInstance(String) is invoked
  * on the Factory which supports that mechanism.
  *
- * @author Mridul Muralidharan
+ * 
  */
 
 public interface SASLClientProviderFactory {

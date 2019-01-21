@@ -100,7 +100,6 @@ http://www.web-cache.com/Writings/Internet-Drafts/draft-luotonen-web-proxy-tunne
  * <tt>http(s)://https-host:https-port?service=xmpp-host:xmpp-port</tt>
  * </ul>
  * 
- * @author Jacques Belissent
  * 
  */
 public class ProxySessionProvider extends XMPPSessionProvider 

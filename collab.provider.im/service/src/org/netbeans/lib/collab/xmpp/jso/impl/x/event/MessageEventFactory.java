@@ -53,7 +53,7 @@ import org.netbeans.lib.collab.xmpp.jso.iface.x.event.MessageEventExtension;
 
 /**
  *
- * @author Rahul Shah
+ * 
  *
  */
 public class MessageEventFactory extends AbstractElementFactory {

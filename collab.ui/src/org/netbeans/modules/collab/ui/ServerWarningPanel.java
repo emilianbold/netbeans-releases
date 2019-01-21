@@ -59,7 +59,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author  Marek Slama
  */
 public class ServerWarningPanel extends javax.swing.JPanel {
 

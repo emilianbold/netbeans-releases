@@ -62,7 +62,6 @@ import org.netbeans.lib.collab.SASLProviderException;
 /**
  * Implementation which delegates to JSO (native) providers for SASL.
  *
- * @author Mridul Muralidharan
  */
 public class JSOSASLProvider implements NativeSASLClientProvider {
     private String mechanism;

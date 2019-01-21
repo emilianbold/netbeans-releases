@@ -41,7 +41,7 @@ package org.netbeans.lib.collab;
 
 /**
  *
- * @author jerry
+ * 
  */
 public class P2PUdpTransport implements P2PTransport {
 

@@ -65,7 +65,7 @@ import org.w3c.dom.NodeList;
 
 /**
  *
- * @author Mridul Muralidharan
+ * 
  */
 public class HTTPSessionController implements Runnable , GatewayResponseListener ,
     HTTPBindConstants , NegotiationConstants{

@@ -52,7 +52,7 @@ import org.jabberstudio.jso.JID;
 /**
  *
  *
- * @author Rahul Shah
+ * 
  *
  */
 public interface Decline extends StreamElement {

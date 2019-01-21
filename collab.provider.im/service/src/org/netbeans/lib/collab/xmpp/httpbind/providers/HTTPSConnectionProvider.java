@@ -69,7 +69,6 @@ import org.netbeans.lib.collab.xmpp.httpbind.HTTPSessionController;
 
 /**
  *
- * @author Mridul Muralidharan
  */
 public class HTTPSConnectionProvider extends ConnectionProviderImpl {
     private CollaborationSessionListener sessionListener = null;

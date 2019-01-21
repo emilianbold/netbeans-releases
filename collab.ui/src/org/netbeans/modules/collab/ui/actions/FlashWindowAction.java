@@ -53,7 +53,7 @@ import org.openide.util.actions.SystemAction;
 /**
  *
  *
- * @author Todd Fast <todd.fast@sun.com>
+ * 
  */
 public class FlashWindowAction extends SystemAction {
     public boolean isEnabled() {

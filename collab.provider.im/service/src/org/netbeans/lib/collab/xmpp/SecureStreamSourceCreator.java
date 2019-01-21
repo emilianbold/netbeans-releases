@@ -67,7 +67,6 @@ import java.nio.channels.ByteChannel;
 /**
  *
  * 
- * @author Vijayakumar Palaniappan
  * 
  */
 public class SecureStreamSourceCreator extends SocketStreamSourceCreator {

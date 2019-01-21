@@ -51,7 +51,7 @@ import org.jabberstudio.jso.StreamElement;
 /**
  *
  *
- * @author Rahul Shah
+ * 
  *
  */
 public interface Destroy extends StreamElement{

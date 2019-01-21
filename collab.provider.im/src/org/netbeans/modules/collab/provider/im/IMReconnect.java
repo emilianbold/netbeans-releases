@@ -56,7 +56,7 @@ import org.netbeans.modules.collab.provider.im.ui.ServerStatusPanel;
 
 /**
  *
- * @author Alexandr Scherbatiy
+ * 
  */
 public class IMReconnect {
 

@@ -53,7 +53,7 @@ import java.util.Date;
  * Interface for representing a history.</p>
  *
  *
- * @author Rahul Shah
+ * 
  *
  */
 public interface History extends StreamElement {

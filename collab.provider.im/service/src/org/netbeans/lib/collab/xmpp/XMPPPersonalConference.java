@@ -49,7 +49,6 @@ import org.netbeans.lib.collab.*;
 /**
  *
  *
- * @author Vijayakumar Palaniappan
  *
  */
 public class XMPPPersonalConference  extends XMPPPersonalStoreEntry implements org.netbeans.lib.collab.PersonalConference {

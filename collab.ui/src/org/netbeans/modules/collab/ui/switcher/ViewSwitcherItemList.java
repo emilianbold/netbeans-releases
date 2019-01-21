@@ -57,8 +57,6 @@ import java.lang.ref.WeakReference;
  * special UI and renderer providing fine-tuned alignment, rollover effect,
  * showing names and different icon size. Used by CategoryPresentPanel.
  *
- * @author Tomas Pavek
- * @author Todd Fast, todd.fast@sun.com (suitability modifications)
  */
 public class ViewSwitcherItemList extends JList {
     static final int BASIC_ICONSIZE = BeanInfo.ICON_COLOR_16x16;

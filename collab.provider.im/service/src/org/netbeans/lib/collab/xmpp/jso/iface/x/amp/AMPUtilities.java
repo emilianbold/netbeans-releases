@@ -62,7 +62,6 @@ import org.jabberstudio.jso.PacketError;
  *
  * AMP Utilities
  *
- * @author Jacques Belissent
  */
 public class AMPUtilities {
 

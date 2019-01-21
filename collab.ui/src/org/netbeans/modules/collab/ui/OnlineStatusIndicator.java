@@ -57,7 +57,7 @@ import com.sun.collablet.CollabSession;
 
 /**
  *
- * @author  todd
+ * 
  */
 
 class OnlineStatusIndicator {

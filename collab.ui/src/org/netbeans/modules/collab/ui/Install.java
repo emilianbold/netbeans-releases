@@ -63,7 +63,7 @@ import org.openide.util.SharedClassObject;
 
 /**
  *
- * @author        Todd Fast, todd.fast@sun.com
+ * 
  */
 public class Install extends ModuleInstall {
 

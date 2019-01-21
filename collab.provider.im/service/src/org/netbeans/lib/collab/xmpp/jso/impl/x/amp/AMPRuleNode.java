@@ -59,7 +59,7 @@ import org.netbeans.lib.collab.xmpp.jso.iface.x.amp.*;
 /**
  * implementation of AMPRule
  *
- * @author Jacques Belissent
+ * 
  */
 public class AMPRuleNode extends ElementNode implements AMPRule
 {

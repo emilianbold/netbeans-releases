@@ -57,7 +57,7 @@ import org.jabberstudio.jso.JID;
 /**
  *
  *
- * @author Rahul Shah
+ * 
  *
  */
 public class DeclineNode extends ExtensionNode implements Decline {

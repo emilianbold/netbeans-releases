@@ -61,7 +61,6 @@ import org.jabberstudio.jso.Packet;
  * Interface representing an amp element in a message.
  * See JEP-0079 Advanced Message Processing
  *
- * @author Jacques Belissent
  */
 public interface AMPExtension extends Extension {
 

@@ -53,7 +53,6 @@ import org.netbeans.lib.collab.xmpp.httpbind.ConnectionProvider;
 
 /**
  *
- * @author Mridul Muralidharan
  */
 public class ConnectionProviderImpl implements ConnectionProvider{
 

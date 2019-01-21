@@ -54,7 +54,7 @@ import org.jabberstudio.jso.io.StreamSource;
 
 /**
  *
- * @author Mridul Muralidharan
+ * 
  */
 public class HTTPBindStreamSource implements
         StreamSource , HTTPBindConstants{

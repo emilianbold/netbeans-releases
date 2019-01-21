@@ -53,7 +53,6 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  Yang Su
  */
 public class AuthSubscriptionForm extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables

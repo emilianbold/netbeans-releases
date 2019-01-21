@@ -52,7 +52,7 @@ import org.netbeans.modules.collab.ui.actions.ShowNextNotificationAction;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public class NotificationRegistry extends Object implements ActionPerformer {
     ////////////////////////////////////////////////////////////////////////////

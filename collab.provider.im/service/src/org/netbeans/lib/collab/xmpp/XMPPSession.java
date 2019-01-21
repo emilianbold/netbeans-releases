@@ -97,10 +97,6 @@ import org.apache.log4j.*;
 
 /**
  *
- * @author Vijayakumar Palaniappan
- * @author Rahul Shah
- * @author Jacques Belissent
- * @author Mridul Muralidharan
  */
 public class XMPPSession implements CollaborationSession
 {

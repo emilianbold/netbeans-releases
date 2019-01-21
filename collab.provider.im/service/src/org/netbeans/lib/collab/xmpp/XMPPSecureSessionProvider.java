@@ -55,7 +55,6 @@ import java.security.cert.X509Certificate;
 /**
  *
  *
- * @author Vijayakumar Palaniappan
  *
  */
 public class XMPPSecureSessionProvider extends XMPPSessionProvider {

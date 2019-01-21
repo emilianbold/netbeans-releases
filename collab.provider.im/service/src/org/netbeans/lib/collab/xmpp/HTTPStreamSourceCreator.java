@@ -72,7 +72,6 @@ import org.netbeans.lib.collab.util.*;
  * Stream Source creator used by HTTPSessionProvider
  * 
  * 
- * @author Jacques Belissent
  * 
  */
 public class HTTPStreamSourceCreator extends SocketStreamSourceCreator

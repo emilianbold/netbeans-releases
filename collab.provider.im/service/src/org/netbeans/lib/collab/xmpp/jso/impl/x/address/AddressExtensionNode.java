@@ -61,7 +61,7 @@ import org.netbeans.lib.collab.xmpp.jso.iface.x.address.*;
 
 /**
  *
- * @author Jacques Belissent
+ * 
  *
  */
 public class AddressExtensionNode extends ExtensionNode implements AddressExtension 

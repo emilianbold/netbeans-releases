@@ -45,7 +45,6 @@ package org.netbeans.modules.collab.provider.im.ui;
 
 /**
  *
- * @author  Alexandr Scherbatiy
  */
 
 

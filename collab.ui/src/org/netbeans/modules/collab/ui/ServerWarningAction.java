@@ -57,7 +57,6 @@ import org.openide.awt.Mnemonics;
 
 /** The action that shows the Register dialog.
 *
-* @author Marek Slama
 */
 public class ServerWarningAction extends CallableSystemAction implements ActionListener {
 

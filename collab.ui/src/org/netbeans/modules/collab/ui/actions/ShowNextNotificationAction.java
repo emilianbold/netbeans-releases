@@ -52,7 +52,7 @@ import org.netbeans.modules.collab.ui.*;
 /**
  *
  *
- * @author Todd Fast <todd.fast@sun.com>
+ * 
  */
 public class ShowNextNotificationAction extends SystemAction implements NotificationListener {
     private static final String NORMAL_RES = "org/netbeans/modules/collab/ui/resources/chat_png.gif";

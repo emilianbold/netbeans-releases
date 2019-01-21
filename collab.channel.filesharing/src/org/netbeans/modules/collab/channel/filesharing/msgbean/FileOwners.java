@@ -185,7 +185,6 @@ public class FileOwners {
 <!--
     Document   : collab.xsd
     Created on : May 21, 2004, 7:45 PM
-    Author     : Ayub Khan
     Description:
         Purpose of the document follows.
 -->

@@ -58,7 +58,7 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public class AccountWizardIterator extends Object implements WizardDescriptor.Iterator {
     ////////////////////////////////////////////////////////////////////////////

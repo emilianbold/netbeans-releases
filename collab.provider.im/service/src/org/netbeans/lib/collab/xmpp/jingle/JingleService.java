@@ -51,7 +51,6 @@ import org.netbeans.lib.collab.xmpp.jso.iface.x.jingle.Jingle;
 
 /**
  *
- * @author jerry
  */
 public class JingleService implements P2PService{
 

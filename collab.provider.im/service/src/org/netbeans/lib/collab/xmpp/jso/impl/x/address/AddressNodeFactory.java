@@ -53,7 +53,7 @@ import org.netbeans.lib.collab.xmpp.jso.iface.x.address.*;
 
 /**
  *
- * @author Jacques Belissent
+ * 
  *
  */
 public class AddressNodeFactory extends AbstractElementFactory {

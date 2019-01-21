@@ -57,7 +57,7 @@ import net.outer_planes.jso.ExtensionNode;
 /**
  *
  *
- * @author Rahul Shah
+ * 
  *
  */
 public class MUCQueryNode extends ExtensionNode implements MUCQuery {

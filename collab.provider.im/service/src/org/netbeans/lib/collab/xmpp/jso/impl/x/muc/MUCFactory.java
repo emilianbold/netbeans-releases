@@ -52,7 +52,7 @@ import net.outer_planes.jso.AbstractElementFactory;
 /**
  *
  *
- * @author Rahul Shah
+ * 
  *
  */
 public class MUCFactory extends AbstractElementFactory {

@@ -57,7 +57,6 @@ import org.apache.log4j.*;
 
 /**
  *
- * @author jerry
  */
 public class JingleServiceImpl implements MediaService{
 

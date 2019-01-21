@@ -69,8 +69,6 @@ import org.netbeans.lib.collab.xmpp.sasl.IdentitySSOClientProviderFactory;
 /**
  *
  * 
- * @author Rahul Shah
- * @author Vijayakumar Palaniappan
  * 
  */
 public class XMPPSessionProvider implements org.netbeans.lib.collab.CollaborationSessionProvider

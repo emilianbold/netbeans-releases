@@ -59,7 +59,7 @@ import org.netbeans.modules.collab.ui.options.NotificationSettings;
 
 /**
  *
- * @author  todd
+ * 
  */
 public class NotificationBar extends JPanel implements NotificationListener, MouseListener, ActionListener {
     ////////////////////////////////////////////////////////////////////////////

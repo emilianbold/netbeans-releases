@@ -67,7 +67,6 @@ import org.netbeans.modules.collab.ui.switcher.ViewSwitcherPane;
 /**
  *
  *
- * @author todd
  */
 public class ConversationComponent extends CloneableTopComponent implements PropertyChangeListener,
     NotificationListener {
@@ -170,8 +169,7 @@ public class ConversationComponent extends CloneableTopComponent implements Prop
         //		map.put(((CallbackSystemAction)SystemAction.get(
         //			FindAction.class)).getActionMapKey(), findBinding);
 
-        /*author Smitha Krishna Nagesh
-          Adding the Cut/Copy/Paste actions into the action map*/
+        /* Adding the Cut/Copy/Paste actions into the action map*/
 
         //ActionMap map = getActionMap();
         //map.put(DefaultEditorKit.cutAction, new DefaultEditorKit.CutAction());

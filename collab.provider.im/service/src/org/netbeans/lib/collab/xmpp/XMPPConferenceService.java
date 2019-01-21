@@ -94,7 +94,6 @@ import java.util.Collections;
 /**
  *
  * 
- * @author Rahul Shah
  * 
  */
 public class XMPPConferenceService implements ConferenceService,ExtendedConferenceService{

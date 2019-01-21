@@ -56,7 +56,7 @@ import java.util.List;
  * size restriction which makes them unsuitable for some needs.
  * Also, this is non-blocking.
  *
- * @author Mridul Muralidharan
+ * 
  */
 public class QueuedStream {
     

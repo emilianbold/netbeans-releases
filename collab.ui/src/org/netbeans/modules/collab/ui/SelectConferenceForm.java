@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  sherylsu
+ * 
  */
 public class SelectConferenceForm extends javax.swing.JPanel implements ListSelectionListener {
     // Variables declaration - do not modify//GEN-BEGIN:variables

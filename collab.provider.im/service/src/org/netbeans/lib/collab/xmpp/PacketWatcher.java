@@ -55,7 +55,6 @@ import org.saxpath.SAXPathException;
 
 /**
  *
- * @author Mridul Muralidharan
  */
 public class PacketWatcher extends XPathListener {
     private Throwable th;

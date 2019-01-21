@@ -47,7 +47,7 @@ package org.netbeans.lib.collab;
 /**
  * SASL Provider exception.
  *
- * @author Mridul Muralidharan
+ * 
  */
 public class SASLProviderException extends Exception {
 

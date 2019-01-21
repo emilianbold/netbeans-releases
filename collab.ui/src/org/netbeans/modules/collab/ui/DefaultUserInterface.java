@@ -72,7 +72,7 @@ import org.netbeans.modules.collab.ui.wizard.AccountWizardSettings;
 /**
  * Default IDE user interface implementation
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public class DefaultUserInterface extends UserInterface {
     ////////////////////////////////////////////////////////////////////////////
@@ -1624,8 +1624,7 @@ public class DefaultUserInterface extends UserInterface {
         }
     }
 
-    /* author Smitha Krishna Nagesh
-     * Fix for bug# 6280758
+    /* Fix for bug# 6280758
      */
     protected class ManageThread extends Thread {
         CollabSession session;

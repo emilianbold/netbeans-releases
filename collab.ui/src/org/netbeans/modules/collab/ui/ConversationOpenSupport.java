@@ -52,7 +52,7 @@ import com.sun.collablet.Conversation;
 
 /**
  *
- * @author  todd
+ * 
  */
 public class ConversationOpenSupport extends CloneableOpenSupport implements OpenCookie {
     ////////////////////////////////////////////////////////////////////////////

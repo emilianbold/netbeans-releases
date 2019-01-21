@@ -50,7 +50,7 @@ package org.netbeans.lib.collab;
  * protocols.
  * These are created from SASLClientProviderFactory for the required mechanism.
  *
- * @author Mridul Muralidharan
+ * 
  */
 public interface SASLClientProvider {
 

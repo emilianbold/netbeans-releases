@@ -58,8 +58,6 @@ import org.jabberstudio.jso.StreamException;
 /**
  *
  *
- * @author Rahul Shah
- * @author Vijayakumar Palaniappan
  *
  */
 public class XMPPComponentSession extends XMPPSession {

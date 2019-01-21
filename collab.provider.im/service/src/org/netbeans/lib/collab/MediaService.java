@@ -47,7 +47,7 @@ import org.jabberstudio.jso.Packet;
 
 /**
  *
- * @author jerry
+ * 
  */
 public interface MediaService {
 

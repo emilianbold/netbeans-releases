@@ -54,7 +54,6 @@ import org.jabberstudio.jso.util.Enumerator;
 
 /**
  *
- * @author Jacques Belissent
  */
 public interface Address {
     

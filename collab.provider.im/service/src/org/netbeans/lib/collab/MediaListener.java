@@ -42,7 +42,7 @@ package org.netbeans.lib.collab;
 
 /**
  *
- * @author jerry
+ * 
  */
 public interface MediaListener {
     /**

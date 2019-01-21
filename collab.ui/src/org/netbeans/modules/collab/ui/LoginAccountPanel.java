@@ -62,7 +62,7 @@ import org.openide.awt.Mnemonics;
 
 /**
  *
- * @author  todd
+ * 
  */
 public class LoginAccountPanel extends JPanel {
     ////////////////////////////////////////////////////////////////////////////

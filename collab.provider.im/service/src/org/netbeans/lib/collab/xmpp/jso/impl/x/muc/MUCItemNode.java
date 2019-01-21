@@ -60,7 +60,7 @@ import org.jabberstudio.jso.JID;
 /**
  *
  * 
- * @author Rahul Shah
+ * 
  * 
  */
 public class MUCItemNode extends ElementNode implements MUCItem{

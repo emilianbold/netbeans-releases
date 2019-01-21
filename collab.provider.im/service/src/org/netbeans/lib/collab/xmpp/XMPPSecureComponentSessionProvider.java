@@ -50,8 +50,6 @@ import org.netbeans.lib.collab.CollaborationException;
 /**
  *
  *
- * @author Rahul Shah
- * @author Vijayakumar Palaniappan
  *
  */
 public class XMPPSecureComponentSessionProvider extends XMPPComponentSessionProvider {

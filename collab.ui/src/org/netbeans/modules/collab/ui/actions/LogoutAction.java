@@ -56,7 +56,7 @@ import org.netbeans.modules.collab.ui.CollabSessionCookie;
 /**
  *
  *
- * @author Todd Fast <todd.fast@sun.com>
+ * 
  */
 public class LogoutAction extends CookieAction {
     private JMenuItem menuPresenter;

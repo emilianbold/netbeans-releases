@@ -45,7 +45,7 @@ import org.netbeans.lib.collab.SASLClientProviderFactory;
 
 /**
  *
- * @author mridul
+ * 
  */
 public class IdentitySSOClientProviderFactory implements SASLClientProviderFactory{
     

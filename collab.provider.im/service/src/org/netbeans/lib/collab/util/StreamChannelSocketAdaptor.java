@@ -63,7 +63,6 @@ import java.nio.channels.SocketChannel;
 /**
  *
  *
- * @author Vijayakumar Palaniappan
  *
  */
 public class StreamChannelSocketAdaptor extends Socket {

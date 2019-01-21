@@ -59,7 +59,7 @@ import org.openide.util.RequestProcessor;
 /**
  *
  *
- * @author        Todd Fast, todd.fast@sun.com
+ * 
  */
 public class SessionsNodeChildren extends Children.Keys implements /*NodeListener,*/ PropertyChangeListener {
     ////////////////////////////////////////////////////////////////////////////

@@ -52,7 +52,7 @@ import org.jabberstudio.jso.NSI;
  * <p>
  * Interface for representing a "http://jabber.org/protocol/muc" query.</p>
  *
- * @author Rahul Shah
+ * 
  *
  */
 public interface MUCQuery extends Extension {

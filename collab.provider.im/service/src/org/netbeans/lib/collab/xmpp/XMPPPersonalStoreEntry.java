@@ -52,7 +52,6 @@ import org.netbeans.lib.collab.xmpp.*;
 /**
  *
  *
- * @author Vijayakumar Palaniappan
  *
  */
 public class XMPPPersonalStoreEntry implements PersonalStoreEntry {

@@ -67,7 +67,6 @@ import org.netbeans.lib.collab.util.*;
 /**
  *
  *
- * @author Vijayakumar Palaniappan
  *
  */
 public class SocketStreamSourceCreator implements StreamSourceCreator {
@@ -268,7 +267,6 @@ public class SocketStreamSourceCreator implements StreamSourceCreator {
      * The user of this class should be aware of what he is doing - I have not added
      * detailed docs on why this class is present.
      *
-     * @author Mridul Muralidharan
      */
     private class DelegateStreamSource implements StreamSource {
 

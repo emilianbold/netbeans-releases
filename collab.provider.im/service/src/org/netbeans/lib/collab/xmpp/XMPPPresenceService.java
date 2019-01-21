@@ -69,7 +69,6 @@ import java.util.List;
 
 /**
  * 
- * @author Vijayakumar Palaniappan
  * 
  */
 public class XMPPPresenceService implements PresenceService{

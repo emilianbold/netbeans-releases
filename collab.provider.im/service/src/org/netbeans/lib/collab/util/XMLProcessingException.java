@@ -48,7 +48,6 @@ package org.netbeans.lib.collab.util;
  *
  *
  *
- * @author Jacques Belissent
  *
  */
 public class XMLProcessingException extends org.netbeans.lib.collab.CollaborationException {

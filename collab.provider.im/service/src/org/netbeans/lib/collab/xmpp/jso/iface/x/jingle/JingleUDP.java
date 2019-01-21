@@ -46,7 +46,7 @@ import org.jabberstudio.jso.StreamElement;
 import org.netbeans.lib.collab.xmpp.jso.impl.x.jingle.JingleCandidate;
 /**
  *
- * @author jerry
+ * 
  */
 public interface JingleUDP extends JingleTransport{
     public static NSI NAME = new NSI("transport", "http://www.xmpp.org/extensions/xep-0177.html#ns");

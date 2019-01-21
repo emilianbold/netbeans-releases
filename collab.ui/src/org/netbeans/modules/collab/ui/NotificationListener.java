@@ -48,7 +48,7 @@ import java.util.EventListener;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public interface NotificationListener extends EventListener {
     /**

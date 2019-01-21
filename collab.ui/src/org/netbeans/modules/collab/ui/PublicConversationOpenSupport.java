@@ -52,7 +52,7 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  todd
+ * 
  */
 public class PublicConversationOpenSupport extends CloneableOpenSupport implements OpenCookie {
     ////////////////////////////////////////////////////////////////////////////

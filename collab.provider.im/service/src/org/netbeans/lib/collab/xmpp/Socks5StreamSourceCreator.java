@@ -63,7 +63,6 @@ import java.util.*;
 /**
  *
  *
- * @author Jacques Belissent
  * 
  */
 public class Socks5StreamSourceCreator extends SocketStreamSourceCreator 

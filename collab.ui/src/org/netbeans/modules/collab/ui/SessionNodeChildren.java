@@ -50,7 +50,7 @@ import com.sun.collablet.CollabSession;
 /**
  *
  *
- * @author        Todd Fast, todd.fast@sun.com
+ * 
  */
 public class SessionNodeChildren extends Children.Array {
     //	/**

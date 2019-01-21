@@ -59,7 +59,6 @@ import org.jabberstudio.jso.x.info.OutOfBandExtension;
 /**
  *
  *
- * @author Rahul Shah
  *
  */
 public class XMPPContentStream implements ContentStream {

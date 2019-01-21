@@ -52,10 +52,7 @@ import java.util.*;
 /**
  * Generate Contact List with random buddies
  *
- * @author Jacques Belissent
- * @author Rahul Shah
- * @author Vijayakumar Palaniappan
- * @author Rebecca Ramer
+ * 
  *
  */
 

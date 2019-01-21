@@ -50,8 +50,6 @@ import org.jabberstudio.jso.*;
 /**
  *
  *
- * @author Rahul Shah
- * @author Vijayakumar Palaniappan
  *
  */
 public class XMPPComponentSessionProvider extends XMPPSessionProvider {

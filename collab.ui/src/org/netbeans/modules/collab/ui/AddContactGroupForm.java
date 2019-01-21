@@ -56,7 +56,7 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  sherylsu
+ * 
  */
 public class AddContactGroupForm extends javax.swing.JPanel {
     private CollabSession session;

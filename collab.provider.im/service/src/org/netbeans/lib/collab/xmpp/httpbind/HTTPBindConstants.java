@@ -45,7 +45,6 @@ package org.netbeans.lib.collab.xmpp.httpbind;
 
 /**
  *
- * @author Mridul Muralidharan
  */
 public interface HTTPBindConstants {
     public static final String MAXREQUESTS_PARAMETER = "maxrequests"; // NOI18N

@@ -57,7 +57,7 @@ import javax.swing.JComponent;
  * Note, the glass pane component <em>must</em> be added first to the container
  * associated with this layout manager.
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public class GlassLayout extends Object implements LayoutManager2, Serializable {
     ////////////////////////////////////////////////////////////////////////////

@@ -54,7 +54,7 @@ import org.openide.util.*;
  * explicitly without a BeanInfo as the central place to store all hidden
  * information.
  *
- * @author        Todd Fast, todd.fast@sun.com
+ * 
  */
 public class HiddenCollabSettings extends SystemOption {
     ////////////////////////////////////////////////////////////////////////////

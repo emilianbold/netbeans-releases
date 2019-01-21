@@ -50,7 +50,7 @@ import javax.swing.event.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public class ViewSwitcherPane extends JPanel implements ListSelectionListener {
     ////////////////////////////////////////////////////////////////////////////

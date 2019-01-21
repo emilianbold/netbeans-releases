@@ -58,7 +58,6 @@ import org.jabberstudio.jso.Packet;
 
 /**
  *
- * @author Jacques Belissent
  */
 public interface AddressExtension extends Extension {
     

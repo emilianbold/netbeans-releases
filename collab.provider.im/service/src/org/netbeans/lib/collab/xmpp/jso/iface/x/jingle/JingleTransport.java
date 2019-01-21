@@ -44,7 +44,7 @@ import org.jabberstudio.jso.StreamElement;
 
 /**
  *
- * @author jerry
+ * 
  */
 public interface JingleTransport extends StreamElement {
     public List listCandidates();

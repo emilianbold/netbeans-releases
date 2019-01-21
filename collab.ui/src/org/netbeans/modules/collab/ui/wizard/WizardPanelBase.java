@@ -56,7 +56,7 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public abstract class WizardPanelBase implements WizardDescriptor.Panel {
     ////////////////////////////////////////////////////////////////////////////

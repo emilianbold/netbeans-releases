@@ -48,7 +48,6 @@ import org.netbeans.lib.collab.*;
 /**
  *
  *
- * @author Rahul Shah
  *
  */
 public class XMPPPrivacyItem implements org.netbeans.lib.collab.PrivacyItem {

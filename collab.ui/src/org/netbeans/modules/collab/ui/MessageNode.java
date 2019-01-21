@@ -48,7 +48,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author  todd
+ * 
  */
 public class MessageNode extends AbstractNode {
     /**

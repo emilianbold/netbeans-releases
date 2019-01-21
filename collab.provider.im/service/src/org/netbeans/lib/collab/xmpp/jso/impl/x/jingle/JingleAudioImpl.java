@@ -52,7 +52,7 @@ import org.netbeans.lib.collab.xmpp.jso.iface.x.jingle.JingleAudio;
 
 /**
  *
- * @author jerry
+ * 
  */
 public class JingleAudioImpl extends ElementNode implements JingleAudio {
 

@@ -59,7 +59,7 @@ import org.netbeans.modules.collab.ui.actions.LeaveConversationAction;
 /**
  *
  *
- * @author        Todd Fast, todd.fast@sun.com
+ * 
  */
 public class ConversationNode extends AbstractNode implements CollabSessionCookie, ConversationCookie,
     PropertyChangeListener {

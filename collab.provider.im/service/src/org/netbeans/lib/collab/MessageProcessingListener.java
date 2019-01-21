@@ -48,7 +48,7 @@ package org.netbeans.lib.collab;
 
 /**
  *
- * @author Jacques Belissent , Mridul Muralidharan , Rahul Shah
+ * 
  */
 public interface MessageProcessingListener extends CollaborationSessionListener {
 

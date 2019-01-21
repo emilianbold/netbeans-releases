@@ -61,7 +61,7 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  sherylsu
+ * 
  */
 public class AddConversationForm extends javax.swing.JPanel implements ListSelectionListener {
     // End of variables declaration                   

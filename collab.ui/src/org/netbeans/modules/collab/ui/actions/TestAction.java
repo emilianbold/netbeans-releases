@@ -53,7 +53,7 @@ import org.openide.windows.WindowManager;
 /**
  *
  *
- * @author Todd Fast <todd.fast@sun.com>
+ * 
  */
 public class TestAction extends NodeAction {
     protected boolean enable(org.openide.nodes.Node[] node) {

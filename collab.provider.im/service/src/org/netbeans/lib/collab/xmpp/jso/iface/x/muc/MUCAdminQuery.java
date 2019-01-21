@@ -51,7 +51,7 @@ import org.jabberstudio.jso.NSI;
  * <p>
  * Interface for representing a "http://jabber.org/protocol/muc#admin" query.</p>
  *
- * @author Rahul Shah
+ * 
  *
  */
 public interface MUCAdminQuery extends Extension {

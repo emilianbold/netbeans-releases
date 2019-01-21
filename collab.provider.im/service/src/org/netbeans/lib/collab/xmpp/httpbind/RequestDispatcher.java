@@ -63,7 +63,7 @@ import org.netbeans.lib.collab.xmpp.httpbind.providers.ConnectionProviderImpl;
 
 /**
  *
- * @author Mridul Muralidharan
+ * 
  */
 public class RequestDispatcher implements Runnable, HTTPBindConstants{
     private static ConnectionProvider _connectionProvider = null;

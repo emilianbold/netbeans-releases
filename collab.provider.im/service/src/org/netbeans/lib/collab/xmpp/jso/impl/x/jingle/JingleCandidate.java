@@ -44,7 +44,7 @@ import org.jabberstudio.jso.StreamElement;
 
 /**
  *
- * @author jerry
+ * 
  */
 public class JingleCandidate {
 

@@ -53,7 +53,7 @@ import org.netbeans.lib.collab.xmpp.jso.iface.x.amp.*;
 
 /**
  *
- * @author Jacques Belissent
+ * 
  *
  */
 public class AMPNodeFactory extends AbstractElementFactory {

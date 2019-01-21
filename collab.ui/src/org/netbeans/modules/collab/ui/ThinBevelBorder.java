@@ -48,7 +48,7 @@ import javax.swing.border.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public class ThinBevelBorder extends AbstractBorder {
     ////////////////////////////////////////////////////////////////////////////

@@ -51,7 +51,6 @@ import org.jabberstudio.jso.*;
 /**
  *
  *
- * @author Vijayakumar Palaniappan
  *
  */
 public class XMPPPersonalProfile extends XMPPPersonalStoreEntry

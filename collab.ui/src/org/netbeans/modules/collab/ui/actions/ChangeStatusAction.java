@@ -53,7 +53,6 @@ import org.openide.util.actions.*;
 /**
  *
  *
- * @author Todd Fast, todd.fast@sun.com
  */
 public class ChangeStatusAction extends NodeAction implements Presenter.Popup {
     ////////////////////////////////////////////////////////////////////////////

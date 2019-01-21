@@ -57,7 +57,6 @@ import javax.naming.directory.*;
  * The original version of this code was contributed to the jdev mailing
  * list by Matt Tucker
  *
- * @author Jacques Belissent
  *
  */
 public class SRVLookup {

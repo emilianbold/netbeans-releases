@@ -227,7 +227,6 @@ public class RegisterEventHandler {
 <!--
     Document   : collab_config.xsd
     Created on : Aug 19, 2004, 7:45 AM
-    Author     : Ayub Khan
     Description:
         Purpose of the document follows.
 -->

@@ -46,7 +46,6 @@ import java.net.SocketTimeoutException;
 /**
  * Listens on given port for UDP packets. Sends any packet data back to
  * its source. Used for testing media connectivity
- * @author jerry
  */
 public class EchoListener extends Thread {
 

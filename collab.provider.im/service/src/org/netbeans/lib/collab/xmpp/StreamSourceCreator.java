@@ -51,7 +51,6 @@ import org.netbeans.lib.collab.CollaborationSessionListener;
 
 /**
  *
- * @author Mridul Muralidharan
  */
 public interface StreamSourceCreator {
     public StreamSource createStreamSource(String hostName, int port)

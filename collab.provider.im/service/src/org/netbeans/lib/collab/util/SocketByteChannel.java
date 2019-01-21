@@ -55,7 +55,6 @@ import java.nio.*;
 /**
  * ByteChannel implementation on top of a socket.
  *
- * @author Vijayakumar Palaniappan
  *
  */
 public class SocketByteChannel implements ByteChannel {

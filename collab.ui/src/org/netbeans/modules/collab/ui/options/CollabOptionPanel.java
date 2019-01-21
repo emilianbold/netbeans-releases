@@ -45,7 +45,6 @@ package org.netbeans.modules.collab.ui.options;
 
 /**
  *
- * @author  catlan
  */
 final class CollabOptionPanel extends javax.swing.JPanel {
     private final CollabOptionModel model;

@@ -65,9 +65,7 @@ import java.security.cert.CertificateException;
 
 /**
  *
- * @author Jacques Belissent
- * @author Rahul Shah
- * @author Vijayakumar Palaniappan
+ * 
  * 
  */
 public class JavaxX509TrustManager implements X509TrustManager {

@@ -48,7 +48,6 @@ import org.netbeans.lib.collab.SASLData;
 
 /**
  *
- * @author Mridul Muralidharan
  */
 public class SASLDataImpl implements SASLData {
 

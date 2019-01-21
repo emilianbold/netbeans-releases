@@ -56,7 +56,7 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  todd
+ * 
  */
 public class ParticipantSearchPanel extends javax.swing.JPanel implements ListSelectionListener {
     private static boolean _isSearching = false;

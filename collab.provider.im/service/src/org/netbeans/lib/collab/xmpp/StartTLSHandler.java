@@ -56,7 +56,6 @@ import org.saxpath.SAXPathException;
 /**
  * Implementation which abstracts out the actual starttls session setup.
  *
- * @author Mridul Muralidharan
  */
 public class StartTLSHandler {
 

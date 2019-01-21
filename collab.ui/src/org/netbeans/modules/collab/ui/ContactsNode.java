@@ -55,7 +55,7 @@ import org.netbeans.modules.collab.ui.actions.*;
 /**
  *
  *
- * @author        Todd Fast, todd.fast@sun.com
+ * 
  */
 public class ContactsNode extends AbstractNode implements CollabSessionCookie {
     ////////////////////////////////////////////////////////////////////////////

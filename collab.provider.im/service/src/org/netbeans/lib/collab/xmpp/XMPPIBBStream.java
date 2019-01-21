@@ -53,7 +53,6 @@ import java.util.Hashtable;
 /**
  *
  *
- * @author Rahul Shah
  *
  */
 public class XMPPIBBStream implements StreamingMethod {

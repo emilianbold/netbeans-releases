@@ -47,7 +47,7 @@ import org.netbeans.lib.collab.SASLProviderException;
 
 /**
  *
- * @author mridul
+ * 
  */
 public class IdentitySSOSASLClientProvider implements SASLClientProvider{
     

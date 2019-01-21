@@ -50,7 +50,7 @@ import org.openide.util.*;
  * This class is for storage of user-visible properties only.  All properties
  * must have a descriptor defined in the BeanInfo if they are to be persisted.
  *
- * @author        Todd Fast, todd.fast@sun.com
+ * 
  */
 public class NotificationSettings extends SystemOption {
     ////////////////////////////////////////////////////////////////////////////

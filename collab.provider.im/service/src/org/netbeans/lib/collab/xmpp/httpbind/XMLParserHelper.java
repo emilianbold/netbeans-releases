@@ -63,7 +63,6 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Mridul Muralidharan
  */
 public class XMLParserHelper {
     

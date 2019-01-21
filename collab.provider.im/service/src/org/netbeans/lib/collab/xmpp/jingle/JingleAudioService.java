@@ -68,7 +68,6 @@ import org.netbeans.lib.collab.xmpp.jso.impl.x.jingle.JingleCandidate;
 
 /**
  *
- * @author jerry
  */
 public class JingleAudioService implements P2PAudioService {
     JingleService _parent;

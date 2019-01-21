@@ -52,7 +52,7 @@ import com.sun.collablet.Conversation;
 /**
  *
  *
- * @author        Todd Fast, todd.fast@sun.com
+ * 
  */
 public class InviteesNode extends AbstractNode {
     ////////////////////////////////////////////////////////////////////////////

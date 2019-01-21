@@ -60,7 +60,7 @@ import net.outer_planes.jso.ElementNode;
  * <p>
  * Interface for representing a "jabber:x:event" extension
  *
- * @author Rahul Shah
+ * 
  *
  */
 public interface MessageEventExtension extends Extension {

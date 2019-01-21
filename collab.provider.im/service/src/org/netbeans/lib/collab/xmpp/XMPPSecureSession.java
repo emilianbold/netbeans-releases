@@ -68,7 +68,6 @@ import org.netbeans.lib.collab.util.JavaxX509TrustManager;
 /**
  *
  * 
- * @author Vijayakumar Palaniappan
  * 
  */
 public class XMPPSecureSession extends XMPPSession{

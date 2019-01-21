@@ -49,7 +49,6 @@ import org.jabberstudio.jso.Packet;
 
 /**
  *
- * @author Mridul Muralidharan
  */
 public interface PacketHandler {
 

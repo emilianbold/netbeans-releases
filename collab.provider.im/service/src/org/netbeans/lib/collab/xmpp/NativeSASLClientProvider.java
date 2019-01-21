@@ -53,7 +53,6 @@ import org.netbeans.lib.collab.SASLProviderException;
  * If the provider implements this interface , only the process() method defined
  * here will be invoked,
  *
- * @author Mridul Muralidharan
  */
 public interface NativeSASLClientProvider extends SASLClientProvider{
 

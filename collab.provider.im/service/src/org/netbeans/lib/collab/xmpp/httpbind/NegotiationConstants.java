@@ -46,7 +46,7 @@ package org.netbeans.lib.collab.xmpp.httpbind;
 
 /**
  *
- * @author Mridul Muralidharan
+ * 
  */
 public interface NegotiationConstants {
 

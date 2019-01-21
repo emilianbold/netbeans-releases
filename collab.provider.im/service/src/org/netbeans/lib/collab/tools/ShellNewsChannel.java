@@ -51,9 +51,7 @@ import java.util.* ;
 /**
  *
  *
- * @author Jacques Belissent
- * @author Rahul Shah
- * @author Vijayakumar Palaniappan
+ * 
  *
  */
 public class ShellNewsChannel extends ShellConference implements org.netbeans.lib.collab.NewsChannelListener

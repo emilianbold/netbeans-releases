@@ -61,8 +61,7 @@ import org.apache.log4j.*;
  *
  * Assumes that the selection key does not change.
  *
- * @author Jacques Belissent
- * @author Vijayakumar Palaniappan
+ * 
  *
  */
 public class BufferedByteChannel implements ByteChannel

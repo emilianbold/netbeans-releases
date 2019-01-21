@@ -50,7 +50,6 @@ import java.io.InputStream;
 /**
  *
  *
- * @author Rahul Shah
  *
  */
 public interface StreamingMethod {

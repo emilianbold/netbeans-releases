@@ -59,7 +59,7 @@ import org.netbeans.modules.collab.ui.options.CollabSettings;
  * Listens to the AWT event queue and determines when the user is idle after
  * an inactive interval.
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public class IdleDetectionListener extends Object implements AWTEventListener, ActionListener {
     ////////////////////////////////////////////////////////////////////////////

@@ -51,7 +51,7 @@ import org.jabberstudio.jso.NSI;
  * p>
  * Interface for representing a "http://jabber.org/protocol/muc#owner" query.</p>
  *
- * @author Rahul Shah
+ * 
  *
  */
 public interface MUCOwnerQuery extends Extension {

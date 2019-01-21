@@ -49,7 +49,7 @@ import org.openide.explorer.view.BeanTreeView;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public class SessionsTreeView extends BeanTreeView {
     /**

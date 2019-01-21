@@ -54,7 +54,6 @@ import org.jabberstudio.jso.util.Enumerator;
 /**
  * Interface for representing AMP rules
  *
- * @author Jacques Belissent
  */
 public interface AMPRule extends StreamElement {
 

@@ -58,7 +58,7 @@ import org.netbeans.lib.collab.xmpp.StreamSourceCreator;
 
 /**
  *
- * @author Mridul Muralidharan
+ * 
  */
 public class HTTPBindStreamSourceCreator 
         implements StreamSourceCreator , DataAvailableNotifier , 

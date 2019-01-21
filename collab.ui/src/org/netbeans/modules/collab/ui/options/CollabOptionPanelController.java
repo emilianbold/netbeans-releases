@@ -51,7 +51,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author catlan
  */
 final class CollabOptionPanelController extends OptionsPanelController {
     private final CollabOptionPanel panel = new CollabOptionPanel();

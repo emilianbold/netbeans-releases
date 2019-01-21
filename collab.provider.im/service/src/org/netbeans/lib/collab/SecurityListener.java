@@ -52,7 +52,7 @@ package org.netbeans.lib.collab;
  * then TLS will not be initiated - if the server specifies TLF support as
  * mandatory , this will result in session termination.
  *
- * @author Jacques Belissent , Mridul Muralidharan
+ * 
  */
 public interface SecurityListener extends SecureSessionListener {
 

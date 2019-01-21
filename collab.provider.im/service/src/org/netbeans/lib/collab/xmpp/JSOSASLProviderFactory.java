@@ -51,7 +51,6 @@ import org.netbeans.lib.collab.SASLClientProviderFactory;
 /**
  * Factory for creating instances of providers which delegate to JSO.
  *
- * @author Mridul Muralidharan
  */
 public class JSOSASLProviderFactory implements SASLClientProviderFactory{
 

@@ -60,7 +60,6 @@ import org.jabberstudio.jso.event.StreamFeaturesListener;
 
 /**
  *
- * @author Mridul Muralidharan
  */
 public class FeatureIdentifier implements StreamFeaturesListener{
     

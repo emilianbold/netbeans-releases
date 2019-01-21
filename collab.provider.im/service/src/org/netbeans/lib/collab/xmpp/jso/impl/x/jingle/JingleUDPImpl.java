@@ -50,7 +50,7 @@ import org.netbeans.lib.collab.xmpp.jso.iface.x.jingle.JingleUDP;
 
 /**
  *
- * @author jerry
+ * 
  */
 public class JingleUDPImpl  extends ElementNode implements JingleUDP {
 

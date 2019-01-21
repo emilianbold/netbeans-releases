@@ -57,7 +57,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  *
  *
- * @author        Todd Fast, todd.fast@sun.com
+ * 
  */
 public class InviteesNodeChildren extends Children.Keys implements PropertyChangeListener {
     ////////////////////////////////////////////////////////////////////////////

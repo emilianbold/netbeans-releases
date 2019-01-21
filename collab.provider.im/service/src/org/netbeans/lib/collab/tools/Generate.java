@@ -56,10 +56,7 @@ import org.apache.log4j.*;
  *
 
  *
- * @author Jacques Belissent
- * @author Rahul Shah
- * @author Vijayakumar Palaniappan
- * @author Rebecca Ramer
+ * 
  *
  */
 class WorkerTimerTask extends TimerTask {

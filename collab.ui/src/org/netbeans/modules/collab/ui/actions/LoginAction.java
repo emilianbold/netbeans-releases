@@ -53,7 +53,7 @@ import com.sun.collablet.CollabManager;
 /**
  *
  *
- * @author Todd Fast <todd.fast@sun.com>
+ * 
  */
 public class LoginAction extends SystemAction {
     public boolean isEnabled() {

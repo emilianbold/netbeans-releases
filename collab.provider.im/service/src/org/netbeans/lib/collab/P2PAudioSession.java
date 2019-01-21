@@ -42,7 +42,7 @@ package org.netbeans.lib.collab;
 
 /**
  *
- * @author jerry
+ * 
  */
 public interface P2PAudioSession {
     public static final int INCOMING = 0;

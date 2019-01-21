@@ -59,9 +59,7 @@ import org.apache.log4j.*;
 
 /**
  *
- * @author Jacques Belissent
- * @author Rahul Shah
- * @author Vijayakumar Palaniappan
+ * 
  *
  */
 class ShellRegistrationListener implements RegistrationListener {

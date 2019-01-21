@@ -52,7 +52,7 @@ import org.netbeans.modules.collab.ui.*;
 /**
  *
  *
- * @author Todd Fast <todd.fast@sun.com>
+ * 
  */
 public class AddContactAction extends CookieAction {
     /**

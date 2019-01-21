@@ -307,7 +307,6 @@ public class ChatInputPane extends JEditorPane implements UndoableEditListener {
         getUndoManager().addEdit(event.getEdit());
     }
 
-    /* author Smitha Krishna Nagesh*/
     public void popUpMenu() {
         JMenuItem menuItem;
         popupMenu = new JPopupMenu();
@@ -372,7 +371,6 @@ public class ChatInputPane extends JEditorPane implements UndoableEditListener {
         }
     }
 
-    /* author Smitha Krishna Nagesh*/
     protected class PopupListener extends MouseAdapter {
         public void mousePressed(MouseEvent mouseEvt) {
             showPopup(mouseEvt);

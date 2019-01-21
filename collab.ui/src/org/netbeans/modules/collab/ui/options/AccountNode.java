@@ -57,7 +57,7 @@ import org.openide.util.actions.SystemAction;
 /**
  *
  *
- * @author        Todd Fast, todd.fast@sun.com
+ * 
  */
 public class AccountNode extends BeanNode implements Node.Cookie, PropertyChangeListener {
     ////////////////////////////////////////////////////////////////////////////

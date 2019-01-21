@@ -61,7 +61,7 @@ import java.text.ParseException;
 /**
  *
  * 
- * @author Rahul Shah
+ * 
  * 
  */
 public class HistoryNode extends ElementNode implements History {

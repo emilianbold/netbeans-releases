@@ -46,7 +46,7 @@ import org.jabberstudio.jso.StreamElement;
 
 /**
  *
- * @author jerry
+ * 
  */
 public interface JingleContent extends Extension {
     public static final NSI NAME = new NSI("content", "http://www.xmpp.org/extensions/xep-0166.html#ns");

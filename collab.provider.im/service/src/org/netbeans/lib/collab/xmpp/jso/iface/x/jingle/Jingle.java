@@ -45,7 +45,7 @@ import org.jabberstudio.jso.NSI;
 
 /**
  *
- * @author jerry
+ * 
  */
 public interface Jingle extends Extension {
 

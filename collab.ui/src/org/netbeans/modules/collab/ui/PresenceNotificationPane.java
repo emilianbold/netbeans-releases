@@ -57,7 +57,7 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public class PresenceNotificationPane extends JPanel implements MouseListener {
     ////////////////////////////////////////////////////////////////////////////

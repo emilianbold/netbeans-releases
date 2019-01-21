@@ -61,7 +61,6 @@ import java.io.File;
 /**
  *
  *
- * @author Rahul Shah
  *
  */
 public class XMPPStreamingService implements StreamingService {

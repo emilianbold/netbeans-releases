@@ -52,7 +52,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author nenik
  */
 class ExplorerPanel extends TopComponent implements ExplorerManager.Provider, Lookup.Provider {
     private ExplorerManager manager;

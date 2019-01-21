@@ -48,7 +48,7 @@ import javax.swing.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public class GlassPanel extends JPanel {
     /**

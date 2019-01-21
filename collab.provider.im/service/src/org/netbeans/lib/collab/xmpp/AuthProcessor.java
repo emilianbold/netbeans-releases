@@ -63,7 +63,6 @@ import org.saxpath.SAXPathException;
 
 /**
  *
- * @author Mridul Muralidharan
  */
 public class AuthProcessor {
     

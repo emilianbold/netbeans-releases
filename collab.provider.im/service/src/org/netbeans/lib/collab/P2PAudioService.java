@@ -45,7 +45,7 @@ import java.util.Set;
 
 /**
  *
- * @author jerry
+ * 
  */
 public interface P2PAudioService extends P2PServiceBase {
     public final static int TRANSPORT_RAW_UDP = 1;

@@ -52,9 +52,7 @@ import java.util.*;
 
 /**
  *
- * @author Jacques Belissent
- * @author Rahul Shah
- * @author Vijayakumar Palaniappan
+ * 
  *
  */
 class Instance extends Shell

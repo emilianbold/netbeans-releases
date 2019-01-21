@@ -48,7 +48,7 @@ package org.netbeans.lib.collab;
  * The data and status is sent to and recieved from the custom SASL providers
  * using an object which adhere to this interface.
  *
- * @author Mridul Muralidharan
+ * 
  */
 public interface SASLData {
 

@@ -46,7 +46,7 @@ import org.netbeans.lib.collab.xmpp.JIDUtil;
 
 /**
  *
- * @author mridul
+ * 
  */
 public class LegacyJIDUtil extends JIDUtilProviderImpl {
 

@@ -56,8 +56,6 @@ import org.apache.log4j.varia.*;
  * 1. Always register for read select except while reading
  * 2. Register for write select only when data is unable to be written in one go.
  *
- * @author Jacques Belissent
- * @author Vijayakumar Palaniappan
  *
  */
 public class SelectWorker implements Runnable

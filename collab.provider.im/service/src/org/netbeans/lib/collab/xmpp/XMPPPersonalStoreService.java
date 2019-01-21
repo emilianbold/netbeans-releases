@@ -87,7 +87,6 @@ import java.util.Properties;
 
 /**
  * 
- * @author Vijayakumar Palaniappan
  * 
  */
 public class XMPPPersonalStoreService implements PersonalStoreService{

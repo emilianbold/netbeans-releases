@@ -58,7 +58,7 @@ import org.netbeans.lib.collab.xmpp.jso.iface.x.address.*;
 /**
  * implementation of AMPRule
  *
- * @author Jacques Belissent
+ * 
  */
 public class AddressNode extends ElementNode implements Address {
     

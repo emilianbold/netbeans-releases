@@ -49,7 +49,6 @@ import org.netbeans.lib.collab.*;
 /**
  *
  *
- * @author Vijayakumar Palaniappan
  *
  */
 public class XMPPPersonalFolder extends XMPPPersonalStoreEntry

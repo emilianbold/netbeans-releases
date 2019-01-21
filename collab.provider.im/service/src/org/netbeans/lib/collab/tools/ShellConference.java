@@ -51,9 +51,7 @@ import java.util.*;
 /**
  *
  *
- * @author Jacques Belissent
- * @author Rahul Shah
- * @author Vijayakumar Palaniappan
+ * 
  *
  */
 public class ShellConference implements org.netbeans.lib.collab.ConferenceListener

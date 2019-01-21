@@ -52,7 +52,6 @@ import java.util.*;
  * the same interface as jDK1.5 PriorityQueue.
  * It offers log(n) for offer and poll.
  *
- * @author Vijayakumar Palaniappan
  */
 public class PriorityQueue {
     private ArrayList _list = null;

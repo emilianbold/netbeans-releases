@@ -57,7 +57,7 @@ import org.netbeans.modules.collab.ui.*;
 /**
  *
  *
- * @author        Todd Fast, todd.fast@sun.com
+ * 
  */
 public class AccountsNodeChildren extends Children.Keys implements NodeListener, PropertyChangeListener {
     ////////////////////////////////////////////////////////////////////////////

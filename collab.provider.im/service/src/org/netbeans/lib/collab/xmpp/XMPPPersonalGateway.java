@@ -53,7 +53,6 @@ import org.netbeans.lib.collab.*;
 /**
  *
  *
- * @author Vijayakumar Palaniappan
  *
  */
 public class XMPPPersonalGateway extends XMPPPersonalStoreEntry implements PersonalGateway {

@@ -52,7 +52,7 @@ import com.sun.collablet.Conversation;
 
 /**
  *
- * @author  todd
+ * 
  */
 public class ConversationOpenSupportEnv extends Object implements CloneableOpenSupport.Env, PropertyChangeListener {
     ////////////////////////////////////////////////////////////////////////////

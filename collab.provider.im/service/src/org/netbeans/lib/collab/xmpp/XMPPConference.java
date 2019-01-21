@@ -72,7 +72,6 @@ import org.netbeans.lib.collab.util.StringUtility;
 /**
  *
  * 
- * @author Rahul Shah
  * 
  */
 

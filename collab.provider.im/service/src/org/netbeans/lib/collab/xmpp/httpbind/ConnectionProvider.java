@@ -51,7 +51,6 @@ import org.netbeans.lib.collab.CollaborationException;
 
 /**
  *
- * @author Mridul Muralidharan
  */
 public interface ConnectionProvider extends HTTPBindConstants {
     public static final String CONNECTION_TIMEOUT = "connection_timeout"; // NOI18N

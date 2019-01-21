@@ -54,7 +54,7 @@ import com.sun.collablet.CollabManager;
 /**
  *
  *
- * @author Todd Fast <todd.fast@sun.com>
+ * 
  */
 public class LogoutAllAction extends SystemAction {
     public boolean isEnabled() {

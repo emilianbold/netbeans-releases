@@ -50,7 +50,6 @@ import org.netbeans.lib.collab.*;
 /**
  *
  *
- * @author Rahul Shah
  *
  */
 public class XMPPPrivacyList implements org.netbeans.lib.collab.PrivacyList {
