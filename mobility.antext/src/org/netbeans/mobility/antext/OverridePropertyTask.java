@@ -52,7 +52,6 @@ import org.apache.tools.ant.BuildException;
  * This target sets the property value or overides it
  * when already defined.
  *
- * @author Adam Sotona
  */
 public class OverridePropertyTask extends Task {
 

@@ -90,7 +90,6 @@ import org.apache.tools.ant.types.Reference;
  * </ul>
  * If value of attribute is not set, its value is not passed to Command Line string formatter.
  *
- * @author  Adam Sotona, David Kaspar
  */
 public class PreverifyTask extends Task
 {

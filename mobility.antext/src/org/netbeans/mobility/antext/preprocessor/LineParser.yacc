@@ -48,7 +48,6 @@
  *
  * !!! do not modify LineParser.java or LineParserTokens.java !!! primary source is LineParser.yacc !!!
  *
- * @author Adam Sotona
  * 
  * byaccJ options:
  * -d -Jpackage=org.netbeans.mobility.antext.preprocessor -Jclass=LineParser -Jsemantic=PPToken LineParser.yacc 

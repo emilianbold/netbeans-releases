@@ -53,7 +53,6 @@ import java.text.MessageFormat;
 import java.util.*;
 
 /**
- * @author Adam Sotona
  */
 public final class PPLine
 {

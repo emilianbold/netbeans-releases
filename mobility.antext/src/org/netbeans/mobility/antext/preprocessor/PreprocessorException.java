@@ -52,7 +52,6 @@ package org.netbeans.mobility.antext.preprocessor;
 
 /**
  *
- * @author Adam
  */
 public class PreprocessorException extends RuntimeException
 {

@@ -50,7 +50,6 @@
 package org.netbeans.mobility.antext.preprocessor;
 
 /**
- * @author Adam Sotona
  */
 public final class PPBlockInfo
 {

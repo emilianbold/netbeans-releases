@@ -61,7 +61,6 @@ import org.netbeans.mobility.antext.Bundle;
 
 /**
  *
- * @author Lukas Waldmann
  */
 public class CommentingPreProcessorTaskTest extends NbTestCase
 {

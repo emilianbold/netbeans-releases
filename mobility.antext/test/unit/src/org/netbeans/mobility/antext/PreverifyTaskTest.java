@@ -64,7 +64,6 @@ import org.netbeans.modules.j2me.common.ant.EMapFormat;
 
 /**
  *
- * @author Lukas Waldmann
  */
 public class PreverifyTaskTest extends NbTestCase {
     

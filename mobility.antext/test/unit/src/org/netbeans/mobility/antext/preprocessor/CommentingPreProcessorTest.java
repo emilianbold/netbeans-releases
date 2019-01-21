@@ -64,7 +64,6 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Lukas Waldmann
  */
 public class CommentingPreProcessorTest extends NbTestCase
 {

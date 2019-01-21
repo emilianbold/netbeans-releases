@@ -82,7 +82,6 @@ import java.util.ArrayList;
  *
  * <p>Up-to-date check: Check is performed only if DestDir is specified. File is preprocessed if and only if DestDir is specified and the file newer than the one in destination directory.
  *
- * @author Greg Crawley, David Kaspar, Adam Sotona
  *
  */
 public class CommentingPreProcessorTask extends Task

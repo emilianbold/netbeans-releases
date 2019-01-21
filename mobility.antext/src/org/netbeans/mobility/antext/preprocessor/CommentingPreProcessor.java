@@ -59,7 +59,6 @@ import java.io.StringWriter;
 import java.util.*;
 
 /**
- * @author Adam Sotona
  */
 public final class CommentingPreProcessor implements Runnable
 {

@@ -52,7 +52,6 @@ package org.netbeans.mobility.antext.preprocessor;
 
 /**
  *
- * @author Adam Sotona
  */
 public final class PPToken implements LineParserTokens
 {

@@ -58,7 +58,6 @@ import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor.Abilitie
 
 /**
  *
- * @author bohemius + luky
  */
 public class LineParserTest extends NbTestCase {
             

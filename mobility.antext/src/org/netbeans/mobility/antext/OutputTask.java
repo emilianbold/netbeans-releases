@@ -67,7 +67,6 @@ import org.apache.tools.ant.Task;
  * <li>Text - Optional. Text to be written to the file (empty by default). Nested CDATA section may contain multi-line text.
  * </ol>
  *
- * @author Adam Sotona
  */
 public class OutputTask extends Task
 {

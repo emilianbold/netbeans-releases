@@ -46,7 +46,6 @@
  *
  * !!! do not modify PreprocessorScanner.java !!! primary source is PreprocessorScanner.jflex !!!
  *
- * @author Adam Sotona
  *
  */
 
