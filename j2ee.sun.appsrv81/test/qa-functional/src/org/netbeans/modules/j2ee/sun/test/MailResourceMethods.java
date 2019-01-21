@@ -69,7 +69,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 /**
  *
- * @author Amanpreet Kaur
+ * 
  */
 public class MailResourceMethods extends NbTestCase implements WizardConstants{
     

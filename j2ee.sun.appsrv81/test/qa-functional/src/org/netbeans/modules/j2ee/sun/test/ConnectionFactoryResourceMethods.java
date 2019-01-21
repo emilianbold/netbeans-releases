@@ -67,7 +67,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Amanpreet Kaur
+ * 
  */
 public class ConnectionFactoryResourceMethods extends NbTestCase implements WizardConstants{
     private static String JMS_QUEUE_RESOURCE_NAME = "jmsqResourceTest";

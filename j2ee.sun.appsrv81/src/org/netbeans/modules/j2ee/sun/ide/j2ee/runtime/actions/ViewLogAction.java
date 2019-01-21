@@ -60,7 +60,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
 import org.openide.windows.InputOutput;
 /** Action to get the log viewer dialog to open
  *
- * @author ludo
+ * 
  */
 public class ViewLogAction extends CookieAction {
     

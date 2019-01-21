@@ -70,7 +70,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Amanpreet Kaur
+ * 
  */
 public class JDBCResourceMethods extends NbTestCase implements WizardConstants{
     

@@ -20,7 +20,7 @@ import enterprise.customer_cmp_ejb.persistence.*;
 import enterprise.customer_cmp_ejb.common.*;
 /**
  *
- * @author Rahul Biswas
+ * 
  *
  * Why a facade?  
  * 1. session beans are thread safe, and EMs are not necessarily; so injecting a EM into a SessionBean makes it safe. 

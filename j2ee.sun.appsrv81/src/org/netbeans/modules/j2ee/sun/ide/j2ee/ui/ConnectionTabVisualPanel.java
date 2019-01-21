@@ -55,7 +55,7 @@ import org.openide.NotifyDescriptor;
 
 /** A single panel for a wizard - the GUI portion.
  *
- * @author nityad
+ * 
  */
 public class ConnectionTabVisualPanel extends javax.swing.JPanel {
     

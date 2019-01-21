@@ -87,7 +87,7 @@ import org.netbeans.modules.j2ee.sun.share.management.UtilMEJB;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class UtilMEJBTest extends TestCase {
     

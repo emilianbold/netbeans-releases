@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.HashMap;
 /**
  *
- * @author  vkraemer
+ * 
  */
 public class MockDDBean implements javax.enterprise.deploy.model.DDBean {
 	

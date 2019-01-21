@@ -84,7 +84,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class WebAppRootCustomizerTest extends TestCase {
     

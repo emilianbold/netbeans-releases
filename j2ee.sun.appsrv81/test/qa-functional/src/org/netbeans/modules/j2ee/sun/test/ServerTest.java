@@ -53,7 +53,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 
 /**
  *
- * @author Michal Mocnak
+ * 
  */
 public class ServerTest extends NbTestCase {
     

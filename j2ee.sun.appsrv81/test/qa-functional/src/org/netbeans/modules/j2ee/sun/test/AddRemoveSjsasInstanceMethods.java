@@ -58,7 +58,7 @@ import org.openide.WizardDescriptor.Panel;
 
 /**
  *
- * @author Michal Mocnak
+ * 
  */
 public class AddRemoveSjsasInstanceMethods extends NbTestCase {
     

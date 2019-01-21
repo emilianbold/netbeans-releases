@@ -64,7 +64,7 @@ import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class WebAppRootTest extends TestCase {
     

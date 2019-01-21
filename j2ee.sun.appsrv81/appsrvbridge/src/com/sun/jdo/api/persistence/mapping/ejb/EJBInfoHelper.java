@@ -66,7 +66,7 @@ import com.sun.jdo.api.persistence.model.Model;
  * and helper objects needed to do mapping and generating of ejb related 
  * things in persistence.
  *
- * @author Rochelle Raccah
+ * 
  */
 public interface EJBInfoHelper
 {

@@ -57,7 +57,7 @@ import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.mbmapping.JvmOptions;
 
 /**
- * @author edwingo
+ * 
  *
  * Manipulate the app server http proxy options.
  * Requires app server to be running before this class can be used.

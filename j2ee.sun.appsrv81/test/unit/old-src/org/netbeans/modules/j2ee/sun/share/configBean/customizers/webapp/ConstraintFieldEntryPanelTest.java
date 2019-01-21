@@ -79,7 +79,7 @@ import junit.framework.*;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class ConstraintFieldEntryPanelTest extends TestCase {
     

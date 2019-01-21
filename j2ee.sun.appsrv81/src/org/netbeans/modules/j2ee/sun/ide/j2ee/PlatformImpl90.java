@@ -51,7 +51,7 @@ import java.io.File;
 // TODO flesh this class out completely
 /**
  *
- * @author vkraemer
+ * 
  */
 class PlatformImpl90 extends PlatformImpl {
     

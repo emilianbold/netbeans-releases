@@ -47,8 +47,8 @@ import com.sun.jdo.api.persistence.model.mapping.MappingClassElement;
  * The following class holds all of the state information for a class.  It  
  * contains a table state object and a field holder state object.
  *
- * @author Mark Munro
- * @author Rochelle Raccah
+ * 
+ * 
  * @version %I%
  */
 public class ClassState extends AbstractState implements Cloneable

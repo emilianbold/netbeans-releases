@@ -54,7 +54,6 @@ package org.netbeans.modules.j2ee.sun.test;
 
 /**
  *
- * @author ak199487
  */
 
 import java.io.File;
@@ -74,7 +73,7 @@ import java.io.FileOutputStream;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public class SunConfigurationMethods extends NbTestCase {
     

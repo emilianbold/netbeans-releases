@@ -53,7 +53,7 @@ import javax.enterprise.deploy.model.DDBeanRoot;
 import org.netbeans.modules.j2ee.sun.share.MockDeployableObject;
 /**
  *
- * @author  vkraemer
+ * 
  */
 public class MockDDBeanRoot extends MockDDBean implements DDBeanRoot {
 

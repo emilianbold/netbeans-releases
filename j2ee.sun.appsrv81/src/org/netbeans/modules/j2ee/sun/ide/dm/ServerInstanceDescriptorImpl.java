@@ -48,7 +48,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public class ServerInstanceDescriptorImpl implements ServerInstanceDescriptor {
 

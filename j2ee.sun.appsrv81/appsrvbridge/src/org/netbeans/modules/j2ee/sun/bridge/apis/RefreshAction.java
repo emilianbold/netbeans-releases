@@ -50,7 +50,7 @@ import org.openide.util.actions.CookieAction;
 
 /** Action sensitive to some cookie that does something useful.
  *
- * @author nityad
+ * 
  */
 public class RefreshAction extends CookieAction {
     

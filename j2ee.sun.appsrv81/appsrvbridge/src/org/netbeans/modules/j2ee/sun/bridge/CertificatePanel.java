@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 /**
  * This class displays the certificate
  *
- * @author  Ludo
+ * 
  */
 
 final class CertificatePanel extends javax.swing.JPanel {

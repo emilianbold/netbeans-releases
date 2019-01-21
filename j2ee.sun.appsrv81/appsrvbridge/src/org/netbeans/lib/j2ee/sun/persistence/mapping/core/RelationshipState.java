@@ -54,8 +54,8 @@ import org.netbeans.modules.dbschema.util.NameUtil;
  * the related class and related field, and information about whether this 
  * mapping uses a join table.
  *
- * @author Mark Munro
- * @author Rochelle Raccah
+ * 
+ * 
  * @version %I%
  */
 public class RelationshipState extends FieldState

@@ -49,7 +49,7 @@ import com.sun.jdo.spi.persistence.utility.StringHelper;
 
 /** 
  *
- * @author Rochelle Raccah
+ * 
  * @version %I%
  */
 public class Util extends Object

@@ -61,7 +61,7 @@ import java.util.Arrays;
 import org.netbeans.modules.j2ee.sun.share.SunDeploymentFactory;
 /**
  *
- * @author vkraemer
+ * 
  */
 public class PluginNodeTest extends TestCase {
     

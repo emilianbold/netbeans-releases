@@ -65,7 +65,7 @@ import org.openide.modules.InstalledFileLocator;
 
 /**
  *
- * @author  ludo
+ * 
  */
 public class DeploymentManagerProperties {
     /**

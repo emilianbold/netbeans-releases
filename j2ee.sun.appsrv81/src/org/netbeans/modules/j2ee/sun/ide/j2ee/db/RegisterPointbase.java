@@ -86,7 +86,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.RequestProcessor;
 /**
  *
- * @author  ludo
+ * 
  */
 public class RegisterPointbase implements DatabaseRuntime {
     /** The name of the Pointbase driver to create the connection to sample database */

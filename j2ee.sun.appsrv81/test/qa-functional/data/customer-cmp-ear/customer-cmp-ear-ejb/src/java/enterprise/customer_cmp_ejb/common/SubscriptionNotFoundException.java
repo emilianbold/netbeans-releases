@@ -41,7 +41,7 @@
 
 /**
  *
- * @author Rahul Biswas
+ * 
  */
 
 package enterprise.customer_cmp_ejb.common;

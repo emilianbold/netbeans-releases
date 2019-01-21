@@ -90,7 +90,7 @@ import org.netbeans.modules.j2ee.sun.share.MockDeployableObject;
 import org.netbeans.modules.j2ee.sun.share.TestConstants;
 /**
  *
- * @author vkraemer
+ * 
  */
 public class SunONEDeploymentConfigurationTest extends TestCase {
     

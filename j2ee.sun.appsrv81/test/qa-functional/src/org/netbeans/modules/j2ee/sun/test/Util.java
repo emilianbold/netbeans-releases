@@ -74,7 +74,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Michal Mocnak
+ * 
  */
 public class Util {
     

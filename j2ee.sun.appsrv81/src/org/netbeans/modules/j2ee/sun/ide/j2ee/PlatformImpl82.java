@@ -54,7 +54,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 // TODO flesh this class out completely
 /**
  *
- * @author vkraemer
+ * 
  */
 class PlatformImpl82 extends PlatformImpl {
     

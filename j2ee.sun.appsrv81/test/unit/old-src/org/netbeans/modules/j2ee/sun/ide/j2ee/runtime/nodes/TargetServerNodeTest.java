@@ -69,7 +69,7 @@ import org.netbeans.modules.j2ee.sun.share.SunDeploymentManager;
 
 /**
  *
- * @author Ludo
+ * 
  */
 public class TargetServerNodeTest extends TestCase {
     

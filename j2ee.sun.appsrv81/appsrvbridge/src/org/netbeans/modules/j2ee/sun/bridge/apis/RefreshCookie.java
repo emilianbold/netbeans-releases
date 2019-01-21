@@ -53,7 +53,7 @@ import org.openide.nodes.Node.Cookie;
 
 /**
  *
- * @author Nitya Doraisamy
+ * 
  */
 public interface RefreshCookie extends Cookie {
     

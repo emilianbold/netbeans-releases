@@ -49,7 +49,7 @@ import org.openide.WizardDescriptor;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class PMFWizardTest extends TestCase {
     private WizardDescriptor wiz;

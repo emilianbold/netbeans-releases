@@ -75,7 +75,7 @@ import org.netbeans.modules.j2ee.sun.ide.controllers.ControllerUtil;
 
 /**
  *
- * @author  nityad
+ * 
  */
 public class ServerMEJB implements ServerInterface {
     

@@ -75,8 +75,8 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Ludo Champenois
- * @author Vince Kraemer
+ * 
+ * 
  */
 public class DirectoryDeployment extends IncrementalDeployment {
     

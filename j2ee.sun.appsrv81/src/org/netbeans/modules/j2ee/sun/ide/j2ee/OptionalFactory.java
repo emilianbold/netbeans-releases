@@ -69,7 +69,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.AddDomainWizardIterator;
 
 /**
  *
- * @author  ludo
+ * 
  */
 public  class OptionalFactory extends OptionalDeploymentManagerFactory {
     

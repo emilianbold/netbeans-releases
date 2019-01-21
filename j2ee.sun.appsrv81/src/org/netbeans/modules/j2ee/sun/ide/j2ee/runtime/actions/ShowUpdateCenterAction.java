@@ -57,7 +57,7 @@ import org.openide.execution.NbProcessDescriptor;
 /** 
  * This action will run the update center tool for Glassfish.
  * 
- * @author Peter Williams
+ * 
  */
 public class ShowUpdateCenterAction extends CookieAction {
 

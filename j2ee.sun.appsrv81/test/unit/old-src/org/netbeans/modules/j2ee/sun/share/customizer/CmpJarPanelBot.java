@@ -52,7 +52,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.CmpJar;
 // dedda
 /**
  *
- * @author vkraemer
+ * 
  */
 public class CmpJarPanelBot extends ComponentTestFixture { // TestCase {
 

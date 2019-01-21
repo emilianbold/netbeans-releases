@@ -62,7 +62,7 @@ import junit.framework.*;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class SunONEDeploymentFactoryTest extends TestCase implements Constants {
 	

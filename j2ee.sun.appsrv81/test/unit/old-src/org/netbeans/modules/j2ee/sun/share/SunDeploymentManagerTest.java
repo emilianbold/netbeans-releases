@@ -75,7 +75,7 @@ import junit.framework.*;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class SunDeploymentManagerTest extends TestCase {
     

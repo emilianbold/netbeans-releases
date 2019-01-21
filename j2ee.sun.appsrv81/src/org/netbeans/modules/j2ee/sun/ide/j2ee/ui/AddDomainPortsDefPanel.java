@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 /** A single panel descriptor for a wizard.
  * You probably want to make a wizard iterator to hold it.
  *
- * @author vkraemer
+ * 
  */
 public class AddDomainPortsDefPanel implements WizardDescriptor.Panel,
         ChangeListener {

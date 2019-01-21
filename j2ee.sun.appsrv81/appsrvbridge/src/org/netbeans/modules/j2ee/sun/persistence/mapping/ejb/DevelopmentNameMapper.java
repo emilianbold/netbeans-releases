@@ -52,7 +52,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.*;
  * also has methods for translation of field names.  The basic entry point 
  * is ejb name or persistence-capable class name.
  *
- * @author Rochelle Raccah
+ * 
  */
 public class DevelopmentNameMapper extends AbstractNameMapper {
 	private final EjbJar bundleDescriptor;

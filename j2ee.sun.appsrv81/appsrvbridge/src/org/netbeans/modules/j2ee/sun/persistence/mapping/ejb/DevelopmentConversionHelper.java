@@ -52,7 +52,7 @@ import com.sun.jdo.spi.persistence.utility.StringHelper;
  * This class implements the ConversionHelper interface by using data from
  * EjbJar and other DDAPI classes.
  *
- * @author Rochelle Raccah
+ * 
  */
 public class DevelopmentConversionHelper implements ConversionHelper {
 	private static final String COLLECTION = "java.util.Collection"; // NOI18N

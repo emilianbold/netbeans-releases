@@ -73,7 +73,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author  ludo
+ * 
  */
 public class ManagerNode extends AbstractNode implements Node.Cookie{
     static java.util.Collection bogusNodes = java.util.Arrays.asList(new Node[] { Node.EMPTY, Node.EMPTY });

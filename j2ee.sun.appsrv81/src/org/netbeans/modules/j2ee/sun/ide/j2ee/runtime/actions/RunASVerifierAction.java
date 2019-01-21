@@ -59,7 +59,7 @@ import org.openide.util.actions.NodeAction;
 
 /** Action that can always be invoked and work procedurally.
  * This action will display the verifier tool from app server
- * @author  ludo
+ * 
  */
 public class RunASVerifierAction extends NodeAction {
     

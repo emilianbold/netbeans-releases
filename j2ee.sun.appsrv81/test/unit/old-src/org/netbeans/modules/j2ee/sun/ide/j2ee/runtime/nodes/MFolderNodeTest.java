@@ -69,7 +69,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.RefreshAction;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class MFolderNodeTest extends TestCase {
     

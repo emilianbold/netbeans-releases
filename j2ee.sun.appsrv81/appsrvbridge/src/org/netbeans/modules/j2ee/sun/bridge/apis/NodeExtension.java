@@ -54,7 +54,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author ludo
+ * 
  */
 public abstract class NodeExtension {
     

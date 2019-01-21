@@ -54,7 +54,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 /**
  * AppServer instance customizer which is accessible from server manager.
  *
- * @author Stepan Herold
+ * 
  */
 public class Customizer extends JTabbedPane {
 

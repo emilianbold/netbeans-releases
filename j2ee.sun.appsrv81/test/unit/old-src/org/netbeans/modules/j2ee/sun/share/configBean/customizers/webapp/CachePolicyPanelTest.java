@@ -57,7 +57,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class CachePolicyPanelTest extends TestCase {
 

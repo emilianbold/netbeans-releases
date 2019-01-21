@@ -49,8 +49,8 @@ import com.sun.jdo.api.persistence.model.jdo.PersistenceClassElement;
  * state objects.  It provides some general purpose methods and state 
  * information.
  *
- * @author Mark Munro
- * @author Rochelle Raccah
+ * 
+ * 
  * @version %I%
  */
 abstract public class AbstractState implements Cloneable

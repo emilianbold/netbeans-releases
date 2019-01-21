@@ -80,7 +80,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
 /**
  * Iterator for registering an SJSAS/GF domain
  * 
- * @author vkraemer
+ * 
  */
 public class AddDomainWizardIterator implements
         WizardDescriptor.InstantiatingIterator,ChangeListener {

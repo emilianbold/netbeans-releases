@@ -59,7 +59,7 @@ import org.w3c.dom.Document;
 
 /**
  *
- * @author Michal Mocnak
+ * 
  */
 public class DomainEditorMethods extends NbTestCase {
     

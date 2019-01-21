@@ -71,7 +71,7 @@ import org.xml.sax.SAXException;
 
 /** Catalog for App Server 8PE DTDs that enables completion support in editor.
  *
- * @author Ludo
+ * 
  */
 
 public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogReader, CatalogDescriptor2,org.xml.sax.EntityResolver  {

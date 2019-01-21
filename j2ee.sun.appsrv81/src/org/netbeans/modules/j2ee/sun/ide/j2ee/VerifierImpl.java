@@ -91,7 +91,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ludo
+ * 
  */
 public class VerifierImpl extends org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport {
 

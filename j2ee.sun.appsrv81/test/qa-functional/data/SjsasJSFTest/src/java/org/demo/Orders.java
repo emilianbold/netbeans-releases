@@ -25,7 +25,6 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author ak199487
  */
 @Entity
 @Table(name = "ORDERS")

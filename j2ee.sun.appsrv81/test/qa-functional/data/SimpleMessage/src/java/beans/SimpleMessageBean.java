@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 /**
  * This is the bean class for the SimpleMessageBean enterprise bean.
  * Created May 16, 2006 4:03:36 PM
- * @author ak199487
  */
 public class SimpleMessageBean implements MessageDrivenBean, MessageListener {
     private MessageDrivenContext context;

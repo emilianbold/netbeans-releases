@@ -62,7 +62,6 @@ import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
  * Test of org.netbeans.jellytools.NewJspFileNameStepOperator.
- * @author Martin.Schovanek@sun.com
  */
 public class NewWebProjectTest extends J2eeTestCase {
     

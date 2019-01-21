@@ -65,7 +65,7 @@ import org.netbeans.modules.j2ee.sun.share.SunDeploymentManager;
 
 /**
  *
- * @author ludo
+ * 
  */
 public class OptionalFactoryTest extends TestCase {
     private SunDeploymentManager dm;

@@ -55,8 +55,8 @@ import org.openide.WizardDescriptor;
 
 /**
  *
- * @author Michal Mocnak
- * @author vince kraemer
+ * 
+ * 
  */
 public class TestUtil {
     

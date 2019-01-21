@@ -48,7 +48,7 @@ import junit.framework.TestCase;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class WebServiceEndpointEntryPanelTest extends TestCase {
 

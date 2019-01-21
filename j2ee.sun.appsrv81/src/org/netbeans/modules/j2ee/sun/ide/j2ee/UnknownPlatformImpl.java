@@ -60,7 +60,7 @@ import org.openide.util.Utilities;
 
 /** Placeholder for an unknown platform
  *
- * @author vkraemer
+ * 
  */
 class UnknownPlatformImpl extends J2eePlatformImpl {
     

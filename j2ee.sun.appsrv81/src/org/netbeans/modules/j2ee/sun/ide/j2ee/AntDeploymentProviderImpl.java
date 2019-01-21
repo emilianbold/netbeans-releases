@@ -58,7 +58,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  * @thief vkraemer
- * @author sherold
+ * 
  */
 public class AntDeploymentProviderImpl implements AntDeploymentProvider {
     

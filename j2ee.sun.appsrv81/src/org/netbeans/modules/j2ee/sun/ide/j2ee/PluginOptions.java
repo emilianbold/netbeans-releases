@@ -48,7 +48,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Andrei Badea
+ * 
  */
 public class PluginOptions  {
 

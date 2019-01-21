@@ -49,7 +49,7 @@ import com.sun.jdo.api.persistence.model.Model;
  * and reference key (column pair) information.  This state object is 
  * "owned" by its enclosing TableState.
  *
- * @author Rochelle Raccah
+ * 
  * @version %I%
  */
 public class SecondaryTableState extends AbstractState

@@ -65,7 +65,7 @@ import org.openide.util.NbPreferences;
 
 /** This deploymenmt factory can creates an alternate deployment manager for
  * S1AS.
- * @author vkraemer,ludo
+ * ,ludo
  */
 public class SunDeploymentFactory implements Constants, DeploymentFactory, InstanceListener {
     

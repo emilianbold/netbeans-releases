@@ -46,7 +46,7 @@ package org.netbeans.modules.j2ee.sun.ide.dm;
 
 /** Constants used in through-out the deployment
  * module
- * @author vbk
+ * 
  */
 public interface Constants {
 

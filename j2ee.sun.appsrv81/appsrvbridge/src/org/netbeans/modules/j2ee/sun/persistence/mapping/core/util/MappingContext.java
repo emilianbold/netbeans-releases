@@ -59,7 +59,7 @@ import org.netbeans.lib.j2ee.sun.persistence.utility.openide.HelpUtils;
 
 /** 
  *
- * @author Rochelle Raccah
+ * 
  * @version %I%
  */
 public class MappingContext

@@ -51,7 +51,7 @@ package org.netbeans.modules.j2ee.sun.util;
 
 /**
  *
- * @author  Nitya Doraisamy
+ * 
  */
 public class PropertyConstants {
 

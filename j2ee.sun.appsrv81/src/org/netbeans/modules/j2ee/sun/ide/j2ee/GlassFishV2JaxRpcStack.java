@@ -58,8 +58,8 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
 
 /**
  *
- * @author mkuchtiak
- * @author ads
+ * 
+ * 
  */
 public class GlassFishV2JaxRpcStack implements WSStackImplementation<JaxRpc> {
     private static final String WEBSERVICES_TOOLS_JAR = "lib/webservices-tools.jar"; //NOI18N

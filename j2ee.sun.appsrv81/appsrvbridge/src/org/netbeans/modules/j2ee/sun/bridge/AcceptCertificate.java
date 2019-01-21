@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
  * Displays CertificatePanel to user. User must accept Certificate to continue.
  * if user does not accept false is return.
  *
- * @author  Ludo
+ * 
  */
 
 public final class AcceptCertificate {

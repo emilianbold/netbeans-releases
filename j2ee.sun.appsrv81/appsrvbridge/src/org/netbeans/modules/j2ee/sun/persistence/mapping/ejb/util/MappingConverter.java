@@ -53,7 +53,7 @@ import com.sun.jdo.api.persistence.mapping.ejb.beans.*;
 /** This is a class which helps convert OriginalCMPMapping mapping to 
  * SunCmpMappings and MappingClassElement objects.
  *
- * @author Rochelle Raccah
+ * 
  */
 public class MappingConverter {
 	private EJBInfoHelper ejbInfoHelper;

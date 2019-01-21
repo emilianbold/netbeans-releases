@@ -46,7 +46,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 enum Profile {
     DEFAULT(NbBundle.getMessage(Profile.class, "DEFAULT_DISPLAY_VALUE"), ""),

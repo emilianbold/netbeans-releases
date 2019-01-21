@@ -69,7 +69,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Amanpreet Kaur
+ * 
  */
 public class AdminObjectResourceMethods extends NbTestCase implements WizardConstants{
     

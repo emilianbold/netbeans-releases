@@ -79,7 +79,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.data.PropertyL
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class SessionConfigurationCustomizerTest extends TestCase {
     

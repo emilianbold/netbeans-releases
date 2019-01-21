@@ -55,7 +55,6 @@ import org.netbeans.junit.NbTestSuite;
 
 /**
  * Test of org.netbeans.jellytools.NewJspFileNameStepOperator.
- * @author Martin.Schovanek@sun.com
  */
 public class NewJspFileNameStepOperatorTest extends JellyTestCase {
 

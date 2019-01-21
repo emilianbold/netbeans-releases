@@ -126,7 +126,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 /**
  *
- * @author  ludo, vkraemer
+ * , vkraemer
  */
 public class SunDeploymentManager implements Constants, DeploymentManager, SunDeploymentManagerInterface {
     

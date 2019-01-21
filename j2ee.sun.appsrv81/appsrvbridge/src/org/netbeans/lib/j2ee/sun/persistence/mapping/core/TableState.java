@@ -54,7 +54,7 @@ import com.sun.jdo.spi.persistence.utility.JavaTypeHelper;
  * information (including reference key pairs).  This state object may be
  * "owned" by an enclosing ClassState, but it is not required.
  *
- * @author Mark Munro
+ * 
  * @version %I%
  */
 public class TableState extends AbstractState implements Cloneable {

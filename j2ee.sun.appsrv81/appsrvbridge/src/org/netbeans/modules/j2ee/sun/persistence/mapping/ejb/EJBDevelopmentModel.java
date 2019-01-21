@@ -75,7 +75,7 @@ import org.netbeans.api.project.FileOwnerQuery;
  * return answers about the byte array when called on the persistence-capable 
  * and return answers about the serializable type when called on the ejb.
  *
- * @author Rochelle Raccah
+ * 
  */
 public class EJBDevelopmentModel extends DevelopmentModel {
 	// TODO: what should class loader be? do we need it here (constructor, var,

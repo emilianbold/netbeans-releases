@@ -73,7 +73,7 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author  Ludo Champenois
+ * 
  * small class to invoke App Server APIS to really do the directory based deployment.
  * It has to be a separate class because of class loader closure issues if the app server jars
  * are not around wihtin the  IDE.

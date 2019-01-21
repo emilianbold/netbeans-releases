@@ -56,7 +56,7 @@ import org.netbeans.modules.j2ee.sun.api.restricted.SunMessageDestination;
 
 /**
  *
- * @author Nitya Doraisamy
+ * 
  */
 public class SunMessageDestinationDeployment implements MessageDestinationDeployment {
 

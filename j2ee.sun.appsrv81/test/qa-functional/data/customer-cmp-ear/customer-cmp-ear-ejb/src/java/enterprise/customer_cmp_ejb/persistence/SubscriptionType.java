@@ -11,7 +11,6 @@ import java.io.Serializable;
 /**
  * This is a dependent value class.
  *
- * @author	Rahul Biswas
  */
 public class SubscriptionType implements Serializable {
 

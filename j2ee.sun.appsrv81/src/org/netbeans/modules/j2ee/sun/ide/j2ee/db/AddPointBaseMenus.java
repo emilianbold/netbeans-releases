@@ -56,7 +56,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author ludo
+ * 
  */
  class AddPointBaseMenus {
 

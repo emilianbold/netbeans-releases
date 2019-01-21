@@ -55,7 +55,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 
 /**
  *
- * @author Michal Mocnak
+ * 
  */
 public class WebModuleMethods extends NbTestCase {
     

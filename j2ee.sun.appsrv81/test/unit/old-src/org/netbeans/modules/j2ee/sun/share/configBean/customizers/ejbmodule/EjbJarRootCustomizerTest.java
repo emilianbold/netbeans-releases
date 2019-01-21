@@ -86,7 +86,7 @@ import junit.framework.*;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class EjbJarRootCustomizerTest extends TestCase {
     

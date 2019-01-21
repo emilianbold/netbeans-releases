@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
  * Server customizer support class. Provides default implementations of some 
  * common server manager customizer panes.
  *
- * @author sherold
+ * 
  *
  * @since 1.19
  */

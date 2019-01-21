@@ -62,7 +62,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Michal Mocnak
+ * 
  */
 public class SunResourcesMethods extends NbTestCase implements WizardConstants{
     

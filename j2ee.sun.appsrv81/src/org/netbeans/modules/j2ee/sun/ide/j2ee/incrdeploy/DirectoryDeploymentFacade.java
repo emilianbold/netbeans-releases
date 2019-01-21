@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  vkraemer
+ * 
  */
 public class DirectoryDeploymentFacade  extends IncrementalDeployment {
     

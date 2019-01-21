@@ -55,7 +55,7 @@ import org.openide.ErrorManager;
 
 /**
  *
- * @author vbk
+ * 
  */
 public class ModConFactory implements ModuleConfigurationFactory2 {
     

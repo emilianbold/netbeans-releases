@@ -75,7 +75,7 @@ import org.openide.util.Task;
 
 /**
  *
- * @author Amanpreet
+ * 
  */
 public class JSFModuleMethods extends NbTestCase {
     

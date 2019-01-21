@@ -86,7 +86,7 @@ import org.netbeans.modules.schema2beans.Schema2BeansException;
  * classes based on ejb-jar.xml, bean classes and policy by invoking the 
  * database generation backend.
  *
- * @author Jie Leng 
+ *  
  */
 public class MappingGenerator {
 

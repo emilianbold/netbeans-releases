@@ -55,7 +55,7 @@ import junit.framework.*;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class PropertiesUtilTest extends TestCase {
 

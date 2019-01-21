@@ -47,7 +47,7 @@ import org.netbeans.lib.j2ee.sun.persistence.utility.openide.DevelopmentModel;
 
 /** 
  *
- * @author Rochelle Raccah
+ * 
  * @version %I%
  */
 public class MappingContextFactory

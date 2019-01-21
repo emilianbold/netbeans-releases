@@ -66,7 +66,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.*;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class EjbJarRootTest extends TestCase {
 	

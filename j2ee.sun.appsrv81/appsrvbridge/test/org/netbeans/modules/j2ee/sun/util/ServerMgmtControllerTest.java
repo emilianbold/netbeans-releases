@@ -56,7 +56,7 @@ import com.sun.appserv.management.DomainRoot;
 
 /**
  *
- * @author Rob
+ * 
  */
 public class ServerMgmtControllerTest extends TestCase {
     

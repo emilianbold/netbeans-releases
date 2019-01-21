@@ -49,7 +49,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class FindJSPServletImplTest {
 

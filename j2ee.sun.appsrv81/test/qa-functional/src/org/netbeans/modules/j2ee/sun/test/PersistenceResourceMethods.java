@@ -71,7 +71,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Amanpreet Kaur
+ * 
  */
 public class PersistenceResourceMethods extends NbTestCase implements WizardConstants{
     

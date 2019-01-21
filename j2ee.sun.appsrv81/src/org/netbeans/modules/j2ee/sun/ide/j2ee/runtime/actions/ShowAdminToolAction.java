@@ -60,7 +60,7 @@ import org.openide.util.RequestProcessor;
 
 /** Action that can always be invoked and work procedurally.
  * This action will display the URL for the given admin server node in the runtime explorer
- * @author  ludo
+ * 
  */
 public class ShowAdminToolAction extends CookieAction {
     

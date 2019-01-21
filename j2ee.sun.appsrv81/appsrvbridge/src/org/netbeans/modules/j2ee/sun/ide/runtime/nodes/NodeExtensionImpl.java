@@ -52,7 +52,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Peter Liu
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.sun.bridge.apis.NodeExtension.class)
 public class NodeExtensionImpl extends NodeExtension {

@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  vkraemer
+ * 
  */
 public class OptionTabVisualPanel extends javax.swing.JPanel {
     

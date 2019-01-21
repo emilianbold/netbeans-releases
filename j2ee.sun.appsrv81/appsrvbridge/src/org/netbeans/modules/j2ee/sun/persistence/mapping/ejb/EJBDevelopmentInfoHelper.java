@@ -59,7 +59,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.cmp.SunCmpMappings;
 /** This is a class which implements the EJBInfoHelper interface 
  * based on EjbJar and other DDAPI classes.
  *
- * @author Rochelle Raccah
+ * 
  */
 public class EJBDevelopmentInfoHelper implements EJBInfoHelper {
     

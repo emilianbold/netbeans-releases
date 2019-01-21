@@ -59,8 +59,8 @@ import com.sun.jdo.api.persistence.model.mapping.*;
  * because this class contains a relationship with that class, and
  * FieldHolderState objects which are relevant for related field information. 
  *
- * @author Mark Munro
- * @author Rochelle Raccah
+ * 
+ * 
  * @version %I%
  */
 public class FieldHolderState extends AbstractState implements Cloneable

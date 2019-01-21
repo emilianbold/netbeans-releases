@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ludo
+ * 
  */
 public class MasterPasswordInputDialog extends NotifyDescriptor {
 

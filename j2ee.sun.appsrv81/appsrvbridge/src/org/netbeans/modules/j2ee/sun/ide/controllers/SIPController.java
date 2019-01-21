@@ -56,7 +56,7 @@ import org.netbeans.modules.j2ee.sun.bridge.apis.AppserverMgmtControllerBase;
 
 /**
  *
- * @author Nitya Doraisamy
+ * 
  */
 public class SIPController extends AppserverMgmtControllerBase 
     implements DeployedItemsController, EnablerController {

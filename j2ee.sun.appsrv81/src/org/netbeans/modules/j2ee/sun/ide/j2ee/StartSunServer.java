@@ -100,7 +100,7 @@ import org.netbeans.modules.glassfish.eecommon.api.ProgressEventSupport;
 
 /**
  * Life Cycle management for an instance
- * @author Ludo
+ * 
  */
 public class StartSunServer extends StartServer implements ProgressObject, SunServerStateInterface,
         Runnable {

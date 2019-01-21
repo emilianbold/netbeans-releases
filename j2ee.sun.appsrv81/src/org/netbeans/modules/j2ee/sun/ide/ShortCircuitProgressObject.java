@@ -57,7 +57,7 @@ import org.netbeans.modules.glassfish.eecommon.api.ProgressEventSupport;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class ShortCircuitProgressObject implements ProgressObject {
 

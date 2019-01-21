@@ -58,7 +58,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Andrei Badea
+ * 
  */
 public class PluginOptionsBeanInfo extends SimpleBeanInfo {
     public PropertyDescriptor[] getPropertyDescriptors() {

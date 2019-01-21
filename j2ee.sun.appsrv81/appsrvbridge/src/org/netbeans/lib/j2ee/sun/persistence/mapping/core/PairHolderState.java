@@ -46,7 +46,7 @@ import com.sun.jdo.api.persistence.model.mapping.MappingClassElement;
  * is introduced to provide a common way to navigate to the TableState and 
  * MappingClassElement.
  *
- * @author Rochelle Raccah
+ * 
  * @version %I%
  */
 public interface PairHolderState

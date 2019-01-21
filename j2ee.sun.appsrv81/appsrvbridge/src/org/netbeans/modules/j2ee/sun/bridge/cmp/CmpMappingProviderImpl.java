@@ -77,7 +77,7 @@ import org.openide.util.WeakListeners;
 // handling, repackaging
 /**
  *
- * @author raccah
+ * 
  */
 public class CmpMappingProviderImpl implements CmpMappingProvider {
 

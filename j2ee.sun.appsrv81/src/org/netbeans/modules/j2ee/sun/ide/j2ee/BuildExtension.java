@@ -59,7 +59,7 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class BuildExtension {
     

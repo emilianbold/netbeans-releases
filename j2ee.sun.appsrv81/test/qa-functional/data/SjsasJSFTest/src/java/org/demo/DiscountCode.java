@@ -22,7 +22,6 @@ import javax.persistence.Table;
 
 /**
  *
- * @author ak199487
  */
 @Entity
 @Table(name = "DISCOUNT_CODE")

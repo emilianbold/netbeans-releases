@@ -74,7 +74,6 @@ import javax.management.remote.JMXServiceURL;
  * wrap some App Server internal APIS calls
  * for the netbeans plugin
  * to compile this class, you need some App Server jar files like appsrv-rt.jar and appsrv-admin.jar
- * @author: Ludovic Champenois
  *
  **/
 

@@ -48,7 +48,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 class DomainListEntry {
     private String hostPort;

@@ -74,7 +74,7 @@ import org.netbeans.modules.j2ee.sun.util.AppserverConnectionFactory;
 
 /**
  *
- * @author  nityad
+ * 
  */
 public class UtilMEJB implements Constants{
     

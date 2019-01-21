@@ -54,7 +54,7 @@ import org.w3c.dom.Document;
 
 /**
  *
- * @author Ludovic Champenois
+ * 
  */
 public class ConfigureProfiler {
         

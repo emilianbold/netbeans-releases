@@ -68,7 +68,7 @@ import org.netbeans.spi.project.ActionProvider;
 
 /**
  *
- * @author Amanpreet Kaur
+ * 
  */
 public class DukeStatefulMethods extends NbTestCase{
     

@@ -50,8 +50,8 @@ import com.sun.jdo.api.persistence.model.jdo.PersistenceFieldElement;
  * RelationshipState.  This state object is "owned" by its enclosing
  * FieldHolderState.
  *
- * @author Mark Munro
- * @author Rochelle Raccah
+ * 
+ * 
  * @version %I%
  */
 public class FieldState extends AbstractState implements Cloneable

@@ -49,7 +49,7 @@ import com.sun.jdo.api.persistence.model.Model;
  * This state object manages something with column pair information.  This 
  * state object is "owned" by its enclosing FieldHolderState.
  *
- * @author Rochelle Raccah
+ * 
  * @version %I%
  */
 public class PairState extends AbstractState implements ReferenceKey, Cloneable

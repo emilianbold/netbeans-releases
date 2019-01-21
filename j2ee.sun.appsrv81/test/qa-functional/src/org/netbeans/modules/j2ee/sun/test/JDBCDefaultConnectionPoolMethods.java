@@ -64,7 +64,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Amanpreet Kaur
+ * 
  */
 public class JDBCDefaultConnectionPoolMethods extends NbTestCase implements WizardConstants{
     

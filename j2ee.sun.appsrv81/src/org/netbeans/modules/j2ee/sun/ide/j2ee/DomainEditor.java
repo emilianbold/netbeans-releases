@@ -84,7 +84,7 @@ import org.xml.sax.SAXException;
 /**
  * Parses and edits domain.xml
  * Used for Profiler, HTTP Proxy, DataSources
- * @author Nitya Doraisamy
+ * 
  */
 public class DomainEditor {
     

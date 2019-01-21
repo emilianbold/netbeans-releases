@@ -52,7 +52,7 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee;
 import java.util.logging.Logger;
 /**
  *
- * @author  vkraemer
+ * 
  */
 public class Constants {
 

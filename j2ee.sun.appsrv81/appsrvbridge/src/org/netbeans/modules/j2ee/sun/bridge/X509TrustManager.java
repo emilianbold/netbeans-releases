@@ -59,7 +59,6 @@ import java.security.cert.X509Certificate;
  *  Trust Management.  This implementation prompts for confirmation of the
  *  server certificate.
  *
- *  @author Ken Paulsen (ken.paulsen@sun.com)
  */
 class X509TrustManager extends SunOneBasicX509TrustManager {
 

@@ -81,7 +81,7 @@ import org.netbeans.modules.dbschema.DBException;
 
 /**
  *
- * @author  Vince Kraemer
+ * 
  *          Anissa Lam
  */
 public class SunOneUtilsCMP 

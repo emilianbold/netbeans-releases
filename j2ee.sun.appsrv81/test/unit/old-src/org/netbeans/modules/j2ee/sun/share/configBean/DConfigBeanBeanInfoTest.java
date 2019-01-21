@@ -54,7 +54,7 @@ import junit.framework.TestCase;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public class DConfigBeanBeanInfoTest extends TestCase {
 	

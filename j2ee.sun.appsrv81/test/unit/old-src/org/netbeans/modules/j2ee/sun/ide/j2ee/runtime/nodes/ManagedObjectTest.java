@@ -88,7 +88,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class ManagedObjectTest extends TestCase {
     

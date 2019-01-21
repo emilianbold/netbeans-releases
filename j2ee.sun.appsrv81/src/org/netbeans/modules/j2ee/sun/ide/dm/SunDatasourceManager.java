@@ -57,7 +57,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
 
 /**
  *
- * @author Nitya Doraisamy
+ * 
  */
 public class SunDatasourceManager implements DatasourceManager {
     

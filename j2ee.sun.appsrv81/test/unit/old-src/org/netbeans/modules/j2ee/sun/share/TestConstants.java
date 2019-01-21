@@ -51,7 +51,7 @@ package org.netbeans.modules.j2ee.sun.share;
 
 /**
  *
- * @author  vkraemer
+ * 
  */
 public class TestConstants {
 

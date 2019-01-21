@@ -16,7 +16,6 @@ import javax.jws.WebParam;
 
 /**
  *
- * @author ak199487
  */
 
 @Stateless()

@@ -72,7 +72,7 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author  ludo
+ * 
  */
 public class PluginProperties  {
     

@@ -5,7 +5,7 @@ import javax.ejb.*;
 /**
  * This is the bean class for the TestSessionBean enterprise bean.
  * Created Jan 11, 2006 9:10:39 PM
- * @author marigan
+ * 
  */
 public class TestSessionBean implements SessionBean, TestSessionLocalBusiness {
     private SessionContext context;

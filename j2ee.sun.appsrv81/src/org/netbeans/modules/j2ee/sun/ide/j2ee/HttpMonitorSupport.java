@@ -52,7 +52,6 @@ import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 
 /** Monitor enabling/disabling utilities for Application Server 8.x.
  *
- * @author Milan.Kuchtiak@sun.com, Petr Jiricka, Ludovic Champenois
  */
 public class HttpMonitorSupport {
 

@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 
 /** A single panel for a wizard - the GUI portion.
  *
- * @author vkraemer
+ * 
  */
 // TODO : force validation to key release instead of StateChange
 public class CreateServerVisualPanel extends javax.swing.JPanel {

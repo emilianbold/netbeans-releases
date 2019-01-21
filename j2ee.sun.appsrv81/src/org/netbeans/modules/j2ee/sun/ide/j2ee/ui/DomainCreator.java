@@ -64,8 +64,6 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
  * Helper class which serves to create and register a new domain without
  * any use of the ui.
  *
- * @author Michal Mocnak, 
- * @author vkraemer
  */
 public final class DomainCreator {
     

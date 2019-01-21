@@ -55,7 +55,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Nitya Doraisamy
+ * 
  */
 public class SIPModuleNode extends AppserverMgmtApplicationsNode {
         

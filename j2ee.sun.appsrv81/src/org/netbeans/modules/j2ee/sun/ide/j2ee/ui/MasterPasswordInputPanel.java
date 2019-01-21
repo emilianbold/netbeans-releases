@@ -46,7 +46,7 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
 
 /**
  *
- * @author  ludo
+ * 
  */
 public class MasterPasswordInputPanel extends javax.swing.JPanel {
 

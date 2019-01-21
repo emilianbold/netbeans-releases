@@ -68,7 +68,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 /**
  * <code>LogSupport</code> class for creating links in the output window.
  *
- * @author  Stepan Herold
+ * 
  */
 public class LogHyperLinkSupport {
     private Map/*<Link, Link>*/ links = Collections.synchronizedMap(new HashMap());

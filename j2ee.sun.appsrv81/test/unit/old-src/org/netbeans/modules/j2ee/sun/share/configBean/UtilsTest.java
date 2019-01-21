@@ -49,7 +49,7 @@ import junit.framework.TestCase;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class UtilsTest extends TestCase {
 

@@ -63,7 +63,7 @@ import java.util.*;
  * also has methods for translation of field names.  The basic entry point 
  * is ejb name or persistence-capable class name.
  *
- * @author Rochelle Raccah
+ * 
  */
 abstract public class AbstractNameMapper {
 	public static final int USER_DEFINED_KEY_CLASS = 1;

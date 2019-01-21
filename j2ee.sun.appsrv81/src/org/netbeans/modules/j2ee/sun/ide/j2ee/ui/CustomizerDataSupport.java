@@ -61,7 +61,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 
 /**
  *
- * @author sherold
+ * 
  */
 public class CustomizerDataSupport {
     

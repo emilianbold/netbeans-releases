@@ -56,7 +56,7 @@ import org.openide.WizardDescriptor;
 
 /**
  *
- * @author Michal Mocnak
+ * 
  */
 public class Util {
     

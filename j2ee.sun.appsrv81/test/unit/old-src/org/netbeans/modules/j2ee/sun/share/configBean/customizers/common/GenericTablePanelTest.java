@@ -68,7 +68,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.data.*;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class GenericTablePanelTest extends TestCase {
     

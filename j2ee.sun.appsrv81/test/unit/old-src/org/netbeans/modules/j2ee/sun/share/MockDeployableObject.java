@@ -56,7 +56,7 @@ import javax.enterprise.deploy.model.DDBeanRoot;
 
 /**
  *
- * @author  vkraemer
+ * 
  */
 public class MockDeployableObject implements javax.enterprise.deploy.model.DeployableObject {
 

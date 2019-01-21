@@ -92,7 +92,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.ProgressEventSupport;
 
 /**
  *
- * @author vkraemer
+ * 
  */
 public class DirectoryDeploymentTest extends TestCase {
     
