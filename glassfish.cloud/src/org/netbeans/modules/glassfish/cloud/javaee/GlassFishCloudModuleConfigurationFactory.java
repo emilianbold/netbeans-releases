@@ -45,7 +45,6 @@ package org.netbeans.modules.glassfish.cloud.javaee;
  * Extension of {@link ModuleConfigurationFactory} providing also access to
  * server instance URL for local GlassFish server registered with cloud.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudModuleConfigurationFactory
         extends GlassFishModuleConfigurationFactory {

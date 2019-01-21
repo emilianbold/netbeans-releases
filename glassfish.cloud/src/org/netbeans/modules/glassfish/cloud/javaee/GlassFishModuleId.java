@@ -54,7 +54,6 @@ import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
 /**
  * Unique identifier for a deployed application module on GlassFish server.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishModuleId implements TargetModuleID {
 

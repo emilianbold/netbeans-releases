@@ -47,7 +47,6 @@ import org.openide.util.actions.NodeAction;
 /**
  * GUI action to work with GlassFish cloud user account.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public abstract class GlassFishAccountAction extends NodeAction {
     

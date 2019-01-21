@@ -50,7 +50,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurati
  * Abstract Extension of {@link ModuleConfigurationFactory} providing also
  * access to server instance URL.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public abstract class GlassFishModuleConfigurationFactory
         implements ModuleConfigurationFactory2 {

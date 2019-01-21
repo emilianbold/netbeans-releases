@@ -55,7 +55,6 @@ import static org.openide.util.NbBundle.getMessage;
  * <p>
  * Allows user to register a new GlassFish Cloud (CPAS).
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
 

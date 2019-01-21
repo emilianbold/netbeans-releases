@@ -62,7 +62,6 @@ import org.netbeans.modules.glassfish.tooling.utils.StringPrefixTree;
  * GlassFish instance in IDE)</li>
  * </ul></p>
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishUrl {
     

@@ -49,7 +49,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 /**
  * Optional deployment manager for registered GlassFish cloud user account.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishAccountOptionalDeploymentManager
         extends GlassFishOptionalDeploymentManager {

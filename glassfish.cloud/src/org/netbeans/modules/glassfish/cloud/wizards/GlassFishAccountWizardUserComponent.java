@@ -59,7 +59,6 @@ import static org.openide.util.NbBundle.getMessage;
 
 /**
  *
- * @author kratz
  */
 public class GlassFishAccountWizardUserComponent
         extends GlassFishWizardComponent {

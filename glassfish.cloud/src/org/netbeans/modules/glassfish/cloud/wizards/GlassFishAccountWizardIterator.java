@@ -58,7 +58,6 @@ import static org.openide.util.NbBundle.getMessage;
  * <p>
  * Adds GlassFish User Account item into Add Server wizard.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishAccountWizardIterator extends GlassFishWizardIterator {
 

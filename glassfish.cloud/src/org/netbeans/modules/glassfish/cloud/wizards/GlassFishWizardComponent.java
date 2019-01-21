@@ -48,7 +48,6 @@ import javax.swing.event.DocumentListener;
 
 /**
  *
- * @author kratz
  */
 public abstract class GlassFishWizardComponent
         extends javax.swing.JPanel {

@@ -58,7 +58,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationExceptio
  * <code>getInstance</code> method calls every time this provider is being
  * accessed.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudInstanceProvider
     extends GlassFishInstanceProvider {

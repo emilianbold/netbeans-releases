@@ -56,7 +56,6 @@ import static org.openide.util.NbBundle.getMessage;
  * <p/>
  * Based on API that will be made optional in JavaEE 7 platform.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudDeploymentFactory implements DeploymentFactory {
 

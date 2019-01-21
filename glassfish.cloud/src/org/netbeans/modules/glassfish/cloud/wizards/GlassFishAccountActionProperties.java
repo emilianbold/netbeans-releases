@@ -50,7 +50,6 @@ import static org.openide.util.NbBundle.getMessage;
 /**
  * GUI action to update GlassFish cloud user account properties.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishAccountActionProperties extends GlassFishAccountAction {
 

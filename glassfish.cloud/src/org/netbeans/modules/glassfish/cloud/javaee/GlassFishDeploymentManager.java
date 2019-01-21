@@ -58,7 +58,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
  * <p/>
  * Based on API that will be made optional in JavaEE 7 platform.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
     

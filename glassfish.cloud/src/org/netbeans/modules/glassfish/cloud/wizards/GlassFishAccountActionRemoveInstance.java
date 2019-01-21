@@ -50,7 +50,6 @@ import static org.openide.util.NbBundle.getMessage;
 /**
  * GUI action to remove GlassFish cloud user account instance.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishAccountActionRemoveInstance extends GlassFishAccountAction {
 

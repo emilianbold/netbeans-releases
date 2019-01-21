@@ -60,7 +60,6 @@ import static org.openide.util.NbBundle.getMessage;
  * Allows editing cloud attributes in both add wizard and properties update
  * pop up.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudWizardCpasComponent
         extends GlassFishWizardComponent {

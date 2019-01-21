@@ -52,7 +52,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
  * Factory class producing SPI interface for Java EE platform registered with
  * GlassFish cloud.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishPlatformFactory extends J2eePlatformFactory {
 

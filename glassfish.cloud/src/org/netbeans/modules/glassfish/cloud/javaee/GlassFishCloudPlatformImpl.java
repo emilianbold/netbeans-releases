@@ -48,7 +48,6 @@ import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
  * Java EE platform SPI interface implementation for Java EE platform registered
  * with GlassFish cloud.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudPlatformImpl extends GlassFishPlatformImpl {
 

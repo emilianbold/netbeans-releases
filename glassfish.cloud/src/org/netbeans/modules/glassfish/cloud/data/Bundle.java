@@ -46,7 +46,6 @@ package org.netbeans.modules.glassfish.cloud.data;
  * <p>
  * Constants to access bundle values.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class Bundle {
     

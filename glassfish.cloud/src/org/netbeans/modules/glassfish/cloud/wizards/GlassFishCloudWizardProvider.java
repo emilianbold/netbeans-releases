@@ -51,7 +51,6 @@ import static org.openide.util.NbBundle.getMessage;
  * Adds GlassFish Cloud item into Add Cloud wizard. This is top level class
  * connecting Add GlassFish cloud wizard to common Add Cloud wizard.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudWizardProvider implements ServerWizardProvider {
 

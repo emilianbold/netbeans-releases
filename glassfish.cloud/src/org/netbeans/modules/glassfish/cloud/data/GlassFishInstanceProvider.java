@@ -54,7 +54,6 @@ import org.openide.util.ChangeSupport;
  * <p/>
  * common code to handle all registered GlassFish cloud or server instances.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public abstract class GlassFishInstanceProvider
         implements ServerInstanceProvider {

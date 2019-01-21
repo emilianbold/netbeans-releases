@@ -71,7 +71,6 @@ import org.openide.filesystems.FileUtil;
  * Common Java EE platform SPI interface implementation for Java EE platform
  * registered with GlassFish cloud.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public abstract class GlassFishPlatformImpl
         extends J2eePlatformImpl2 implements ChangeListener {

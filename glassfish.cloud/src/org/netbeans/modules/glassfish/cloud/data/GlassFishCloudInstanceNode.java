@@ -51,7 +51,6 @@ import org.openide.util.actions.SystemAction;
  * <p>
  * this class represents cloud (CPAS) instance in GUI.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudInstanceNode extends GlassFishInstanceNode {
 

@@ -50,7 +50,6 @@ import org.openide.util.lookup.Lookups;
  * <p>
  * this class represents cloud or server instance in GUI.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public abstract class GlassFishInstanceNode extends AbstractNode {
     

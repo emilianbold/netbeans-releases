@@ -57,7 +57,6 @@ import static org.openide.util.NbBundle.getMessage;
  * <p>
  * Adds GlassFish Cloud item into Add Cloud wizard.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudWizardIterator extends GlassFishWizardIterator {
 

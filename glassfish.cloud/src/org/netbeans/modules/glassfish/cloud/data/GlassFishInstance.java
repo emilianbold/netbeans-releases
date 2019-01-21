@@ -52,7 +52,6 @@ import org.netbeans.spi.server.ServerInstanceImplementation;
  * Contains additional common method to access both CPAS interface and user
  * account attributes and methods to handle change events listeners.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public interface GlassFishInstance
         extends ServerInstanceImplementation, Target {

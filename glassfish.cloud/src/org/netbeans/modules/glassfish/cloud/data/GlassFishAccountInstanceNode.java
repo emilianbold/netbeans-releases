@@ -51,7 +51,6 @@ import org.openide.util.actions.SystemAction;
  * <p>
  * this class represents server (user account) instance in GUI.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishAccountInstanceNode extends GlassFishInstanceNode {
     

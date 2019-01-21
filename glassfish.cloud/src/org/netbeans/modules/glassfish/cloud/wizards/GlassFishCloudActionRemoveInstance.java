@@ -51,7 +51,6 @@ import static org.openide.util.NbBundle.getMessage;
 /**
  * GUI action to remove GlassFish cloud instance.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudActionRemoveInstance extends GlassFishCloudAction {
 

@@ -55,7 +55,6 @@ import static org.openide.util.NbBundle.getMessage;
  * User deploys an application using his credentials under GlassFish cloud
  * account.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishAccountWizardProvider implements ServerWizardProvider {
 

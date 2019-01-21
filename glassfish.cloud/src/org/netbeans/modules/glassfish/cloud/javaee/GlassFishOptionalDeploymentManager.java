@@ -47,7 +47,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
 /**
  * Abstract optional deployment manager for GlassFish cloud.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public abstract class GlassFishOptionalDeploymentManager
         extends OptionalDeploymentManagerFactory {

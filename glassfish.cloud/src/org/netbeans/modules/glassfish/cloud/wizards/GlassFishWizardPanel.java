@@ -54,7 +54,6 @@ import org.openide.util.Utilities;
  * <code>WizardDescriptor.AsynchronousValidatingPanel&lt;WizardDescriptor&gt;</code>
  * and <code>ChangeListener</code> interfaces.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public abstract class GlassFishWizardPanel
         implements

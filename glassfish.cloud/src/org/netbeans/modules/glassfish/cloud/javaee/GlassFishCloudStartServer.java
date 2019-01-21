@@ -48,7 +48,6 @@ package org.netbeans.modules.glassfish.cloud.javaee;
  * administration server and managed (virtual) target servers (in debug mode)
  * during deployment or debugging execution.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudStartServer extends GlassFishStartServer {
     

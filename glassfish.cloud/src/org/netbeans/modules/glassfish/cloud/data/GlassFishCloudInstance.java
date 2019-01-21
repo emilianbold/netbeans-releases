@@ -66,7 +66,6 @@ import static org.openide.util.NbBundle.getMessage;
  * Supports change listeners to watch GlassFish cloud instance changes.
  * Listeners are notified when persistency operation is being invoked.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudInstance extends GlassFishCloudEntity
         implements GlassFishInstance {

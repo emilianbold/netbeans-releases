@@ -53,7 +53,6 @@ package org.netbeans.modules.glassfish.cloud.javaee;
  * This class is responsible for managing all individual libraries provided
  * by GlassFish server. Individual libraries have their own 
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishLibrariesManager {
 

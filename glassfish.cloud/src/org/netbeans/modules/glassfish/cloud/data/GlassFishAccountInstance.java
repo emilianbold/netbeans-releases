@@ -66,7 +66,6 @@ import static org.openide.util.NbBundle.getMessage;
  * GlassFish user account instance represents user on cloud account. Based
  * on Tooling SDK entity object.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishAccountInstance extends GlassFishAccountEntity
     implements GlassFishServer, GlassFishInstance {

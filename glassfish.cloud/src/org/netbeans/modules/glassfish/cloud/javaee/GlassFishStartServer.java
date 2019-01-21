@@ -54,7 +54,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
  * administration server and managed (virtual) target servers (in debug mode)
  * during deployment or debugging execution.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public abstract class GlassFishStartServer extends StartServer {
 

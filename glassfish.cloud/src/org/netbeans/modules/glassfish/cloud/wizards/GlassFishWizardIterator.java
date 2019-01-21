@@ -54,7 +54,6 @@ import org.openide.util.ChangeSupport;
  * <code>WizardDescriptor.AsynchronousInstantiatingIterator&lt;WizardDescriptor&gt;</code>
  * interface.
  * <p/>
- * @author Tomas Kraus, Peter Benedikovic
  */
 public abstract class GlassFishWizardIterator
         implements

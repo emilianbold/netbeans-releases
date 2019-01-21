@@ -60,7 +60,6 @@ import org.netbeans.modules.glassfish.tooling.TaskStateListener;
  * Receives events from command runner about execution of command
  * and notifies registered listeners with new <code>DeploymentStatusImpl</code>.
  *
- * @author Peter Benedikovic, Tomas Kraus
  */
 public class ProgressObjectDeploy implements ProgressObject, TaskStateListener {
 
