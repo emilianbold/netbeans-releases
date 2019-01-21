@@ -76,7 +76,7 @@ public class XMLParserHelper {
     private static final String RID_ATTRIBUTE = "rid"; // NOI18N
     
     private static final String JAXP_SCHEMA_LANGUAGE =
-            "http://java.sun.com/xml/jaxp/properties/schemaLanguage"; // NOI18N
+            ""; // NOI18N
 
     private static final String W3C_XML_SCHEMA =
             "http://www.w3.org/2001/XMLSchema"; // NOI18N

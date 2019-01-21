@@ -67,9 +67,6 @@ import java.nio.channels.*;
  * This copying was necessary in order to use SOCKS on a per-socket
  * basis, as the JDK only allows SOCKS usage across the entire VM.
  * 
- * @author        Jacques Belissent
- * @author        Matt Stevens, matthew.stevens@sun.com
- * @author        Todd Fast, todd.fast@sun.com
  */
 public class Socks5SocketChannelAdaptor {
         

@@ -61,7 +61,6 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public class IMCollabMessage extends IMCollabMessagePart implements CollabMessage {
     ////////////////////////////////////////////////////////////////////////////

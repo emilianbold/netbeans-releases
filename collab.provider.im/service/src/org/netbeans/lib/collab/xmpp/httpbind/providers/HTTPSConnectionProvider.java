@@ -274,7 +274,7 @@ public class HTTPSConnectionProvider extends ConnectionProviderImpl {
     }
     
     
-    // When I was testing with http://nicp103.india.sun.com:8888/
+    // When I was testing
     // The peerhost reported was the IP !
     // We should do something more intelligent here - a dns lookup
     // to verify cred is a bad idea IMHO.

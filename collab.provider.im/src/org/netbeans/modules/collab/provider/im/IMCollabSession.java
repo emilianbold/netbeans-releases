@@ -76,7 +76,6 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  *
  *
- * @author  Todd Fast <todd.fast@sun.com>
  */
 public class IMCollabSession extends Object implements CollabSession, CollaborationSessionListener,
     InviteMessageStatusListener, PresenceServiceListener, PersonalStoreServiceListener, NotificationServiceListener,
