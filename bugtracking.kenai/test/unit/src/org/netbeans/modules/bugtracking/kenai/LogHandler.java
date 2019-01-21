@@ -48,7 +48,6 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 
 /**
  *
- * @author tomas
  */
 public class LogHandler extends Handler {
     private static final long TIMEOUT = 60 * 1000;

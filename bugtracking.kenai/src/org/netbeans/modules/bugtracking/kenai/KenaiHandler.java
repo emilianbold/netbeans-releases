@@ -73,7 +73,6 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Tomas Stupka
  */
 class KenaiHandler {
 

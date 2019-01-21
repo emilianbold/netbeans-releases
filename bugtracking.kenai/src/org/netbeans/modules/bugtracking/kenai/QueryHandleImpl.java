@@ -66,7 +66,6 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Tomas Stupka
  */
 class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionListener, PropertyChangeListener {
     private final Query query;

@@ -58,7 +58,6 @@ import org.netbeans.modules.kenai.api.KenaiManager;
 
 /**
  *
- * @author tomas
  */
 public class KenaiQueryTest extends NbTestCase implements TestConstants, QueryConstants {
 

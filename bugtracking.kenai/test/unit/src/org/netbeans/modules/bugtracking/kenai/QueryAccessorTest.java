@@ -63,7 +63,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author tomas
  */
 public class QueryAccessorTest extends NbTestCase {
     private Kenai kenai;

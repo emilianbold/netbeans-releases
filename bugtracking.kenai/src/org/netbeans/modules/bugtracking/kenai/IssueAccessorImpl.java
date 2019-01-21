@@ -64,8 +64,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author joshis
- * @author Tomas Stupka
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.class)
 public class IssueAccessorImpl extends KenaiIssueAccessor {

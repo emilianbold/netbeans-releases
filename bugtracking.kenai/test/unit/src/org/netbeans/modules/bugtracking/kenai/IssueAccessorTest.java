@@ -80,7 +80,6 @@ import org.openide.util.test.MockLookup;
 
 /**
  *
- * @author tomas
  */
 public class IssueAccessorTest extends NbTestCase {
     private static Kenai kenai;

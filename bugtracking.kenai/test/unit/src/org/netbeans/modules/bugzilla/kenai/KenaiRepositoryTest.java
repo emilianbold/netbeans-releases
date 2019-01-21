@@ -67,7 +67,6 @@ import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 
 /**
  *
- * @author tomas
  */
 public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
 

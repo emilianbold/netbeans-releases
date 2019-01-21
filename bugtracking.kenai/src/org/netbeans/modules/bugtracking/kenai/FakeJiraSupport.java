@@ -67,7 +67,6 @@ import org.openide.util.NbBundle;
  * kenai projects with a JIRA issue tracker. To be used when no JIRA plugin is
  * available.
  *
- * @author Tomas Stupka
  */
 class FakeJiraSupport {
 

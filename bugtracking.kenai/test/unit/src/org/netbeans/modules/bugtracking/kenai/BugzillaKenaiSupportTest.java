@@ -71,7 +71,6 @@ import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 
 /**
  *
- * @author tomas
  */
 public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstants {
 

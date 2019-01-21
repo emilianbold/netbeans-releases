@@ -84,7 +84,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Tomas Stupka
  */
 @org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=org.netbeans.modules.team.spi.TeamAccessor.class),
                                            @ServiceProvider(service=org.netbeans.modules.bugtracking.kenai.TeamAccessorImpl.class)})

@@ -63,7 +63,6 @@ import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
 
 /**
  *
- * @author Tomas Stupka
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.server.ui.spi.QueryAccessor.class)
 public class QueryAccessorImpl extends QueryAccessor<KenaiProject> {
