@@ -61,7 +61,6 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * Document Listener attached to each shared file being handled
  *
- * @author  Todd Fast <todd.fast@sun.com>
  * @version 1.0
  */
 public class FilesharingDocumentListener extends CollabDocumentListener {

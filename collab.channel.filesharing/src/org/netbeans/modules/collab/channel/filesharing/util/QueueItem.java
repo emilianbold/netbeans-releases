@@ -49,7 +49,7 @@ import org.netbeans.modules.collab.channel.filesharing.msgbean.CCollab;
 /**
  * QueueItem
  *
- * @author Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class QueueItem extends Object {

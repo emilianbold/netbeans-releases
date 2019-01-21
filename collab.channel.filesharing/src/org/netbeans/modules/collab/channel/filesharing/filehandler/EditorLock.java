@@ -54,7 +54,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * Bean that holds editorStates of a document
  *
- * @author Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class EditorLock extends Object {

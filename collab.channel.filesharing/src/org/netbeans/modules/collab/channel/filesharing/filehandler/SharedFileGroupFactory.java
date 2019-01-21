@@ -49,7 +49,6 @@ import org.openide.filesystems.FileObject;
 /**
  * SharedFileGroupFactory
  *
- * @author  ayub.khan@sun.com
  * @version                1.0
  */
 public class SharedFileGroupFactory extends Object {

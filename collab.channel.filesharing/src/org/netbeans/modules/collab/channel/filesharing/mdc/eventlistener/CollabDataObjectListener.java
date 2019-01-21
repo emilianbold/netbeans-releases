@@ -51,7 +51,6 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.event.*;
 
 /**
  *
- * @author  Owner
  */
 public class CollabDataObjectListener extends Object implements OperationListener {
     ////////////////////////////////////////////////////////////////////////////

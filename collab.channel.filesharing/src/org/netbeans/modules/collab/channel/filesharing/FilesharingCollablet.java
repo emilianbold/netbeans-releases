@@ -94,7 +94,6 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * Filesharing Channel
  *
- * @author Todd Fast, todd.fast@sun.com
  * @version 1.0
  */
 public class FilesharingCollablet extends Object implements InteractiveCollablet, FilesharingConstants,

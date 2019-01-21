@@ -58,7 +58,7 @@ import javax.swing.text.*;
 /**
  * Bean that holds editorPane of a document, as well as its state
  *
- * @author Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class EditorState extends Object {

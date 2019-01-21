@@ -47,7 +47,7 @@ package org.netbeans.modules.collab.channel.filesharing.mdc;
 /**
  * Interface for EventNotifier
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public interface EventNotifier {

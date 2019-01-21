@@ -62,7 +62,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * Support class for all class implements CollabRegion
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class CollabRegionSupport extends Object {

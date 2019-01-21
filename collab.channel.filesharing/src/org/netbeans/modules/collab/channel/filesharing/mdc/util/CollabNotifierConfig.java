@@ -62,7 +62,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * Default EventProcessor
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class CollabNotifierConfig extends CollabConfigVerifier {

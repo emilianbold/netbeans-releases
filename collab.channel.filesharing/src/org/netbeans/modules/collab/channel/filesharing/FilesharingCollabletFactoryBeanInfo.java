@@ -58,7 +58,6 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * BeanInfo class for FilesharingCollabletFactory
  *
- * @author Todd Fast, todd.fast@sun.com
  * @version 1.0
  */
 public class FilesharingCollabletFactoryBeanInfo extends SimpleBeanInfo {

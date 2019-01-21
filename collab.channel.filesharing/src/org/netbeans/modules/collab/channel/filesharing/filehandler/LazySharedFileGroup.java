@@ -55,7 +55,6 @@ import org.netbeans.modules.collab.channel.filesharing.FilesharingContext;
 /**
  * SharedFileGroup
  *
- * @author  ayub.khan@sun.com
  * @version                1.0
  */
 public class LazySharedFileGroup extends SharedFileGroup {

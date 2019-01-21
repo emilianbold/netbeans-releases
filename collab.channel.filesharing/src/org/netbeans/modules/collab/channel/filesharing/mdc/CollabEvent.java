@@ -47,7 +47,7 @@ package org.netbeans.modules.collab.channel.filesharing.mdc;
 /**
  * Bean that holds channel context
  *
- * @author Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public interface CollabEvent {

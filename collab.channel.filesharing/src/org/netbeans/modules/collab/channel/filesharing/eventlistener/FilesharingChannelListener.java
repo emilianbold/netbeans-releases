@@ -76,7 +76,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * FilesharingChannelListener
  *
- * @author Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class FilesharingChannelListener extends CollabChannelListener {

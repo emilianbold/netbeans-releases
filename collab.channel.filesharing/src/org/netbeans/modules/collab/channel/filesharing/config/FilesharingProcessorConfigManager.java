@@ -57,7 +57,6 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.*;
 /**
  *
  *
- * @author  Ayub Khan <ayub.khan@sun.com>
  */
 public class FilesharingProcessorConfigManager extends Object {
     /* instance */

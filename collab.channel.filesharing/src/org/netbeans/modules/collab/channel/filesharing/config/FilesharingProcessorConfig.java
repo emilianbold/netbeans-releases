@@ -52,7 +52,7 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.util.CollabProcessorC
 /**
  * Default EventProcessor
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class FilesharingProcessorConfig extends CollabProcessorConfig {

@@ -53,7 +53,6 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  ayub khan
  */
 public class EditorComponentFocusListener extends Object implements FocusListener {
     ////////////////////////////////////////////////////////////////////////////

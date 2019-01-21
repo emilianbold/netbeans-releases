@@ -51,7 +51,6 @@ package org.netbeans.lib.collab;
  * 'features' , for backwardly compatibility , we do not invoke this listener but
  * directly proceed to jabber iq auth.
  *
- * @author Mridul Muralidharan
  */
 public interface AuthenticationListener extends CollaborationSessionListener{
     /**

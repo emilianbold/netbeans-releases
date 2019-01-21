@@ -75,7 +75,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * SendFileHandler
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class SendFileHandler extends FilesharingEventHandler implements FilesharingConstants {

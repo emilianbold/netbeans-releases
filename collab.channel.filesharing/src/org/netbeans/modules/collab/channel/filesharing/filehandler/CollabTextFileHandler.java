@@ -57,7 +57,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * FileHandler for Text files
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class CollabTextFileHandler extends CollabFileHandlerSupport implements CollabFileHandler {

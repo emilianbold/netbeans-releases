@@ -49,7 +49,6 @@ import org.openide.text.*;
 /**
  * Region Annotation class
  *
- * @author  Ayub Khan, ayub.khan@sun.com
  * @version 1.0
  */
 public class RegionAnnotation1 extends CollabRegionAnnotation {

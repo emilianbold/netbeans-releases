@@ -58,8 +58,6 @@ import java.util.*;
  *
  * @see "java.util.StringTokenizer"
  *
- * @author        Todd Fast, todd.fast@sun.com
- * @author        Mike Frisino, michael.frisino@sun.com
  * @version        JATO/@version@ $Id$
  */
 public class StringTokenizer2 extends Object implements Enumeration, Iterator {

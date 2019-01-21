@@ -51,7 +51,7 @@ import org.netbeans.modules.collab.channel.filesharing.msgbean.CCollab;
 /**
  * MessageReceived bean
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class ReceivedFilesharingMessage extends Object implements CollabEvent {

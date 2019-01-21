@@ -52,7 +52,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * CollabQueue
  *
- * @author Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class RegionQueue extends Object implements FilesharingConstants {

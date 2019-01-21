@@ -57,7 +57,7 @@ import javax.swing.*;
 
 /**
  * FilesharingProvider - creates MDCollablet instance
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public class MDCollabletFactory extends Object implements CollabletFactory {
     /**

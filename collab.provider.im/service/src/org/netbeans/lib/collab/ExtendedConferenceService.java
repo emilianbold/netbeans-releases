@@ -48,7 +48,6 @@ import java.util.Set;
 
 /**
  *
- *@author Rahul K Singh
  *
  * The major difference between this and ConferenceService is , ExtendedConferenceService
  * requires <component ID> for all of its operation. All the operation performed here are specfic 

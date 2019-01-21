@@ -73,7 +73,6 @@ import org.netbeans.modules.collab.channel.filesharing.msgbean.Use2phase;
 
 /**
  *
- * @author askhan
  */
 public class LockRegionManager {
     private String lockID;

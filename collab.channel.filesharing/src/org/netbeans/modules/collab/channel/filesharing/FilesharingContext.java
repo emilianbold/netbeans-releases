@@ -105,7 +105,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * Bean that holds channel context
  *
- * @author Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class FilesharingContext extends CollabContext implements FilesharingConstants {

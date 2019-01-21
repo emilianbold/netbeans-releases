@@ -73,7 +73,6 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * Panel for FilesharingCollablet Filesystem Explorer
  *
- * @author  Todd Fast <todd.fast@sun.com>
  * @version 1.0
  */
 public class FilesystemExplorerPanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider,

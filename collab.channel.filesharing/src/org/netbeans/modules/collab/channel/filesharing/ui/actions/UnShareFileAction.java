@@ -72,7 +72,6 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * UnShareFileAction
  *
- * @author  Ayub Khan
  * @version 1.0
  */
 public class UnShareFileAction extends SystemAction {

@@ -59,7 +59,6 @@ import javax.swing.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public class ChatChannelImpl extends Object implements ChatCollablet {
     ////////////////////////////////////////////////////////////////////////////

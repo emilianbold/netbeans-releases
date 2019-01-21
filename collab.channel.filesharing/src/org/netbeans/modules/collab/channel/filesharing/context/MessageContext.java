@@ -50,7 +50,7 @@ import org.netbeans.modules.collab.channel.filesharing.msgbean.CCollab;
 /**
  * Bean that holds channel context
  *
- * @author Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class MessageContext extends EventContext {

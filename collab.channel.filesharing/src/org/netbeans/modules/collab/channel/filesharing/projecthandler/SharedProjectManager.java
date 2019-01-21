@@ -62,7 +62,6 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * SharedProjectManager
  *
- * @author  ayub.khan@sun.com
  * @version                1.0
  */
 public class SharedProjectManager extends Object implements FilesharingConstants {

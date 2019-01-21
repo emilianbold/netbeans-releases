@@ -113,7 +113,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * Support class for all class implements CollabFileHandler
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public abstract class CollabFileHandlerSupport extends Object implements FilesharingConstants, KeyListener, MouseListener {

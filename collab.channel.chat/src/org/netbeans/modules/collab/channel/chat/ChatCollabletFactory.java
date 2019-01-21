@@ -55,7 +55,6 @@ import javax.swing.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public class ChatCollabletFactory extends Object implements CollabletFactory {
     /**

@@ -49,7 +49,6 @@ import org.netbeans.modules.collab.channel.filesharing.ui.SharedProjectNode;
 
 /**
  *
- * @author  Owner
  */
 public interface FilesharingConstants {
     ////////////////////////////////////////////////////////////////////////////

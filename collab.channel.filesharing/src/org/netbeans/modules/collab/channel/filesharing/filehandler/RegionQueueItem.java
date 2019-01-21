@@ -57,7 +57,7 @@ import org.openide.text.NbDocument;
 /**
  * QueueItem
  *
- * @author Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class RegionQueueItem extends Object {

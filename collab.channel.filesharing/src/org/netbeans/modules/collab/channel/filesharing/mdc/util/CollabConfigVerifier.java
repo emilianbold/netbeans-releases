@@ -49,7 +49,7 @@ import java.util.*;
 /**
  * CollabConfig Verifier
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class CollabConfigVerifier extends Object {

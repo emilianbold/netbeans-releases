@@ -46,7 +46,6 @@ package org.netbeans.modules.collab.channel.filesharing.ui.actions;
 
 /**
  *
- * @author Owner
  */
 public interface ProjectAction {
     /*

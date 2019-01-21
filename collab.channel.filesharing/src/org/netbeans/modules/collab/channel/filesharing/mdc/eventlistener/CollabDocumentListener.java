@@ -56,7 +56,6 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.util.DocumentEventCon
 /**
  * Document Listener attached to each shared file being handled
  *
- * @author  Todd Fast <todd.fast@sun.com>
  * @version 1.0
  */
 public class CollabDocumentListener extends Object implements DocumentListener {

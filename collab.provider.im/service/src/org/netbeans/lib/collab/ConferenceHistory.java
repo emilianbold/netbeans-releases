@@ -49,7 +49,6 @@ package org.netbeans.lib.collab;
  * history for the conference room. The server will return the messages which satifies all
  * the criteria specified in this class.
  *
- * @author Rahul Shah
  */
 public class ConferenceHistory {
 

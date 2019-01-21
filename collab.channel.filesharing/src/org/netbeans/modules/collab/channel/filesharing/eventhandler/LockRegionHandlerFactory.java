@@ -52,7 +52,7 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.EventHandlerFactory;
 /**
  * Default EventHandler Factory
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class LockRegionHandlerFactory extends Object implements EventHandlerFactory {

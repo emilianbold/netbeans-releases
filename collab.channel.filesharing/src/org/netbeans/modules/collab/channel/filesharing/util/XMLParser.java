@@ -58,7 +58,7 @@ import javax.xml.parsers.*;
 
 /**
  *
- * @author Ayub Khan ayub.khan@sun.com
+ * 
  */
 public class XMLParser {
     /**

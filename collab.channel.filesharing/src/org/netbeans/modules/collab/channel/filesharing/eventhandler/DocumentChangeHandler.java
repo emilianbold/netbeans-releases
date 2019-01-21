@@ -69,7 +69,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * FileChangeHandler
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class DocumentChangeHandler extends FilesharingEventHandler implements FilesharingConstants {

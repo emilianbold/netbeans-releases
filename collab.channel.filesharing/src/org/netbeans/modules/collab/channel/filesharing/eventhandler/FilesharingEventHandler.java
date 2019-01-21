@@ -73,7 +73,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * FilesharingEventHandler
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public abstract class FilesharingEventHandler extends Object implements EventHandler, FilesharingConstants {

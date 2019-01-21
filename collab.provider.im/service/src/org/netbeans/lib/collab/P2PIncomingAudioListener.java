@@ -42,7 +42,6 @@ package org.netbeans.lib.collab;
 
 /**
  *
- * @author jerry
  */
 public interface P2PIncomingAudioListener {
     public void onIncoming(P2PAudioSession incoming);

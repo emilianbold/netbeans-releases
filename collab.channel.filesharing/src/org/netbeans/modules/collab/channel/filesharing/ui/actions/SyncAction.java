@@ -57,7 +57,6 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * SyncAction
  *
- * @author  Ayub Khan
  * @version 1.0
  */
 public class SyncAction extends SystemAction implements FilesharingConstants {

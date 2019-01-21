@@ -55,7 +55,7 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public class SyncWaitPanel extends javax.swing.JPanel {
     private static Dialog dialog;

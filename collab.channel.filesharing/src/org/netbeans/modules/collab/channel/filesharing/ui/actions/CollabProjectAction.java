@@ -76,7 +76,6 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 /**
  * SyncAction
  *
- * @author  Ayub Khan
  * @version 1.0
  */
 public class CollabProjectAction //extends SystemAction

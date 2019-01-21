@@ -56,7 +56,6 @@ import javax.swing.event.*;
 /**
  * Border for FilesharingCollablet Filesystem Explorer
  *
- * @author  Todd Fast <todd.fast@sun.com>
  * @version 1.0
  */
 public class ThinBevelBorder extends AbstractBorder {

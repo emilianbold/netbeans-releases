@@ -68,7 +68,7 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.util.CollabNotifierCo
 /**
  * Filesharing EventNotifier
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class FilesharingEventNotifier extends MDChannelEventNotifier {

@@ -48,7 +48,6 @@ package org.netbeans.lib.collab;
  * This interface should be used as a callback listener for conferences
  * which requires password for joining the room
  *
- * @author Rahul Shah
  */
 public interface ConferencePasswordListener {
 

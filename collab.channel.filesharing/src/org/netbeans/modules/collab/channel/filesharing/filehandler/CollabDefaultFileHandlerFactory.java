@@ -51,7 +51,7 @@ import java.util.*;
 /**
  * Default FileHandler Factory
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class CollabDefaultFileHandlerFactory extends Object implements CollabFileHandlerFactory {

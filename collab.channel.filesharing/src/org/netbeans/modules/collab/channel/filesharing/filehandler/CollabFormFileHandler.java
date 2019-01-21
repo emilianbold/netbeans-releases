@@ -65,7 +65,7 @@ import org.openide.loaders.DataObject;
 /**
  * FileHandler for Form files (non-editable files)
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class CollabFormFileHandler extends CollabDefaultFileHandler implements CollabFileHandler {

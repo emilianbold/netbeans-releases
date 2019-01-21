@@ -49,7 +49,6 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author nenik
  */
 public final class CollabContentTypeImpl extends CollabContentType {
     private Image icon;

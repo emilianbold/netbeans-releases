@@ -51,7 +51,7 @@ import org.openide.loaders.*;
 /**
  * CollabRegion interface
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public interface CollabRegion {

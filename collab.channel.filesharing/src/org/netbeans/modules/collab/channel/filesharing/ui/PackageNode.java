@@ -63,7 +63,6 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  *
  *
- * @author        Ayub Khan, ayub.khan@sun.com
  */
 public class PackageNode extends AbstractNode implements FilesharingConstants {
     ////////////////////////////////////////////////////////////////////////////

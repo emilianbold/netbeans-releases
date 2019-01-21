@@ -63,7 +63,7 @@ import org.netbeans.modules.collab.channel.filesharing.msgbean.UnlockRegionData;
 /**
  * Interface for Collab Filesharing FileHandlers
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public interface CollabFileHandler {

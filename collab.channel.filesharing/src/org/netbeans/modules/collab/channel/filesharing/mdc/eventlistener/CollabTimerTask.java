@@ -50,7 +50,6 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.*;
 
 /**
  *
- * @author  Owner
  */
 public abstract class CollabTimerTask extends TimerTask {
     ////////////////////////////////////////////////////////////////////////////

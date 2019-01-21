@@ -49,7 +49,7 @@ import com.sun.collablet.CollabException;
 /**
  * Interface for Collab Filesharing FileHandlers
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public interface EventHandler {

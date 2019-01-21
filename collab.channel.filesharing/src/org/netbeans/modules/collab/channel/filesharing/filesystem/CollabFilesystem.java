@@ -67,7 +67,6 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  Todd Fast <todd.fast@sun.com>
  */
 public class CollabFilesystem extends LocalFileSystem implements StatusDecorator, FilesharingConstants {
     ////////////////////////////////////////////////////////////////////////////

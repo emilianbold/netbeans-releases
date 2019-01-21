@@ -50,7 +50,7 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.event.DocumentInsertU
 /**
  * LeaveFilesharing bean
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class DocumentChangeRemove extends DocumentInsertUpdate {

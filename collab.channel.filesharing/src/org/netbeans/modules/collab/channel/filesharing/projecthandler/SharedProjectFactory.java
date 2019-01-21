@@ -49,7 +49,6 @@ import org.netbeans.api.project.Project;
 /**
  * SharedProjectFactory
  *
- * @author  ayub.khan@sun.com
  * @version                1.0
  */
 public class SharedProjectFactory extends Object {

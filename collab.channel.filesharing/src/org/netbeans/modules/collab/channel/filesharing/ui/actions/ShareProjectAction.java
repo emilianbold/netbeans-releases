@@ -57,7 +57,6 @@ import org.netbeans.api.project.Project;
  * An action sensitive to Project cookie allowing to share the selected project
  * over the last active conversation.
  *
- * @author
  */
 public class ShareProjectAction extends CookieAction {
     /** Creates a new instance of ShareFilesAction */

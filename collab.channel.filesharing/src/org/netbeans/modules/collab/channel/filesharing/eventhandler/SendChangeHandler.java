@@ -63,7 +63,7 @@ import org.netbeans.modules.collab.channel.filesharing.msgbean.FileGroups;
 /**
  * SendMessageJoin
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class SendChangeHandler extends FilesharingEventHandler {

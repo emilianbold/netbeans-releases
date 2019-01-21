@@ -56,7 +56,6 @@ import org.netbeans.modules.collab.channel.filesharing.config.FilesharingNotifie
 /**
  *
  *
- * @author  Ayub Khan <ayub.khan@sun.com>
  */
 public class FilesharingNotifierConfigManager extends Object {
     /* instance */

@@ -49,7 +49,7 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.*;
 /**
  * DocumentEvent bean
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class CollabDocumentEvent extends Object implements CollabEvent {

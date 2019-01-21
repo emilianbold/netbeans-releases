@@ -60,7 +60,7 @@ import javax.swing.*;
 /**
  * Filesharing Channel
  *
- * @author Todd Fast, todd.fast@sun.com
+ * 
  * @version 1.0
  */
 public class MDCollablet extends Object implements Collablet {

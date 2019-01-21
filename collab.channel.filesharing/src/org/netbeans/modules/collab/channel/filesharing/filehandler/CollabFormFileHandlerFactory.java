@@ -51,7 +51,7 @@ import java.util.*;
 /**
  * Form FileHandler Factory
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class CollabFormFileHandlerFactory extends Object implements CollabFileHandlerFactory {

@@ -52,7 +52,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * MDC EventProcessor
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class MDChannelEventProcessor extends Object implements EventProcessor {

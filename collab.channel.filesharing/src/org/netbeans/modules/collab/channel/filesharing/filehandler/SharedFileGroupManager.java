@@ -71,7 +71,6 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * SharedFileGroup
  *
- * @author  ayub.khan@sun.com
  * @version                1.0
  */
 public class SharedFileGroupManager extends Object implements FilesharingConstants {

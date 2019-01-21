@@ -87,7 +87,6 @@ import org.netbeans.modules.editor.NbEditorKit;
 
 /**
  *
- * @author  todd
  */
 public class ChatInputPane extends JEditorPane implements UndoableEditListener {
     ////////////////////////////////////////////////////////////////////////////

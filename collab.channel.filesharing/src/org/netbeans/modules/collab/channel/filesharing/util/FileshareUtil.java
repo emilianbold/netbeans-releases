@@ -78,7 +78,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * general util class
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class FileshareUtil implements FilesharingConstants {

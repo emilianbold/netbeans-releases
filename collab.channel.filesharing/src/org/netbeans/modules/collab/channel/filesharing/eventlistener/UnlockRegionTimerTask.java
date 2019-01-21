@@ -50,7 +50,6 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.EventNotifier;
 
 /**
  *
- * @author  Owner
  */
 public class UnlockRegionTimerTask extends FilesharingTimerTask {
     /**

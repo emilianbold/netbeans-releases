@@ -50,7 +50,7 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.event.FileCreated;
 /**
  * LeaveFilesharing bean
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class SendFileEvent extends FileCreated {

@@ -61,7 +61,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * FileHandler Resolver
  *
- * @author Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class CollabFileHandlerResolver extends Object {

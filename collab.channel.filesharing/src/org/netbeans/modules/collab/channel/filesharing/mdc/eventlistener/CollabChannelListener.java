@@ -52,7 +52,7 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.*;
 /**
  * Support class for FilesharingCollablet
  *
- * @author Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public abstract class CollabChannelListener extends Object implements ChannelListener {

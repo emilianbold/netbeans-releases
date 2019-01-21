@@ -51,7 +51,7 @@ import org.netbeans.modules.collab.channel.filesharing.FilesharingConstants;
 /**
  * Bean that holds region information
  *
- * @author Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class RegionInfo extends Object implements FilesharingConstants {

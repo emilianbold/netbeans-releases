@@ -55,7 +55,6 @@ import javax.swing.*;
 
 /**
  * FilesharingProvider - creates FilesharingCollablet instance
- * @author  Todd Fast, todd.fast@sun.com
  */
 public class FilesharingCollabletFactory extends Object implements CollabletFactory, FilesharingConstants {
     /**

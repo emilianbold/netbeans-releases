@@ -48,7 +48,6 @@ import java.awt.Image;
 
 /**
  *
- * @author  Smitha Krishna Nagesh
  */
 public abstract class CollabContentType {
     public abstract String getDisplayName();

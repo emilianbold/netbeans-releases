@@ -53,7 +53,6 @@ import java.util.*;
 /**
  * util for stream copy
  *
- * @author  Todd Fast <todd.fast@sun.com>
  * @version 1.0
  */
 public class StreamCopier extends Object {

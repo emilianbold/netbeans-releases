@@ -63,7 +63,7 @@ import org.netbeans.modules.collab.channel.filesharing.msgbean.UnlockRegionData;
 /**
  * UnlockRegionHandler
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class UnlockRegionHandler extends FilesharingEventHandler {

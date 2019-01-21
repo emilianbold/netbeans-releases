@@ -70,7 +70,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * PauseFilesharingHandler
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class PauseFilesharingHandler extends FilesharingEventHandler implements FilesharingConstants {

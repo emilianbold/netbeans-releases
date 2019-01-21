@@ -42,7 +42,6 @@ package org.netbeans.lib.collab;
 
 /**
  *
- * @author jerry
  */
 public interface P2PServiceBase {
     public void addTransport(P2PTransport transport);

@@ -56,7 +56,6 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  ayub khan
  */
 public class EditorCookieListener extends Object implements PropertyChangeListener {
     ////////////////////////////////////////////////////////////////////////////

@@ -56,7 +56,6 @@ import org.netbeans.modules.collab.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
  */
 public class SyntaxColoring extends Object {
     /**

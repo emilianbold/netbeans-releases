@@ -50,7 +50,7 @@ import com.sun.collablet.CollabMessage;
 /**
  * Support class for FilesharingCollablet
  *
- * @author Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public interface ChannelListener {

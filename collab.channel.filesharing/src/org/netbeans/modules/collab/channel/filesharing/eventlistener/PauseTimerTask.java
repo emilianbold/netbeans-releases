@@ -50,7 +50,7 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.EventNotifier;
 
 /**
  *
- * @author  Ayub Khan ayub.khan@sun.com
+ * 
  */
 public class PauseTimerTask extends FilesharingTimerTask {
     /**

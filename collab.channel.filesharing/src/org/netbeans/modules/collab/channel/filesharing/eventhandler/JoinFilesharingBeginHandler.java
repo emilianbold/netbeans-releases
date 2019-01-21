@@ -61,7 +61,7 @@ import org.netbeans.modules.collab.channel.filesharing.util.FileshareUtil;
 /**
  * SendMessageJoinBegin
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class JoinFilesharingBeginHandler extends FilesharingEventHandler implements FilesharingConstants {

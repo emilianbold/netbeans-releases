@@ -55,7 +55,7 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.util.CollabProcessorC
 /**
  * Default EventProcessor Factory
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class FilesharingEventProcessorFactory extends Object implements EventProcessorFactory {

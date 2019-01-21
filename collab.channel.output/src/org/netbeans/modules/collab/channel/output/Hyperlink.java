@@ -76,7 +76,6 @@ import java.util.Set;
  * Represents a linkable line (appears in red in Output Window).
  * Line and column numbers start at 1, and -1 means an unknown value.
  * Careful since org.openide.text seems to assume 0-based line and column numbers.
- * @author Jesse Glick
  */
 public final class Hyperlink extends Annotation implements OutputListener, PropertyChangeListener {
     // #14804: detach everything before uninstalling module.

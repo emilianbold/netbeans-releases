@@ -54,7 +54,7 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.util.CollabProcessorC
 /**
  * Filesharing EventProcessor
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class FilesharingEventProcessor extends MDChannelEventProcessor {

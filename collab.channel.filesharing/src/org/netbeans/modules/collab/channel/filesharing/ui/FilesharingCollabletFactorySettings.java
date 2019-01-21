@@ -49,7 +49,7 @@ import org.openide.util.*;
 
 /**
  *
- * @author  Todd Fast, todd.fast@sun.com
+ * 
  */
 public class FilesharingCollabletFactorySettings extends SystemOption {
     ////////////////////////////////////////////////////////////////////////////

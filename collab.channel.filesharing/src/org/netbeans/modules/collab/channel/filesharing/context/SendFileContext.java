@@ -50,7 +50,7 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.EventContext;
 /**
  * Bean that holds sendfile context
  *
- * @author Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class SendFileContext extends EventContext {

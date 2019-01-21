@@ -57,7 +57,6 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author
  */
 public class ShareFilesAction extends CookieAction {
     /** Creates a new instance of ShareFilesAction */

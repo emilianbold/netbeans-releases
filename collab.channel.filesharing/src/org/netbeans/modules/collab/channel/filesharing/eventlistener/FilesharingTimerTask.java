@@ -54,7 +54,6 @@ import org.netbeans.modules.collab.core.Debug;
 
 /**
  *
- * @author  Owner
  */
 public class FilesharingTimerTask extends CollabTimerTask implements FilesharingConstants {
     /**

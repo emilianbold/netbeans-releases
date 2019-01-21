@@ -55,7 +55,7 @@ import org.netbeans.modules.collab.channel.filesharing.mdc.util.CollabNotifierCo
 /**
  * Default EventNotifier Factory
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class FilesharingEventNotifierFactory extends Object implements EventNotifierFactory {

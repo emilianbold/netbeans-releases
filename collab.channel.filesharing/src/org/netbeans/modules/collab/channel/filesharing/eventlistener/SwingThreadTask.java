@@ -50,7 +50,6 @@ import javax.swing.SwingUtilities;
 
 /**
  *
- * @author  ayub khan
  */
 public class SwingThreadTask extends TimerTask {
     ////////////////////////////////////////////////////////////////////////////

@@ -49,7 +49,7 @@ import org.netbeans.modules.collab.channel.filesharing.context.MessageContext;
 /**
  * ReceivedCommand
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class ReceivedCommand extends ReceivedFilesharingMessage {

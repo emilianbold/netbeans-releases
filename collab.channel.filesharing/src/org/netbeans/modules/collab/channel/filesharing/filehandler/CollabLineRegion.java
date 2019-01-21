@@ -58,7 +58,7 @@ import org.netbeans.modules.collab.core.Debug;
 /**
  * Support for line regions
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  * @version 1.0
  */
 public class CollabLineRegion extends CollabRegionSupport implements CollabRegion {

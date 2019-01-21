@@ -121,7 +121,7 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 
 /**
  *
- * @author  Ayub Khan, ayub.khan@sun.com
+ * 
  */
 public class ProjectsRootNode extends AbstractNode implements FilesharingConstants {
     ////////////////////////////////////////////////////////////////////////////
