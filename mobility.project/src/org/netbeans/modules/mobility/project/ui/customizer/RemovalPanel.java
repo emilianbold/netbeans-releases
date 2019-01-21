@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  gc149856
  */
 public class RemovalPanel extends javax.swing.JPanel {
     

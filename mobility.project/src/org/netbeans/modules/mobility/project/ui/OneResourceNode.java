@@ -85,7 +85,7 @@ import org.openide.util.lookup.Lookups;
 /**
  * Node representing one JAR file, etc. under a ResourcesNode.
  *
- * @author Tim Boudreau
+ * 
  */
 final class OneResourceNode extends LazyInitFilterNode implements FileMonitor {
 

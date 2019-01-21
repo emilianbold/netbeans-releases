@@ -69,7 +69,6 @@ import java.io.IOException;
 
 /**
  *
- * @author  Adam Sotona
  */
 public class AddKeystorePanel extends javax.swing.JPanel implements ActionListener, DocumentListener {
     

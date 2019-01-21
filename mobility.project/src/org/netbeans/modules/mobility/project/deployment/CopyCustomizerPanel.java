@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam
+ * 
  */
 public class CopyCustomizerPanel extends javax.swing.JPanel {
     

@@ -87,7 +87,7 @@ import static org.netbeans.modules.mobility.project.ProjectConfigurationsHelper.
 /**
  * Parent node for all project configurations under a mobility project.
  *
- * @author Tim Boudreau
+ * 
  */
 final class ConfigurationsNode extends DecoratedNode implements PropertyChangeListener, AntProjectListener {
     private final ConfigurationsChildren kids;

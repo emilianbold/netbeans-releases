@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.class, position=90)
 public class UserConfigurationTemplatesProvider implements ProjectConfigurationFactory, ProjectConfigurationFactory.CategoryDescriptor {

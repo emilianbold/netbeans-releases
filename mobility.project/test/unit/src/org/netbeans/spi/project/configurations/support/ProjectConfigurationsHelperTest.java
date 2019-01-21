@@ -72,7 +72,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author lukas
+ * 
  */
 public class ProjectConfigurationsHelperTest extends NbTestCase {
     

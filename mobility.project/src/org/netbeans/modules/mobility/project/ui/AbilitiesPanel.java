@@ -105,7 +105,7 @@ import org.openide.util.NbBundle;
 /**
  *
  *
- * @author Lukas Waldmann
+ * 
  */
 
 public class AbilitiesPanel implements NavigatorPanel

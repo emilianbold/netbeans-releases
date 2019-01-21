@@ -143,7 +143,6 @@ import org.w3c.dom.Node;
 
 /**
  * Represents one plain J2ME project.
- * @author Jesse Glick, Adam Sotona, Tim Boudreau
  */
 @AntBasedProjectRegistration(
     type=J2MEProjectType.TYPE,

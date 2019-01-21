@@ -71,7 +71,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  David Kaspar
  */
 public class PlatformInstallPanel extends javax.swing.JPanel {
     

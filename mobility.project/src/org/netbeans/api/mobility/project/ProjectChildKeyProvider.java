@@ -48,7 +48,7 @@ import java.util.Collection;
  * Determines what child nodes a mobility project has if present in the
  * default lookup.
  *
- * @author Tim Boudreau
+ * 
  */
 public interface ProjectChildKeyProvider {
     /**

@@ -62,7 +62,7 @@ import org.openide.nodes.Node;
 /**
  * Child factory for children of the Resources nodes of an ME project.
  *
- * @author Tim Boudreau
+ * 
  */
 public class ResourcesChildren extends ChildFactory<VisualClassPathItem> {
 

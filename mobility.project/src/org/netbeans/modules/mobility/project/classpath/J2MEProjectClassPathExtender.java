@@ -74,7 +74,7 @@ import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 
 /**
- * @author Adam Sotona
+ * 
  **/
 public class J2MEProjectClassPathExtender implements ProjectClassPathExtender {
     

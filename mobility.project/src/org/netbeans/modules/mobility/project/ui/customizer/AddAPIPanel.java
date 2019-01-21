@@ -65,7 +65,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  dave
+ * 
  */
 public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, DocumentListener {
     

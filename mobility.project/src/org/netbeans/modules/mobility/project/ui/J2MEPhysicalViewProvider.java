@@ -57,7 +57,6 @@ import org.openide.nodes.Node;
 
 /**
  * Support for creating logical views.
- * @author Petr Hrebejk, Adam Sotona
  */
 public class J2MEPhysicalViewProvider implements LogicalViewProvider {
         

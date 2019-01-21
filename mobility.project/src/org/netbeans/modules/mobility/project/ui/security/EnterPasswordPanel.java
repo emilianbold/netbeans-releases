@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class EnterPasswordPanel extends javax.swing.JPanel implements ActionListener {
     

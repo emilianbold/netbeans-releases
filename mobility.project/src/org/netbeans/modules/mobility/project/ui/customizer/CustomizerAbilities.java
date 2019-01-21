@@ -83,7 +83,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam Sotona
  */
 public class CustomizerAbilities extends JPanel implements CustomizerPanel, VisualPropertyGroup, ListSelectionListener {
     

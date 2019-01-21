@@ -59,7 +59,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author suchys
+ * 
  */
 public class DeploymentPropertiesHandler {
     public static void loadDeploymentProperties(final Collection<Lookup.Result> result){

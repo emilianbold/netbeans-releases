@@ -61,7 +61,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Jan Lahoda
+ * 
  */
 public class J2MEProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     

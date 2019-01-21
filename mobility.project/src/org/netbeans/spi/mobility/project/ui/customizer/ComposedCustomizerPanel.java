@@ -46,7 +46,7 @@ package org.netbeans.spi.mobility.project.ui.customizer;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public interface ComposedCustomizerPanel extends CustomizerPanel {
     

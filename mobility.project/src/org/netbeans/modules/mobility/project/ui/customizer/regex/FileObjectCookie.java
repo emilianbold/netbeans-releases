@@ -54,7 +54,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author  Adam
+ * 
  */
 public interface FileObjectCookie extends Node.Cookie {
     public FileObject getFileObject();

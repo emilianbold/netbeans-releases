@@ -72,7 +72,6 @@ import org.openide.util.NbBundle;
 
 /** Customizer for general project attributes.
  *
- * @author  phrebejk, Adam Sotona, Petr Somol
  */
 public class PlatformSelectionPanelGUI extends JPanel implements ActionListener {
     

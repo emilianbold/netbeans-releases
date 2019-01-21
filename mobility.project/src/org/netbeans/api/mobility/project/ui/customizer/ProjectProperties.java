@@ -50,7 +50,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public interface ProjectProperties extends Map<String, Object> {
     

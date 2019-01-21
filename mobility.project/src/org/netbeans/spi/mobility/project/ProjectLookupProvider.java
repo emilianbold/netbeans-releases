@@ -50,7 +50,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
  *
- * @author Lukas Waldmann
+ * 
  */
 public interface ProjectLookupProvider {
     public List createLookupElements(J2MEProject project, AntProjectHelper helper, ReferenceHelper refHelper, ProjectConfigurationsHelper profHelper);

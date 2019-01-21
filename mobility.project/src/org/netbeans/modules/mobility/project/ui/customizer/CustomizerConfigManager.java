@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  gc149856
  */
 public class CustomizerConfigManager extends javax.swing.JPanel {
     

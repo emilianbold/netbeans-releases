@@ -58,7 +58,7 @@ import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.deployment.DeploymentPlugin.class, position=10)
 public class CopyDeploymentPlugin implements DeploymentPlugin {

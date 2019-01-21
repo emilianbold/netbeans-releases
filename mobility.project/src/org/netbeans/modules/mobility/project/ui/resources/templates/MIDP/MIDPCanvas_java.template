@@ -10,7 +10,7 @@ package ${package};
 import javax.microedition.lcdui.*;
 
 /**
- * @author ${user}
+ * ${user}
  */
 public class ${name} extends Canvas implements CommandListener {
     /**

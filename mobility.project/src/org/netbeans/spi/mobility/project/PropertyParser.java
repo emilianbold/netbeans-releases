@@ -48,7 +48,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public interface PropertyParser {
 

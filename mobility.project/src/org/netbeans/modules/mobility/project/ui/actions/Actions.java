@@ -57,7 +57,7 @@ import org.openide.util.actions.SystemAction;
 /**
  * A bunch of indirection to allow layer-based registration of project actions.
  *
- * @author Tim Boudreau
+ * 
  */
 public class Actions {
 

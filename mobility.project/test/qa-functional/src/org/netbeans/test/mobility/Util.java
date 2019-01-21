@@ -51,7 +51,6 @@ import java.util.zip.ZipInputStream;
 
 /**
  *
- * @author ivansidorkin@netbeans.org
  */
 public class Util {
 

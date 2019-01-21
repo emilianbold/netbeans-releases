@@ -76,7 +76,7 @@ import org.openide.windows.WindowManager;
  * Instances of FileMonitor are weakly referenced and must be held or implemented
  * on the long-lived object that is interested in notifications about file changes.
  *
- * @author Tim Boudreau
+ * 
  */
 class MissingFileDetector {
 

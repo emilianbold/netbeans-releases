@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class CustomizerObfuscate extends JPanel implements CustomizerPanel, VisualPropertyGroup, ChangeListener {
     

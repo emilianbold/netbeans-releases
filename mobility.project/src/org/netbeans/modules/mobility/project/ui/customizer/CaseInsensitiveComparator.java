@@ -49,7 +49,6 @@ package org.netbeans.modules.mobility.project.ui.customizer;
 import java.util.Comparator;
 
 /**
- * @author gc149856
  *
  */
 public class CaseInsensitiveComparator implements Comparator {

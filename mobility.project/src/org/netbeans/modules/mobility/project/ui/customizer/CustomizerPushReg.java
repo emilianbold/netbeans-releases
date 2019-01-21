@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  David Kaspar
+ * 
  */
 public class CustomizerPushReg extends JPanel implements CustomizerPanel, VisualPropertyGroup, ListSelectionListener, ChangeListener, TableModelListener {
     static final long serialVersionUID = 1191422396924194938L;

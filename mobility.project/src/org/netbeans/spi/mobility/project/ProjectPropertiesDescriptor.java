@@ -48,7 +48,7 @@ import org.netbeans.api.mobility.project.PropertyDescriptor;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public interface ProjectPropertiesDescriptor {
     

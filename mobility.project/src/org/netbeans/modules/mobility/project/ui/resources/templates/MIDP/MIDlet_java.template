@@ -10,7 +10,7 @@ package ${package};
 import javax.microedition.midlet.*;
 
 /**
- * @author ${user}
+ * ${user}
  */
 public class ${name} extends MIDlet {
     public void startApp() {

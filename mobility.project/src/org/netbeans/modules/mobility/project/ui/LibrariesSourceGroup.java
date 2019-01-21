@@ -53,7 +53,7 @@ import org.openide.filesystems.FileUtil;
 /**
  * Fake source group used to create a package view for misc resource nodes
  *
- * @author Lukas Waldmann
+ * 
  */
 class LibrariesSourceGroup implements SourceGroup {
 

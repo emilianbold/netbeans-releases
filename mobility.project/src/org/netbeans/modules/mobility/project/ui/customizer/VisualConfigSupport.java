@@ -45,7 +45,7 @@
 package org.netbeans.modules.mobility.project.ui.customizer;
 /**
  *
- * @author  Administrator
+ * 
  */
 
 import java.awt.*;
@@ -92,7 +92,7 @@ import org.netbeans.modules.mobility.project.ui.wizard.ConfigurationsSelectionPa
 
 /** Handles adding, removing, editing and ordering of configs.
  *
- * @author gc149856
+ * 149856
  */
 public final class VisualConfigSupport {
     

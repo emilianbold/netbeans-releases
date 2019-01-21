@@ -50,7 +50,7 @@ import javax.microedition.midlet.*;
 
 /**
  *
- * @author  lukas
+ * 
  * @version
  */
 public class Midlet extends MIDlet {

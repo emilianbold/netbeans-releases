@@ -59,7 +59,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  tz97951
  */
 public class LibrariesChooser extends javax.swing.JPanel {
     

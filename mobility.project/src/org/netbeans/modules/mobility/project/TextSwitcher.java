@@ -72,7 +72,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author  Adam Sotona, gc149856
  */
 public class TextSwitcher implements PropertyChangeListener {
     

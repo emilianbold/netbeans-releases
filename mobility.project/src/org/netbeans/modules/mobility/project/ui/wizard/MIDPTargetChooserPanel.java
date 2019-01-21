@@ -65,7 +65,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  Petr Hrebejk
+ * 
  */
 final class MIDPTargetChooserPanel implements WizardDescriptor.FinishablePanel, ChangeListener {
     

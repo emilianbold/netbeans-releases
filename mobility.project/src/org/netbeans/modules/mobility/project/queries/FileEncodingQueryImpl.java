@@ -57,7 +57,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public class FileEncodingQueryImpl extends FileEncodingQueryImplementation implements AntProjectListener {
     

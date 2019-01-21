@@ -102,7 +102,6 @@ import org.xml.sax.SAXException;
 
 /**
  * Helper class for test bag purposes
- * @author Jesse Glick, Michal Skvor
  */
 public class TestUtil extends ProxyLookup {
 

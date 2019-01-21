@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  breh
+ * 
  */
 public class LocalizationSupportPanelGUI extends JPanel implements ActionListener, ItemListener, DocumentListener {
     /** Creates new form I18nSupportAdvancedSettingsPanel */

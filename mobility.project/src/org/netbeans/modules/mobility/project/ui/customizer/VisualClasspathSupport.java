@@ -78,7 +78,7 @@ import org.openide.util.HelpCtx;
 
 /** Handles adding, removing, editing and reordering of classpath.
  *
- * @author Petr Hrebejk
+ * 
  */
 public final class VisualClasspathSupport {
     

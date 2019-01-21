@@ -72,7 +72,7 @@ import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 
 /**
  *
- * @author  David Kaspar
+ * 
  */
 final public class CustomizerSign extends JPanel implements CustomizerPanel, VisualPropertyGroup, ChangeListener, ItemListener {
     

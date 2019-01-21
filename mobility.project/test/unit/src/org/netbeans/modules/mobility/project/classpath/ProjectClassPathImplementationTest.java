@@ -64,7 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 /**
  *
- * @author lukas
+ * 
  */
 public class ProjectClassPathImplementationTest extends NbTestCase {
     static AntProjectHelper aph=null;

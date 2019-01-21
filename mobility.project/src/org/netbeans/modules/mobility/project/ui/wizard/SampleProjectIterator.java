@@ -64,7 +64,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  David Kaspar
  */
 public class SampleProjectIterator implements TemplateWizard.Iterator {
     

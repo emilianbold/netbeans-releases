@@ -61,7 +61,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author  gc149856
  */
 public class CloneConfigurationPanel extends JPanel implements DocumentListener {
     

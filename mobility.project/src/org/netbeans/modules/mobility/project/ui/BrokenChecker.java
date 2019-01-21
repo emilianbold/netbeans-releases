@@ -44,7 +44,7 @@ package org.netbeans.modules.mobility.project.ui;
 
 /**
  *
- * @author tim
+ * 
  */
 public interface BrokenChecker {
     void checkBroken();

@@ -56,7 +56,7 @@ import org.openide.xml.XMLUtil;
 /**
  * Lightening up of ActionNode
  *
- * @author Tim Boudreau
+ * 
  */
 class DecoratedNode extends AbstractNode {
     static final String GRAY = "gray";

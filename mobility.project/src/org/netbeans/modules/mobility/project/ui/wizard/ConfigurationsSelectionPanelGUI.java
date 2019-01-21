@@ -82,7 +82,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public final class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerManager.Provider {
     private final ExplorerManager manager = new ExplorerManager();

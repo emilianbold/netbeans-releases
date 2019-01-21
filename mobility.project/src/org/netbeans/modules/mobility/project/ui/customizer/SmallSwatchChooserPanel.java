@@ -67,7 +67,6 @@ import javax.swing.colorchooser.AbstractColorChooserPanel;
 
 /**
  *
- * @author  gc149856
  */
 public class SmallSwatchChooserPanel extends AbstractColorChooserPanel {
     

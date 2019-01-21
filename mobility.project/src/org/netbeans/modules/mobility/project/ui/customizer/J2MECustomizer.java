@@ -100,7 +100,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author  phrebejk, Adam Sotona
  */
 public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback {
     

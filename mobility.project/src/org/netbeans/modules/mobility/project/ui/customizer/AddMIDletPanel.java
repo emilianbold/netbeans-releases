@@ -64,7 +64,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  Adam Sotona
  */
 public class AddMIDletPanel extends JPanel implements DocumentListener, ActionListener {
     

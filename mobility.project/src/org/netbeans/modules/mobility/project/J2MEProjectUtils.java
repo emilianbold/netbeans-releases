@@ -75,7 +75,6 @@ import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /**
- * @author gc149856
  *
  * Helper class for j2me projects
  */

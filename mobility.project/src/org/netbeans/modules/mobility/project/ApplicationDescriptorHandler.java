@@ -67,7 +67,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public class ApplicationDescriptorHandler {
     

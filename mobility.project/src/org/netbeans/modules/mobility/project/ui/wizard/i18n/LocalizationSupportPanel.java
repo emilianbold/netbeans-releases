@@ -65,7 +65,7 @@ import java.io.IOException;
 
 /**
  *
- * @author  breh
+ * 
  */
 public final class LocalizationSupportPanel implements WizardDescriptor.Panel, ChangeListener {
     

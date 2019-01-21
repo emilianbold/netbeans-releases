@@ -78,7 +78,6 @@ import org.openide.ErrorManager;
  * property names and handles reading/storing the values from the components
  * automaticaly.
  *
- * @author Petr Hrebejk, Adam Sotona
  */
 public final class VisualPropertySupport {
     

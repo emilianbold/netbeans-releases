@@ -74,7 +74,6 @@ import org.openide.util.NbBundle;
 
 /** Customizer for general project attributes.
  *
- * @author  phrebejk, Adam Sotona
  */
 final public class CustomizerMIDP extends JPanel implements CustomizerPanel, VisualPropertyGroup, ActionListener {
     

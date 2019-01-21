@@ -49,7 +49,7 @@ import javax.microedition.midlet.MIDlet;
 
 /**
  *
- * @author  __USER__
+ * __USER__
  * @version 
  */
 public class Midlet extends MIDlet {

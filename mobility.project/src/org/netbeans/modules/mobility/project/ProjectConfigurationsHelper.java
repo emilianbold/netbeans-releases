@@ -88,7 +88,6 @@ import org.openide.windows.WindowManager;
 
 /**
  * Helper class implementing ProjectConfigurationProvider for Ant based projects.
- * @author Adam Sotona, David Kaspar
  */
 public final class ProjectConfigurationsHelper implements ProjectConfigurationProvider<ProjectConfiguration>, AntProjectListener {
     

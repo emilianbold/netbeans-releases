@@ -48,7 +48,7 @@ import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public interface CustomizerPanel {
     

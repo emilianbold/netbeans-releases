@@ -64,8 +64,6 @@ import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
- * @author ivansidorkin@netbeans.org
- * @author stezeb@netbeans.org
  */
 public class ValidationTest extends JellyTestCase {
     

@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class QuickRunPanel extends JPanel implements ActionListener {
     

@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class CustomizerMIDlets extends JPanel implements CustomizerPanel, VisualPropertyGroup, ListSelectionListener, ChangeListener, TableModelListener {
     static final long serialVersionUID = -7485135564331430899L;

@@ -72,7 +72,7 @@ import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
- * @author Adam Sotona
+ * 
  */
 public class FileBuiltQueryImpl implements FileBuiltQueryImplementation, PropertyChangeListener, Runnable {
     

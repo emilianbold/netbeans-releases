@@ -76,7 +76,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author  phrebejk, David Kaspar
  */
 public class MIDPTargetChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
     

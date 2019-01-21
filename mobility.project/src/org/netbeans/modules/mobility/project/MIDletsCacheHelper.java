@@ -63,7 +63,7 @@ import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class MIDletsCacheHelper implements AntProjectListener {
     

@@ -73,7 +73,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author lukas
+ * 
  */
 public class KeyStoreRepositoryTest extends NbTestCase {
     static

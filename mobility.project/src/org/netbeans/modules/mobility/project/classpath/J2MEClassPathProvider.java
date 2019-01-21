@@ -60,7 +60,6 @@ import org.openide.util.WeakListeners;
 
 /**
  * Supplies the classpath information from {@link J2MEProject}s.
- * @author Jesse Glick, Adam Sotona
  */
 public class J2MEClassPathProvider implements ClassPathProvider {
     

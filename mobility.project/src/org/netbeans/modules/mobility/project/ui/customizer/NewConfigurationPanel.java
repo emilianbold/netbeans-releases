@@ -84,7 +84,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class NewConfigurationPanel extends JPanel implements DocumentListener, PropertyChangeListener, VetoableChangeListener, ExplorerManager.Provider {
     

@@ -66,7 +66,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author lukas
+ * 
  */
 public class J2MEClassPathProviderTest extends NbTestCase {
     static AntProjectHelper aph=null;

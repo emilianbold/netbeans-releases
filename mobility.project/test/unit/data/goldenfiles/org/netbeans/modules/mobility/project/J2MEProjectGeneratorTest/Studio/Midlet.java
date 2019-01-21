@@ -50,7 +50,7 @@ import javax.microedition.lcdui.*;
 
 /**
  *
- * @author  Lukas
+ * 
  * @version
  */
 public class Midlet extends MIDlet {

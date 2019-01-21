@@ -85,7 +85,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  David Kaspar
  */
 public class CustomizerJad extends JPanel implements CustomizerPanel, VisualPropertyGroup, ListSelectionListener, ActionListener {
     

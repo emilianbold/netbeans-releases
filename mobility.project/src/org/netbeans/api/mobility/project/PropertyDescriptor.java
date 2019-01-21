@@ -47,7 +47,7 @@ import org.netbeans.spi.mobility.project.PropertyParser;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public final class PropertyDescriptor {
     

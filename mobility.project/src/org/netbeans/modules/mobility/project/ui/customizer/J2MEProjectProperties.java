@@ -87,7 +87,6 @@ import org.openide.util.NbBundle;
 /** Helper class. Defines constants for properties. Knows the proper
  *  place where to store the properties.
  *
- * @author Petr Hrebejk, Adam Sotona
  */
 public class J2MEProjectProperties implements ProjectProperties {
     

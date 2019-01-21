@@ -81,7 +81,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author lukas
+ * 
  */
 public class FileBuiltQueryImplTest extends NbTestCase {
     static AntProjectHelper aph=null;

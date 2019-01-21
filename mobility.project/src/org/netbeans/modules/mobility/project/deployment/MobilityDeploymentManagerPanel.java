@@ -80,7 +80,7 @@ import org.openide.awt.Mnemonics;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerManager.Provider, PropertyChangeListener {
 

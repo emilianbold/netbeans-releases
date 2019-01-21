@@ -57,7 +57,7 @@ import org.openide.util.Utilities;
 /** Represents classpath items of various types. Can be used in the model
  * of classpath editing controls.
  *
- * @author  phrebejk
+ * 
  */
 public final class VisualClassPathItem {
     

@@ -46,7 +46,7 @@ package org.netbeans.spi.mobility.project.ui.customizer;
 /**
  * Interface that should be implemented by component (usualy customizer panel)
  * that customizes group of propeties handled collectively by VisualPropertySupport.
- * @author Adam Sotona
+ * 
  */
 public interface VisualPropertyGroup {
     

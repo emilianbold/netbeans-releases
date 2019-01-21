@@ -69,7 +69,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  David Kaspar, Petr Somol
  */
 public class ProjectPanel extends javax.swing.JPanel {
     

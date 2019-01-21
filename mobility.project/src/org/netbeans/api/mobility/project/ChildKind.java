@@ -44,7 +44,7 @@ package org.netbeans.api.mobility.project;
 /**
  * Keys used by mobility project root nodes to determine their children.
  *
- * @author Tim Boudreau
+ * 
  */
 public enum ChildKind {
     /**

@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
 
 /** Customization of J2ME project
  *
- * @author Petr Hrebejk, Adam Sotona
  */
 public class J2MECustomizerProvider implements CustomizerProvider
 {

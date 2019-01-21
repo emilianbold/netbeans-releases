@@ -64,7 +64,7 @@ import java.util.*;
 
 /**
  *
- * @author  Breh
+ * 
  */
 public class LocalizationSupportIterator implements TemplateWizard.Iterator {
     

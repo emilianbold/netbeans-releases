@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam
+ * 
  */
 public class CyclicDependencyWarningPanel extends JPanel implements Runnable {
     

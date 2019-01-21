@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  phrebejk, Adam Sotona
  */
 public class CustomizerCompile extends JPanel implements CustomizerPanel, VisualPropertyGroup {
     

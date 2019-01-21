@@ -64,7 +64,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public class PreprocessorFileFilterImplementation implements JavaFileFilterImplementation, PropertyChangeListener, AntProjectListener {
     

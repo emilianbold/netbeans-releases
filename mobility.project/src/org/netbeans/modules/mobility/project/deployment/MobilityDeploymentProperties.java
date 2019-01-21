@@ -59,7 +59,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public class MobilityDeploymentProperties extends HashMap<String,Object> implements Runnable {
 

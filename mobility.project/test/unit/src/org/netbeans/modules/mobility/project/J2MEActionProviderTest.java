@@ -87,7 +87,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Michal Skvor & Lukas Waldmann
  */
 public class J2MEActionProviderTest extends NbTestCase {
     

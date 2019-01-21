@@ -53,7 +53,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Tim Boudreau
+ * 
  */
 final class ConfigurationsChildren extends ChildFactory<ProjectConfiguration> {
     private final J2MEProject project;

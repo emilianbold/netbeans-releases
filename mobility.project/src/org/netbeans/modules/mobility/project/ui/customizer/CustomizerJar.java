@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /** Customizer for general project attributes.
  *
- * @author  phrebejk, Adam Sotona
  */
 public class CustomizerJar extends JPanel implements CustomizerPanel, VisualPropertyGroup {
     

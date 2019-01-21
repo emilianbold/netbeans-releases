@@ -68,7 +68,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  David Kaspar, Petr Somol
  */
 public class NewProjectIterator implements TemplateWizard.AsynchronousInstantiatingIterator<WizardDescriptor> {
     

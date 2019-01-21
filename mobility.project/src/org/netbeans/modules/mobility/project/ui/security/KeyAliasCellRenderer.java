@@ -64,7 +64,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam Sotona, David Kaspar
  */
 public class KeyAliasCellRenderer extends DefaultListCellRenderer {
     

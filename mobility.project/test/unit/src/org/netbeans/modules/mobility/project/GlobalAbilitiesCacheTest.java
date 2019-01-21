@@ -62,7 +62,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author lukas
+ * 
  */
 public class GlobalAbilitiesCacheTest extends NbTestCase {
     

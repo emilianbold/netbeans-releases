@@ -60,7 +60,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author  Adam Sotona
  */
 public class AddAbilityPanel extends javax.swing.JPanel implements ActionListener, DocumentListener {
     

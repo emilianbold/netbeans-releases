@@ -57,7 +57,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  * Logger which redirects links from preprocessed files to original sources.
- * @author Adam Sotona
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=26)
 public final class J2MEAntLogger extends AntLogger {

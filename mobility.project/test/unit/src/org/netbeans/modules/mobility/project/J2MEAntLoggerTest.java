@@ -80,7 +80,7 @@ import org.openide.windows.OutputListener;
 /**
  * Tests J2MEAntLogger functionality
  *
- * @author Michal Skvor
+ * 
  */
 public class J2MEAntLoggerTest extends NbTestCase {
     static final Object syncObj=new Object();

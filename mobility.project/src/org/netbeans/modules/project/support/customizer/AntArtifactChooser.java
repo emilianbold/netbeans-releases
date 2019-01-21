@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
 /** Accessory component used in the ProjectChooser for choosing project
  * artifacts.
  *
- * @author  phrebejk
+ * 
  */
 public class AntArtifactChooser extends javax.swing.JPanel implements PropertyChangeListener {
     

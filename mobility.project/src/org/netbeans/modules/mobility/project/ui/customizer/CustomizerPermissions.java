@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  David Kaspar
+ * 
  */
 public class CustomizerPermissions extends JPanel implements CustomizerPanel, VisualPropertyGroup, ListSelectionListener {
     

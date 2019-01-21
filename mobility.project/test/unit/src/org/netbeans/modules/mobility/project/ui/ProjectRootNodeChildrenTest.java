@@ -87,7 +87,7 @@ import org.openide.util.lookup.Lookups;
 import static org.junit.Assert.*;
 /**
  *
- * @author tim
+ * 
  */
 public class ProjectRootNodeChildrenTest {
 

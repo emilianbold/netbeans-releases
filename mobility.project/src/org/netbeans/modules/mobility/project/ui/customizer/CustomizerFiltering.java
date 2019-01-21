@@ -78,7 +78,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam Sotona
  */
 public class CustomizerFiltering extends JPanel implements CustomizerPanel, VisualPropertyGroup, ActionListener {
     

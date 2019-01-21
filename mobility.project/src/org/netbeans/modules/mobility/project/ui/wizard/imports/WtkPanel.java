@@ -85,7 +85,6 @@ import org.openide.WizardDescriptor;
 
 /**
  *
- * @author  David Kaspar
  */
 public class WtkPanel extends javax.swing.JPanel {
     

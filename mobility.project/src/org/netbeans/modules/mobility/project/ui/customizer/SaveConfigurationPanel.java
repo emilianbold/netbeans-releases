@@ -60,7 +60,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  gc149856
  */
 public class SaveConfigurationPanel extends JPanel implements DocumentListener {
     

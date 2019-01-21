@@ -66,7 +66,7 @@ import org.openide.util.WeakListeners;
 
 /**
  * Finds Javadoc (if it is built) corresponding to binaries in J2SE project.
- * @author Adam Sotona
+ * 
  */
 public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
     

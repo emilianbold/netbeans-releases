@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class CustomizerPlatform extends JPanel implements ComposedCustomizerPanel, VisualPropertyGroup, ActionListener {
     

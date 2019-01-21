@@ -53,7 +53,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Tim Boudreau
  */
 public class MissingFileDetectorTest extends NbTestCase {
 

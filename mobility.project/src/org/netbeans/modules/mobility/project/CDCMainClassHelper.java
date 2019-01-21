@@ -78,7 +78,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Lukas Waldmann
+ * 
  */
 public class CDCMainClassHelper implements AntProjectListener, FileChangeListener
 {

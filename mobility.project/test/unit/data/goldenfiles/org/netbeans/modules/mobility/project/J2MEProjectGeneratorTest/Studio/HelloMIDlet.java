@@ -53,7 +53,7 @@ import javax.microedition.lcdui.*;
  * Refer to the startApp, pauseApp, and destroyApp
  * methods so see how each handles the requested transition.
  *
- * @author  Lukas
+ * 
  * @version
  */
 public class HelloMIDlet extends MIDlet implements CommandListener {

@@ -62,7 +62,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Adam Sotona, Petr Somol
  */
 public class ConfigurationsSelectionPanel implements WizardDescriptor.FinishablePanel {
     

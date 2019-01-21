@@ -48,7 +48,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public interface HelpCtxCallback {
     

@@ -108,7 +108,6 @@ import org.openide.util.Exceptions;
  * Create a fresh J2MEProject from scratch.
  * Currently does not permit much to be specified - feel free to add more parameters
  * as needed.
- * @author Jesse Glick, Adam Sotona, David Kaspar
  */
 public class J2MEProjectGenerator {
     

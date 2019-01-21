@@ -81,7 +81,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Michal Skvor
+ * 
  */
 public class J2MEProjectGeneratorTest extends NbTestCase {
     

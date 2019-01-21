@@ -70,7 +70,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author lukas
+ * 
  */
 public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     static AntProjectHelper aph=null;

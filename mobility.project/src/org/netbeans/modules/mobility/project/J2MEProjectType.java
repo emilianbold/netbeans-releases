@@ -45,7 +45,6 @@
 package org.netbeans.modules.mobility.project;
 /**
  * Factory for simple J2ME projects.
- * @author Jesse Glick, Adam Sotona
  */
 public final class J2MEProjectType {
     

@@ -51,7 +51,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Returns source level of project sources.
- * @author Adam Sotona
+ * 
  */
 public class SourceLevelQueryImpl implements SourceLevelQueryImplementation {
     

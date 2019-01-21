@@ -75,7 +75,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Tim Boudreau
+ * 
  */
 final class ProjectRootNodeChildren extends ChildFactory.Detachable<Object> implements LookupListener, ChangeListener, Runnable {
     private final Map<Object, NodeList> nodeListForKey = Collections.synchronizedMap(new HashMap<Object, NodeList>());

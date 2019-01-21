@@ -65,7 +65,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  mr97946
  * @version
  */
 public class JAMServlet extends HttpServlet {

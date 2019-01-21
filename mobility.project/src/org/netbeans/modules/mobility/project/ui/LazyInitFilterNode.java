@@ -61,7 +61,7 @@ import static org.netbeans.modules.mobility.project.ui.DecoratedNode.GRAY;
  * Use for things like PackageView, where what you get is nodes, but
  * you do not want to create them until they are really needed.
  *
- * @author Tim Boudreau
+ * 
  */
 abstract class LazyInitFilterNode extends FilterNode {
     public LazyInitFilterNode(Lookup lkp) {

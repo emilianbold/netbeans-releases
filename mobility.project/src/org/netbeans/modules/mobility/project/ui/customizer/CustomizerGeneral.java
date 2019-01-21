@@ -70,7 +70,6 @@ import org.openide.util.NbBundle;
 
 /** Customizer for general project attributes.
  *
- * @author  phrebejk, Adam Sotona
  */
 public class CustomizerGeneral extends JPanel implements CustomizerPanel, ActionListener {
     

@@ -69,7 +69,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author  Adam Sotona, Petr Somol
  */
 public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel, ChangeListener {
     

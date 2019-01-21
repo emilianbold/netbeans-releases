@@ -62,7 +62,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Lukas Waldmann
+ * 
  */
 public class MEKeyToolTest extends NbTestCase {
     final J2MEPlatform.Device devices[];    
