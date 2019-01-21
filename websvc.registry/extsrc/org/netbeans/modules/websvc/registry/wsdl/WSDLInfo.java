@@ -447,7 +447,7 @@ public class WSDLInfo {
     }
     
     public static void main(String[] args){
-        System.setProperty("http.proxyHost", "webcache.sfbay.sun.com");
+        System.setProperty("http.proxyHost", ");
         System.setProperty("http.proxyPort", "8080");
         
         WSDLInfo wsdlInfo = new WSDLInfo();

@@ -1200,7 +1200,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        System.setProperty("http.proxyHost", "webcache.sfbay.sun.com");
+        System.setProperty("http.proxyHost", "");
         System.setProperty("http.proxyPort", "8080");
         
         // myWS.firstTimeStart();
