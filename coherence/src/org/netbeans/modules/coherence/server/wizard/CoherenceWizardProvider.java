@@ -47,7 +47,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class CoherenceWizardProvider implements ServerWizardProvider {
 

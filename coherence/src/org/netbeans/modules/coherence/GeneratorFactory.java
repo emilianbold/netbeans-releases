@@ -66,7 +66,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class GeneratorFactory {
 

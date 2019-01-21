@@ -43,7 +43,6 @@ package org.netbeans.modules.coherence.xml.pof;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public interface TypeId extends PofConfigNonNegativeIntegerComponent {
     static String XML_TAG_NAME = "type-id";

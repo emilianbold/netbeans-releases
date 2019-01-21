@@ -50,7 +50,6 @@ import org.openide.util.actions.NodeAction;
 /**
  * Performs stop action for Coherence server.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class StopServerAction extends NodeAction {
 

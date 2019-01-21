@@ -55,7 +55,6 @@ import org.jdesktop.beansbinding.Property;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class NIOFileManagerPanel extends javax.swing.JPanel {
 

@@ -98,7 +98,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class CacheConfigSchemeView extends JPanel implements MultiViewDescription, MultiViewElement,
         ExplorerManager.Provider, DocumentListener, PropertyChangeListener, TableModelListener, ListSelectionListener, ActionListener, SchemeRemoveListener, SchemeModifiedListener {

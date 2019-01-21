@@ -69,8 +69,6 @@ import org.openide.util.Utilities;
 /**
  * This class represents Coherence server and supports actions for running or stopping it, holds its state.
  *
- * @author Martin Fousek <marfous@netbeans.org>
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class CoherenceServer {
 

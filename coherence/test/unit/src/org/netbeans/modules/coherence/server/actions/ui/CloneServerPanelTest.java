@@ -50,7 +50,6 @@ import org.netbeans.modules.coherence.server.CoherenceModuleProperties;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class CloneServerPanelTest extends NbTestCase {
 

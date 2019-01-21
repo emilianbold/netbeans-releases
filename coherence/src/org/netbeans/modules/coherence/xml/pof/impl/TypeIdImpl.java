@@ -48,7 +48,6 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class TypeIdImpl extends PofConfigNonNegativeIntegerComponentImpl implements TypeId {
 

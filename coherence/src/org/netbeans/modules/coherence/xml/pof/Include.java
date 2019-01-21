@@ -43,7 +43,6 @@ package org.netbeans.modules.coherence.xml.pof;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public interface Include extends PofConfigTextComponent, UserTypeListElement {
     static String XML_TAG_NAME = "include";

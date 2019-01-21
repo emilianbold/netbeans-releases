@@ -51,7 +51,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class CoherenceConfigTextView implements MultiViewDescription {
 

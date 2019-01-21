@@ -62,8 +62,6 @@ import org.openide.util.NbBundle;
 /**
  * Panel for set up base Coherence server properties.
  *
- * @author Andrew Hopkinson (Oracle A-Team)
- * @author Martin Fousek <mafous@netbeans.org>
  */
 public class ServerLocationVisual extends javax.swing.JPanel implements ChangeListener {
 

@@ -43,7 +43,6 @@ package org.netbeans.modules.coherence.generators;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public interface PofInnerSerializerGenerator {
 

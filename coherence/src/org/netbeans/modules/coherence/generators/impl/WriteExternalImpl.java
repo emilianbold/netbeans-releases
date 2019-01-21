@@ -74,7 +74,6 @@ import org.openide.awt.StatusDisplayer;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public final class WriteExternalImpl implements WriteExternal {
 

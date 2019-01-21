@@ -51,7 +51,6 @@ import org.w3c.dom.NodeList;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public abstract class PofConfigComponentImpl extends AbstractDocumentComponent<PofConfigComponent> implements PofConfigComponent {
 

@@ -57,7 +57,6 @@ import org.openide.util.lookup.InstanceContent;
  * display name, icon, icons badges and it also appends to every node and {@link
  * CoherenceInstance} new instance of {@link CoherenceServer}.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class CoherenceServerBaseNode extends AbstractNode implements ChangeListener {
 

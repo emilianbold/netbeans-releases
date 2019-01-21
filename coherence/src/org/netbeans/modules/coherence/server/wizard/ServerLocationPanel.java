@@ -52,7 +52,6 @@ import org.openide.util.HelpCtx;
 /**
  * {@code WizardDescriptor.Panel} container for {@link ServerLocationVisual} panel.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class ServerLocationPanel implements WizardDescriptor.Panel, ChangeListener {
 

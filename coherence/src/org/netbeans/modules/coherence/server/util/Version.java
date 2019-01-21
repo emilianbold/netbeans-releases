@@ -55,7 +55,6 @@ import org.openide.util.Parameters;
  * <p>
  * This class is <i>Immutable</i>.
  *
- * @author Petr Hejl
  */
 public final class Version {
 

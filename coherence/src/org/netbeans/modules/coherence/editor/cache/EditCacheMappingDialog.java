@@ -58,7 +58,6 @@ import javax.swing.table.AbstractTableModel;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class EditCacheMappingDialog extends javax.swing.JDialog implements ListSelectionListener {
 

@@ -81,7 +81,6 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class LibraryUtils {
 

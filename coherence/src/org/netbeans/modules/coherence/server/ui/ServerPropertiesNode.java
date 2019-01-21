@@ -55,8 +55,6 @@ import org.openide.nodes.Sheet;
  * Class for creating node with {@link Sheet} for setup all {@link CoherenceServerProperty}.
  * Sheet is supported just for {@code Node}s so it has to be enclosed in {@code AbstractNode}.
  *
- * @author Andrew Hopkinson (Oracle A-Team)
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class ServerPropertiesNode extends AbstractNode {
 

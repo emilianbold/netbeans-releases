@@ -60,7 +60,6 @@ import org.openide.util.ChangeSupport;
 /**
  * JTable for specifying Coherence server libraries on classpath.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 @SuppressWarnings("serial")
 public final class ClasspathTable extends JTable {

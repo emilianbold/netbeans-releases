@@ -43,7 +43,6 @@ package org.netbeans.modules.coherence.util.xml;
 
 /**
  *
- * @author ah195842
  */
 public class UnmarshallException extends Exception{
     

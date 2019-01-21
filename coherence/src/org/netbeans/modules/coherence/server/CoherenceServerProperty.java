@@ -45,7 +45,6 @@ package org.netbeans.modules.coherence.server;
  * {@code CoherenceServerProperty} represents one item of Coherence server
  * property.
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class CoherenceServerProperty {
 

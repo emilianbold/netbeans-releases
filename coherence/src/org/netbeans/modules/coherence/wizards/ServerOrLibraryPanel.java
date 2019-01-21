@@ -43,7 +43,6 @@ package org.netbeans.modules.coherence.wizards;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class ServerOrLibraryPanel extends javax.swing.JPanel {
 

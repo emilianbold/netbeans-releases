@@ -63,7 +63,6 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * Holds basic Coherence and Coherence plugin properties and makes it easier to get to them.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class CoherenceProperties {
 

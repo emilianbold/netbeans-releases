@@ -49,7 +49,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class CoherencePropertiesTest extends NbTestCase {
 

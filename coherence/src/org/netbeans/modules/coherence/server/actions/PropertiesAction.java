@@ -53,7 +53,6 @@ import org.openide.util.actions.NodeAction;
 /**
  * Action for opening Servers window with focus on settings for given {@link ServerInstance}.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class PropertiesAction extends NodeAction {
 

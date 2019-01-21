@@ -47,7 +47,6 @@ import java.util.Set;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class CodegenUtils {
 

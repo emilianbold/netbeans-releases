@@ -58,7 +58,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class LibraryUtilsTest extends NbTestCase {
 

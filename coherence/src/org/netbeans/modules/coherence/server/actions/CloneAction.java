@@ -66,7 +66,6 @@ import org.openide.util.actions.NodeAction;
 /**
  * Action allowing clone Coherence server with equivalent settings.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class CloneAction extends NodeAction {
 

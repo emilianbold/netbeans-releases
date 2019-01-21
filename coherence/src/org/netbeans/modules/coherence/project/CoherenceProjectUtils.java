@@ -50,7 +50,6 @@ import org.netbeans.modules.coherence.library.LibraryUtils;
 /**
  * Contains helper methods related to Coherence project or potential Coherence project.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public final class CoherenceProjectUtils {
 

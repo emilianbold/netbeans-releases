@@ -46,7 +46,6 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public abstract class PofConfigBooleanComponentImpl extends PofConfigComponentImpl implements PofConfigBooleanComponent {
 

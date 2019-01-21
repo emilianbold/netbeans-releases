@@ -54,7 +54,6 @@ import org.openide.filesystems.FileUtil;
 /**
  * Tests for checking ClasspathPropertyUtils helper methods.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class ClasspathPropertyUtilsTest extends NbTestCase {
 

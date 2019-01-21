@@ -50,7 +50,6 @@ import org.openide.util.actions.NodeAction;
 /**
  * Performs restart of Coherence server.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class RestartServerAction extends NodeAction {
 

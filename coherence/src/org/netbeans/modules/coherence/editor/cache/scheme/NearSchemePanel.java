@@ -66,7 +66,6 @@ import org.jdesktop.beansbinding.PropertyStateEvent;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class NearSchemePanel extends JPanel implements SchemePanelInterface, BindingListener {
 

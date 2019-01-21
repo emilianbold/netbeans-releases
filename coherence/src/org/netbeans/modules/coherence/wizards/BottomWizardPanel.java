@@ -71,7 +71,6 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class BottomWizardPanel extends javax.swing.JPanel {
 

@@ -55,7 +55,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class CacheConfigSourceEditor extends CloneableEditor implements MultiViewElement, Runnable {
 

@@ -50,7 +50,6 @@ import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 
 /**
- * @author ads
  *
  */
 public class PofConfigComponentDeleteTest extends NbTestCase {

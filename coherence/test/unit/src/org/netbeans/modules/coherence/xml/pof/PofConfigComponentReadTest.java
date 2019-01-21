@@ -51,7 +51,6 @@ import org.netbeans.junit.NbTestCase;
 
 
 /**
- * @author ads
  *
  */
 public class PofConfigComponentReadTest extends NbTestCase {

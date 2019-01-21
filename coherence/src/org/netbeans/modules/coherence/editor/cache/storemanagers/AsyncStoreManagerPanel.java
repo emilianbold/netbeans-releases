@@ -49,7 +49,6 @@ import org.jdesktop.beansbinding.Property;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class AsyncStoreManagerPanel extends javax.swing.JPanel {
 

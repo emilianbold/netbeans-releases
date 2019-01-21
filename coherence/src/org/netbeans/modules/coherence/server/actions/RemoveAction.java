@@ -52,7 +52,6 @@ import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class RemoveAction extends NodeAction {
 

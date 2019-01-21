@@ -55,7 +55,6 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class PofConfigImpl extends PofConfigComponentImpl implements PofConfig {
 

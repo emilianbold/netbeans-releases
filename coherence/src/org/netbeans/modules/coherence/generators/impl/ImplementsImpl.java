@@ -59,7 +59,6 @@ import org.openide.awt.StatusDisplayer;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public final class ImplementsImpl implements Implements {
     private static final Logger logger = Logger.getLogger(ImplementsImpl.class.getCanonicalName());

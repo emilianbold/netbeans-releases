@@ -53,7 +53,6 @@ import javax.xml.bind.JAXBElement;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public final class XMLObjectFactory extends JAXBXMLFactory {
     /*

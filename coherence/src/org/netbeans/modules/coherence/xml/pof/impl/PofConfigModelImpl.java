@@ -52,7 +52,6 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class PofConfigModelImpl extends AbstractDocumentModel<PofConfigComponent> implements PofConfigModel {
 

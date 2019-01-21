@@ -46,7 +46,6 @@ import org.netbeans.api.java.source.JavaSource;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team) 
  */
 public interface PofMethodGenerator {
     public boolean isOkToModify(JavaSource javaSource) throws IOException;

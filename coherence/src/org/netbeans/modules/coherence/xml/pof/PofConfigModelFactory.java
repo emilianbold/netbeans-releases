@@ -47,7 +47,6 @@ import org.netbeans.modules.xml.xam.ModelSource;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class PofConfigModelFactory extends AbstractModelFactory<PofConfigModel> {
 

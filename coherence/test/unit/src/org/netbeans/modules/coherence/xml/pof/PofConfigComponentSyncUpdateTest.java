@@ -49,7 +49,6 @@ import org.netbeans.junit.NbTestCase;
 
 
 /**
- * @author ads
  *
  */
 public class PofConfigComponentSyncUpdateTest extends NbTestCase {

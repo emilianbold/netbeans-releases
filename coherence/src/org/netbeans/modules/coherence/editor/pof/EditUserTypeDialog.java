@@ -56,7 +56,6 @@ import org.netbeans.modules.coherence.xml.pof.UserType;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class EditUserTypeDialog extends javax.swing.JDialog {
     /** A return status code - returned if Cancel button has been pressed */

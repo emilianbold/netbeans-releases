@@ -54,7 +54,6 @@ import org.jdesktop.beansbinding.Property;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class TcpAcceptorPanel extends javax.swing.JPanel {
 

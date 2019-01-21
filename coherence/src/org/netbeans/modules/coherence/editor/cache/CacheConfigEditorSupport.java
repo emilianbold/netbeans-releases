@@ -57,7 +57,6 @@ import org.openide.text.DataEditorSupport;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class CacheConfigEditorSupport extends DataEditorSupport implements OpenCookie, EditorCookie, EditCookie {
 

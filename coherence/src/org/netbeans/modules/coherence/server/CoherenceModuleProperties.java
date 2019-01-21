@@ -43,7 +43,6 @@ package org.netbeans.modules.coherence.server;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class CoherenceModuleProperties {
 

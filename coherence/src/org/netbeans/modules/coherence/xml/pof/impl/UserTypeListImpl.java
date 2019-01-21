@@ -53,7 +53,6 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class UserTypeListImpl extends PofConfigComponentImpl implements UserTypeList {
 

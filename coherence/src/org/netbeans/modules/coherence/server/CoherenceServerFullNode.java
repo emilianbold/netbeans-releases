@@ -55,7 +55,6 @@ import org.openide.util.actions.SystemAction;
 /**
  * This class extends (@link CoherenceServerBaseNode} and complete primarily node actions.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class CoherenceServerFullNode extends CoherenceServerBaseNode implements ChangeListener {
 

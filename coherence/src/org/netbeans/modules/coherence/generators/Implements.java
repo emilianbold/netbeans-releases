@@ -46,7 +46,6 @@ import org.netbeans.api.java.source.WorkingCopy;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public interface Implements {
     public boolean isImplementsPresent(WorkingCopy workingCopy, ClassTree classTree) throws NullParameterException;

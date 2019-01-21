@@ -61,7 +61,6 @@ import javax.swing.JPanel;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class EditSchemeDialog extends javax.swing.JDialog {
     /** A return status code - returned if Cancel button has been pressed */

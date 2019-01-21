@@ -58,7 +58,6 @@ import org.openide.util.ChangeSupport;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class CoherenceInstanceProvider implements ServerInstanceProvider {
 

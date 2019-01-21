@@ -89,7 +89,6 @@ import org.openide.util.NbBundle;
 /**
  * Panel for setup base (common) Coherence instance properties.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class CustomizerCommon extends javax.swing.JPanel implements ChangeListener {
 

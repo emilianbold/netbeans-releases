@@ -72,7 +72,6 @@ import org.openide.util.NbBundle;
 /**
  * Iterator for creation of all Coherence related templates.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class NewCoherenceFileIterator implements WizardDescriptor.InstantiatingIterator {
 

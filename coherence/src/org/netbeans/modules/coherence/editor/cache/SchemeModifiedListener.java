@@ -43,7 +43,6 @@ package org.netbeans.modules.coherence.editor.cache;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public interface SchemeModifiedListener {
     public void modifyScheme(Object o);

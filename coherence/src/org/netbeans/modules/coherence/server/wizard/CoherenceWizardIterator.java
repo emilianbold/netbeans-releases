@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 /**
  * {@code WizardDescriptor.InstantiatingIterator} for registering a new server instance.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class CoherenceWizardIterator implements WizardDescriptor.InstantiatingIterator {
 

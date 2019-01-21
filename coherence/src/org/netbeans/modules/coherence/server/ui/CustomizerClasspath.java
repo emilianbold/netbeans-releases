@@ -53,7 +53,6 @@ import org.netbeans.modules.coherence.server.util.ClasspathTable;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class CustomizerClasspath extends javax.swing.JPanel implements ChangeListener {
 

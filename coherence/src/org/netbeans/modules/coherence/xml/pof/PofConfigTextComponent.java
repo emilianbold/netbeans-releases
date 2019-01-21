@@ -43,7 +43,6 @@ package org.netbeans.modules.coherence.xml.pof;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public interface PofConfigTextComponent extends PofConfigComponent {
     public String getValue();

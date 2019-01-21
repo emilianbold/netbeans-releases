@@ -53,7 +53,6 @@ import org.jdesktop.beansbinding.Property;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class LHFileManagerPanel extends javax.swing.JPanel {
 

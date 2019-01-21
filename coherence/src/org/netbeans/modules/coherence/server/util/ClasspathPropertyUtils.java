@@ -52,7 +52,6 @@ import org.netbeans.modules.coherence.server.CoherenceProperties;
 /**
  * Holds helper methods for Coherence server classpath property.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class ClasspathPropertyUtils {
 

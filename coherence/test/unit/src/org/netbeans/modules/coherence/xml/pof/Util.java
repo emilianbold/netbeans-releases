@@ -64,7 +64,6 @@ import org.w3c.dom.NodeList;
 
 /**
  *
- * @author nn136682
  */
 public class Util {
 

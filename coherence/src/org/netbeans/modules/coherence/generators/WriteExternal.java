@@ -46,7 +46,6 @@ import org.netbeans.api.java.source.WorkingCopy;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public interface WriteExternal {
     public boolean isWriteExternalPresent(WorkingCopy workingCopy, ClassTree classTree) throws NullParameterException;

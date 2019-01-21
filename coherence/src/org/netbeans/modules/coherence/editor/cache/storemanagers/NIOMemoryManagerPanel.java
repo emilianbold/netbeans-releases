@@ -54,7 +54,6 @@ import org.jdesktop.beansbinding.Property;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class NIOMemoryManagerPanel extends javax.swing.JPanel {
 

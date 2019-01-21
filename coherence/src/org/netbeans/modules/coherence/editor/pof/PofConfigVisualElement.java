@@ -95,7 +95,6 @@ position = 1000)
 })
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public final class PofConfigVisualElement extends JPanel implements MultiViewElement, TableModelListener, ListSelectionListener, BindingListener {
 

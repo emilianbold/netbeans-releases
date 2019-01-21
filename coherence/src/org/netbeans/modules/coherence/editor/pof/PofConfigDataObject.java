@@ -53,7 +53,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class PofConfigDataObject extends MultiDataObject {
 

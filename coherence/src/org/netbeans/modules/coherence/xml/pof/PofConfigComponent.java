@@ -45,7 +45,6 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public interface PofConfigComponent extends DocumentComponent<PofConfigComponent> {
 

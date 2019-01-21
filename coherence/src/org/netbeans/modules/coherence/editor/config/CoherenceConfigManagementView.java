@@ -71,7 +71,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class CoherenceConfigManagementView extends JPanel implements MultiViewDescription, MultiViewElement,
         ExplorerManager.Provider, DocumentListener, PropertyChangeListener, TableModelListener, ListSelectionListener {

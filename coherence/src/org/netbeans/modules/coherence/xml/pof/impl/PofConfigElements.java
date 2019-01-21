@@ -64,7 +64,6 @@ import org.netbeans.modules.coherence.xml.pof.UserTypeList;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public enum PofConfigElements {
     ALLOWINTERFACES(AllowInterfaces.XML_TAG_NAME),

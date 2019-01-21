@@ -61,7 +61,6 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author ah195842
  */
 public class FileUtils {
 

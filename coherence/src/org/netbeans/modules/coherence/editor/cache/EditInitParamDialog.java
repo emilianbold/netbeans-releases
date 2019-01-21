@@ -49,7 +49,6 @@ import java.util.List;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class EditInitParamDialog extends javax.swing.JDialog {
 

@@ -49,7 +49,6 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class CloneServerPanel extends javax.swing.JPanel {
 

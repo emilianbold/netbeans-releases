@@ -48,7 +48,6 @@ import java.util.List;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public interface SchemePanelInterface {
     public void setScheme(Object o);

@@ -64,7 +64,6 @@ import org.netbeans.modules.xml.xam.ComponentUpdater.Operation;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class SyncUpdateVisitor implements ComponentUpdater<PofConfigComponent>, PofConfigVisitor {
 

@@ -45,7 +45,6 @@ import java.util.List;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public interface PofConfig extends PofConfigComponent {
 

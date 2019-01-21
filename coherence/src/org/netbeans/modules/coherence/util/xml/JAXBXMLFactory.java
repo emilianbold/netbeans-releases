@@ -80,7 +80,6 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 /**
- * @author ahopkinson
  * @version $Revision: 1.3 $
  *
  * Create Date 16-Feb-2005

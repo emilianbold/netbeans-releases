@@ -58,7 +58,6 @@ import org.openide.nodes.Node;
  * This class represent Coherence Instance. Means virtual instance created for
  * given {@code InstanceProperties}.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public final class CoherenceInstance implements ServerInstanceImplementation {
 

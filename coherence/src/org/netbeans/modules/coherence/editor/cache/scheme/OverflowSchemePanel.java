@@ -63,7 +63,6 @@ import org.jdesktop.beansbinding.PropertyStateEvent;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class OverflowSchemePanel extends JPanel implements SchemePanelInterface, BindingListener {
 

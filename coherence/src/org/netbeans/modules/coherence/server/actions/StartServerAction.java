@@ -50,7 +50,6 @@ import org.openide.util.actions.NodeAction;
 /**
  * Performs start of Coherence server.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  */
 public class StartServerAction extends NodeAction {
 

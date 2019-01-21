@@ -56,7 +56,6 @@ import org.openide.text.DataEditorSupport;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class CoherenceConfigEditorSupport extends DataEditorSupport implements OpenCookie, EditorCookie, EditCookie {
     public final static int DEFAULT_PANE = 5;
