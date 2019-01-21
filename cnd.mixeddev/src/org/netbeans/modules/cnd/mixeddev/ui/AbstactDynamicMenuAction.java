@@ -59,7 +59,6 @@ import org.openide.util.actions.Presenter;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 /*package*/ abstract class AbstactDynamicMenuAction extends AbstractAction implements ContextAwareAction {
 

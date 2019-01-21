@@ -72,7 +72,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 @ActionID(id = "org.netbeans.modules.cnd.mixeddev.ui.MixedDevToolsMetaAction", category = "MixedDevelopment")
 @ActionRegistration(displayName = "unused-name", lazy = false)

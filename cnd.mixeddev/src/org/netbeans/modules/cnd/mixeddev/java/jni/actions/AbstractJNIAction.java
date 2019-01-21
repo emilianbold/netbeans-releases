@@ -68,7 +68,6 @@ import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public abstract class AbstractJNIAction extends AbstractAction {
     

@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public final class JNIClass {
     

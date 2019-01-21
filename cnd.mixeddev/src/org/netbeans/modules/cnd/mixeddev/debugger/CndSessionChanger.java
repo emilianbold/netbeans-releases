@@ -79,7 +79,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 
 @DebuggerServiceRegistration(types = SessionBridge.SessionChanger.class)

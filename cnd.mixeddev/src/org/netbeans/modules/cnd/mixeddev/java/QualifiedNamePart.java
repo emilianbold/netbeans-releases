@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.mixeddev.java;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public final class QualifiedNamePart {
     

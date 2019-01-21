@@ -50,7 +50,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public class JPFCRootChildFactory extends ChildFactory<NativeProject> {
     

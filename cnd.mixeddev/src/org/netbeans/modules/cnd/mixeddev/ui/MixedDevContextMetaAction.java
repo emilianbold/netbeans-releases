@@ -58,7 +58,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 @ActionID(id = "org.netbeans.modules.cnd.mixeddev.ui.MixedDevContextMetaAction", category = "MixedDevelopment")
 @ActionRegistration(displayName = "unused-name", lazy = false)

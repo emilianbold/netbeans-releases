@@ -102,7 +102,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public class GenerateHeaderForJNIClassAction extends AbstractJNIAction {
     

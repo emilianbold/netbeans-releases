@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.mixeddev.java.model;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public final class JavaParameterInfo implements JavaEntityInfo {
     

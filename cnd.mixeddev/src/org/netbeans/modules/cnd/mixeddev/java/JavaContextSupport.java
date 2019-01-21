@@ -99,7 +99,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public final class JavaContextSupport {
     

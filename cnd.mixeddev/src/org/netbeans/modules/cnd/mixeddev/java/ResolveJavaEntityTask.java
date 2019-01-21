@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public class ResolveJavaEntityTask extends AbstractResolveJavaContextTask<JavaEntityInfo> {
     

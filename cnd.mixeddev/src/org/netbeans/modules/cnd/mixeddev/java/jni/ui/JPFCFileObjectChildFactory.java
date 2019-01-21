@@ -60,7 +60,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public class JPFCFileObjectChildFactory extends ChildFactory<FileObject> {
 

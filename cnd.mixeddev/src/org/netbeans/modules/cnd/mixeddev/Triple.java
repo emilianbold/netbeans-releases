@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.mixeddev;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public final class Triple<F, S, T> {
     

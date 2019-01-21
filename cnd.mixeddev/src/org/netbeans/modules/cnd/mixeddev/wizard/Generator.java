@@ -104,7 +104,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author alsimon
  */
 public class Generator implements PropertyChangeListener {
 

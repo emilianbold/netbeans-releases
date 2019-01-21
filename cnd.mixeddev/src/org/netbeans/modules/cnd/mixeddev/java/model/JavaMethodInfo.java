@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.mixeddev.java.QualifiedNamePart;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public final class JavaMethodInfo implements JavaEntityInfo {
     

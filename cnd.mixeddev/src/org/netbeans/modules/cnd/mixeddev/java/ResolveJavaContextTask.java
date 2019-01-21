@@ -47,7 +47,6 @@ import org.netbeans.api.java.source.CompilationController;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public interface ResolveJavaContextTask<T> extends CancellableTask<CompilationController> {
     

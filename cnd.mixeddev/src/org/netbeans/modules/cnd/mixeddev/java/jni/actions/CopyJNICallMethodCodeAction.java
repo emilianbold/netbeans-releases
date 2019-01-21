@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public class CopyJNICallMethodCodeAction extends AbstractCopyJNIAccessCodeAction {
     

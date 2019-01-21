@@ -54,7 +54,6 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public class NativeProjectNode extends AbstractNode {
     

@@ -55,7 +55,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public abstract class AbstractCopyJNIAccessCodeAction extends AbstractJNIAction {
 

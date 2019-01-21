@@ -47,7 +47,6 @@ import org.netbeans.api.java.source.JavaSource;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public abstract class AbstractResolveJavaContextTask<T> implements ResolveJavaContextTask<T> {
         
