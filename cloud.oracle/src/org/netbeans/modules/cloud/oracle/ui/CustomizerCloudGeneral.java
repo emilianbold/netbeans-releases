@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Petr Hejl
+ * 
  */
 public class CustomizerCloudGeneral extends javax.swing.JPanel implements HelpCtx.Provider {
 

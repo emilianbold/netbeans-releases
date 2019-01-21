@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Petr Hejl
+ * 
  */
 public class CustomizerInstanceGeneral extends javax.swing.JPanel implements HelpCtx.Provider {
 

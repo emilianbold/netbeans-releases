@@ -54,7 +54,7 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Petr Hejl
+ * 
  */
 public final class DataCenters {
 

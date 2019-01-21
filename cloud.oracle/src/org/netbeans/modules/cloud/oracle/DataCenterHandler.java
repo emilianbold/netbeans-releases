@@ -50,7 +50,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author Petr Hejl
+ * 
  */
 public class DataCenterHandler extends DefaultHandler {
 

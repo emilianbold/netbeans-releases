@@ -53,7 +53,7 @@ import org.netbeans.modules.web.common.api.Version;
  */
 /**
  *
- * @author Petr Hejl
+ * 
  */
 public class DataCenterHandlerTest extends NbTestCase {
 
