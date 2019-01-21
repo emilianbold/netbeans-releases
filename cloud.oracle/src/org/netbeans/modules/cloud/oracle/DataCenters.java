@@ -58,7 +58,7 @@ import org.xml.sax.SAXException;
  */
 public final class DataCenters {
 
-    private static final String LIST_URL = "https://cloud.oracle.com/datacenters.xml";
+    private static final String LIST_URL = "";
 
     private static final String TEST_URL = System.getProperty(DataCenters.class.getName() + ".testUrl");
 

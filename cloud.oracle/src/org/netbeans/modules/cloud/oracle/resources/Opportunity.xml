@@ -51,8 +51,8 @@
     xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
     type="http://schemas.xmlsoap.org/wsdl/"
-    api-doc="http://oracle.com"
-    url="file:/org/netbeans/modules/cloud/oracle/resources/services/OpportunityService.wsdl">
+    api-doc=""
+    url="">
 
     <description>Oracle Cloud Services</description>
     

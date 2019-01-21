@@ -138,7 +138,7 @@ public class ModuleConfigurationFactoryImpl implements ModuleConfigurationFactor
 //
 //        @Override
 //        public String getUrl() {
-//            return "http://"+jndiName+"-nbtrial.db.cloud.oracle.com/apex/";
+//            return "http://"+jndiName;
 //        }
 //
 //        @Override

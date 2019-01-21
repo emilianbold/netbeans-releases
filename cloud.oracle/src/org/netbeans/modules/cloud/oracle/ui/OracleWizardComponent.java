@@ -70,7 +70,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
 
     private static final Logger LOGGER = Logger.getLogger(OracleWizardComponent.class.getName());
 
-    private static final String ADMIN_URL = "https://javaservices.%s.cloud.oracle.com"; // NOI18N
+    private static final String ADMIN_URL = ""; // NOI18N
 
     private static final Version JCS_13_2 = Version.fromJsr277OrDottedNotationWithFallback("13.2");
 
@@ -291,7 +291,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
 
 private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MouseClicked
         try {
-            URLDisplayer.getDefault().showURL(new URL("http://cloud.oracle.com"));
+            URLDisplayer.getDefault().showURL(new URL(""));
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
