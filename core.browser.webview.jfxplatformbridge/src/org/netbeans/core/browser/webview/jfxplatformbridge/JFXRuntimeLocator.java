@@ -49,7 +49,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author petrjiricka
  */
 @ServiceProvider(service=WebBrowserImplProvider.JFXRuntimePathProvider.class)
 public class JFXRuntimeLocator implements WebBrowserImplProvider.JFXRuntimePathProvider {
