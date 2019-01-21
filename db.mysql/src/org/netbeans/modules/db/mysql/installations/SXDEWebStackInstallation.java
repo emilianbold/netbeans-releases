@@ -49,7 +49,6 @@ import org.openide.util.Utilities;
 /**
  * Webstack version on SXDE.
  * 
- * @author David Van Couvering
  */
 public class SXDEWebStackInstallation implements Installation {
     

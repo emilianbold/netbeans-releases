@@ -48,7 +48,6 @@ import java.util.Collection;
  * have several versions in the same system. For example, on Windows, there can
  * be several versions of MySQL installed in C:\Program Files\.
  *
- * @author jhavlin
  */
 public interface MultiInstallation {
 

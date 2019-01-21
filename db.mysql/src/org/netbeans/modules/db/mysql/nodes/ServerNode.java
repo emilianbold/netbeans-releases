@@ -76,7 +76,6 @@ import org.openide.util.actions.SystemAction;
 /**
  * Represents a MySQL Server instance.  
  * 
- * @author David Van Couvering
  */
 public class ServerNode extends AbstractNode implements ChangeListener, Comparable {  
     private final DatabaseServer server;

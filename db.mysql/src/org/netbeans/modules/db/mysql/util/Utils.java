@@ -59,7 +59,6 @@ import org.openide.util.Utilities;
 /**
  * Various utility methods
  * 
- * @author David Van Couvering
  */
 public class Utils {
     private static Logger LOGGER = Logger.getLogger(Utils.class.getName());

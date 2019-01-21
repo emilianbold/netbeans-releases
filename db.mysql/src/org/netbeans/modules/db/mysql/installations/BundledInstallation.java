@@ -51,7 +51,6 @@ import org.openide.util.Utilities;
  * installation sets a system variable to tell us what the start
  * and stop commands and arguments are.
  * 
- * @author David Van Couvering
  */
 public class BundledInstallation implements Installation {
     private String startExe;

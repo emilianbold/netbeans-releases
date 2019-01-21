@@ -51,7 +51,6 @@ import org.openide.util.Utilities;
  * See <a href="http://www.apachefriends.org/en/xampp-linux.html">
  * http://www.apachefriends.org/en/xampp-linux.html</a>
  * 
- * @author David Van Couvering
  */
 public class LinuxXAMPPInstallation implements Installation {
     private static final String LAMPP = "/opt/lampp/lampp"; // NOI18N

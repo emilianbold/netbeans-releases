@@ -59,7 +59,6 @@ import org.openide.util.NbBundle;
  *
  * This is a thread-safe class
  *
- * @author David Van Couvering
  */
 public final class ConnectionProcessor implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(ConnectionProcessor.class.getName());

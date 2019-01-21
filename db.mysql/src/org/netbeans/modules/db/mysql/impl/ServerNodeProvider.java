@@ -65,7 +65,6 @@ import org.openide.util.RequestProcessor;
 /**
  * Provides a node for working with a local MySQL Server instance
  * 
- * @author David Van Couvering
  */
 public final class ServerNodeProvider extends NodeProvider {
     private static final Logger LOGGER = Logger.getLogger(ServerNodeProvider.class.getName());

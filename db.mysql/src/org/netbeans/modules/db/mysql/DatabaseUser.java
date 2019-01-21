@@ -45,7 +45,6 @@ package org.netbeans.modules.db.mysql;
 /**
  * Represents a database user
  * 
- * @author David Van Couvering
  */
 public class DatabaseUser {
     private final String user;

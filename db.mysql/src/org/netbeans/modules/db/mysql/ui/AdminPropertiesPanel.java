@@ -58,7 +58,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author  David Van Couvering
  */
 public class AdminPropertiesPanel extends javax.swing.JPanel {
     private static final Logger LOGGER = Logger.getLogger(AdminPropertiesPanel.class.getName());

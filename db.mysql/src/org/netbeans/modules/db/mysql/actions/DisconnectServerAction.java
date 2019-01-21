@@ -50,7 +50,6 @@ import org.openide.util.actions.CookieAction;
 /**
  * Disconnects a connected server
  * 
- * @author David Van Couvering
  */
 public class DisconnectServerAction extends CookieAction {
     private static final Class[] COOKIE_CLASSES = 

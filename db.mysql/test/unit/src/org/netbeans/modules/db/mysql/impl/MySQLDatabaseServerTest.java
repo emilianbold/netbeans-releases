@@ -56,7 +56,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author David
  */
 public class MySQLDatabaseServerTest extends TestBase {
 

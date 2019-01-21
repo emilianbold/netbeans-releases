@@ -58,7 +58,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author David
  */
 public class ConnectManager {
     private static final ConnectManager DEFAULT = new ConnectManager();

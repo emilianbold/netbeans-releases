@@ -53,7 +53,6 @@ import org.openide.nodes.Node.Cookie;
 
 /**
  * An interface to a database server
- * @author David
  */
 public interface DatabaseServer extends Cookie {
     /**

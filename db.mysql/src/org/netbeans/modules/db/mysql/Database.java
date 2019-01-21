@@ -50,7 +50,6 @@ import org.openide.nodes.Node;
  * Model class representing a database.  Right now all it has is a 
  * name, but in the future it may provide more information.
  * 
- * @author David Van Couvering
  */
 public class Database implements Node.Cookie {
     private final String name;

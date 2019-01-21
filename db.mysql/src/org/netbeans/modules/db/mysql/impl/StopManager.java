@@ -73,7 +73,6 @@ import org.openide.util.RequestProcessor;
  *
  * This is a thread-safe class
  * 
- * @author David Van Couvering
  */
 public final class StopManager {
     private static final StopManager DEFAULT = new StopManager();

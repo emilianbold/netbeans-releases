@@ -56,7 +56,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author jhavlin
  */
 public class SelectInstallationPanel extends javax.swing.JPanel {
 

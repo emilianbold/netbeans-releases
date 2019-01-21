@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  David Van Couvering
  */
 public class BasePropertiesPanel extends javax.swing.JPanel {
     MySQLOptions options = MySQLOptions.getDefault();

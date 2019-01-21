@@ -63,7 +63,6 @@ import org.openide.util.lookup.Lookups;
 /**
  * Supporting methods to work with the registered implementations of Installation
  * 
- * @author David Van Couvering
  */
 public class InstallationManager {    
     private static Logger LOGGER = 

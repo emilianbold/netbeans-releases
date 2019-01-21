@@ -50,7 +50,6 @@ import org.netbeans.api.db.explorer.DatabaseException;
  * This interface defines an SPI for a module to provide support for
  * creating a sample database against a MySQL database
  *
- * @author David Van Couvering
  */
 public interface SampleProvider {
     /**

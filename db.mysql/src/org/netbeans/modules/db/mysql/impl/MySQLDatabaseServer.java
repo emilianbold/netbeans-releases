@@ -96,7 +96,6 @@ import org.openide.windows.InputOutput;
  * support one server, but this can be migrated to use an approach that
  * supports more than one server
  *
- * @author David Van Couvering
  */
 public final class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListener {
     private static final Object lock = new Object();

@@ -58,7 +58,6 @@ import org.openide.util.actions.SystemAction;
 /**
  * Represents a database. 
  * 
- * @author David Van Couvering
  */
 class DatabaseNode extends AbstractNode implements Comparable {
     

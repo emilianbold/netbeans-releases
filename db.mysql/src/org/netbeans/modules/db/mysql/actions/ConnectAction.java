@@ -61,7 +61,6 @@ import org.openide.util.actions.CookieAction;
 /**
  * Connect to a database
  * 
- * @author David Van Couvering
  */
 public class ConnectAction extends CookieAction {
     private static final Logger LOGGER = Logger.getLogger(ConnectAction.class.getName());

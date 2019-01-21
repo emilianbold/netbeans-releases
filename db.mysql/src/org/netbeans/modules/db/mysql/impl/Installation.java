@@ -50,7 +50,6 @@ package org.netbeans.modules.db.mysql.impl;
  * Valid installations are loaded through the layer file using the folder
  * Databases/MySQL/Installations
  * 
- * @author David Van Couvering
  */
 public interface Installation {
      public enum Command { START, STOP, ADMIN };

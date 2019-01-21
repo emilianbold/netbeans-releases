@@ -55,7 +55,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author David
  */
 public class TestBase extends NbTestCase  {
     private String host;

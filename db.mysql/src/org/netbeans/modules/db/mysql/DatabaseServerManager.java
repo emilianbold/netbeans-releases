@@ -47,7 +47,6 @@ import org.netbeans.modules.db.mysql.impl.MySQLDatabaseServer;
 /**
  * 
  *
- * @author David Van Couvering
  */
 public class DatabaseServerManager {
     private static volatile DatabaseServer SERVER;

@@ -53,7 +53,6 @@ import org.netbeans.modules.db.mysql.util.DatabaseUtils.URLParser;
  * Listen to changes on the connection list, and if we're not registered
  * and a MySQL connection is added, register the MySQL 
  * 
- * @author David Van Couvering
  */
 public class DbExplorerConnectionListener implements ConnectionListener {
 

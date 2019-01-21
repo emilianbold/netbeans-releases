@@ -64,7 +64,6 @@ import org.netbeans.modules.db.test.DBTestBase;
 
 /**
  *
- * @author David
  */
 public class SakilaSampleProviderTest  extends DBTestBase {
     SakilaSampleProvider provider;

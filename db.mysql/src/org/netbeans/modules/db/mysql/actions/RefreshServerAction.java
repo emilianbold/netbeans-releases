@@ -50,7 +50,6 @@ import org.openide.util.actions.CookieAction;
 /**
  * Connect to a database
  * 
- * @author David Van Couvering
  */
 public class RefreshServerAction extends CookieAction {
     private static final Class[] COOKIE_CLASSES = 

@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 /**
  * A utility class for creating sample databases 
  * 
- * @author David Van Couvering
  */
 public class SampleManager {
     /**

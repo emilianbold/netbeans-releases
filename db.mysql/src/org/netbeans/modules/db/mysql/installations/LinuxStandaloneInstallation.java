@@ -50,7 +50,6 @@ import org.openide.util.Utilities;
  * Standalone version on Linux.  Assuming installed as a service, and that
  * the standard approach is to manage the service, not another instance.
  * 
- * @author David Van Couvering
  */
 public class LinuxStandaloneInstallation implements Installation {
     

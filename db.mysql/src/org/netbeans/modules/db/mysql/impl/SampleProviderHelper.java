@@ -50,7 +50,6 @@ import org.openide.util.lookup.Lookups;
 /**
  * Encapsulates loading of sample providers
  * 
- * @author David Van Couvering
  */
 public class SampleProviderHelper {
 

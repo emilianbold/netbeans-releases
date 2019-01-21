@@ -51,7 +51,6 @@ import org.openide.util.Utilities;
  * See <a href="http://sourceforge.net/projects/mamp">
  * http://sourceforge.net/projects/mamp</a>
  * 
- * @author David Van Couvering
  */
 public class MAMPInstallation implements Installation {
     private static final String DEFAULT_BASE_PATH = "/Applications/MAMP"; // NOI18N

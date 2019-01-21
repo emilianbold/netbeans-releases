@@ -51,7 +51,6 @@ import org.openide.util.Utilities;
 /**
  * Standalone version on Windows, not installed as a server
  *
- * @author David Van Couvering
  */
 public class WindowsStandaloneInstallation implements Installation {
     static final File DEFAULT_BASE_PATH = FileUtil.normalizeFile(new File("C:/Program Files/MySQL/"));  //NOI18N

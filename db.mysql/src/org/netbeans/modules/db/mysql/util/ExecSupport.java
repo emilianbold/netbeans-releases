@@ -55,7 +55,6 @@ import java.util.logging.Logger;
 /**
  * Provides utility for rerouting process output to an output window
  * 
- * @author  ludo, David Van Couvering
  */
 
 import org.netbeans.modules.db.mysql.impl.MySQLDatabaseServer;

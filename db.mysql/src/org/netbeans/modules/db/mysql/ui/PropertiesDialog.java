@@ -55,7 +55,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author David
  */
 public class PropertiesDialog  {
     private static final Logger LOGGER = Logger.getLogger(PropertiesDialog.class.getName());

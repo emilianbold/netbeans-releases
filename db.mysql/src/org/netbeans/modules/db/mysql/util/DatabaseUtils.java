@@ -69,7 +69,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author David
  */
 public class DatabaseUtils {
     // Separate request processor for opening connections so that we are safe
@@ -96,7 +95,6 @@ public class DatabaseUtils {
      * An enumeration indicating the status after attempting to connect to the
      * server
      * 
-     * @author David Van Couvering
      */
     public enum ConnectStatus {
         /** The server was not detected at the given host/port */

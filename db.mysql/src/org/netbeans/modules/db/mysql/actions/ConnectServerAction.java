@@ -52,7 +52,6 @@ import org.openide.util.actions.CookieAction;
 /**
  * Connects to a server
  * 
- * @author David Van Couvering
  */
 public class ConnectServerAction extends CookieAction {
     private static final Class[] COOKIE_CLASSES = 

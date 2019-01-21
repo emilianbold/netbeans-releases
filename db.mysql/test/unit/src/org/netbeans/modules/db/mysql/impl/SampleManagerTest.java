@@ -57,7 +57,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author David Van Couvering
  */
 public class SampleManagerTest extends TestBase {
     private static final String SAMPLE_NAME = "testSample";

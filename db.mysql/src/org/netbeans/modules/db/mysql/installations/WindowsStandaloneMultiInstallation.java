@@ -55,7 +55,6 @@ import org.openide.util.Utilities;
 /**
  * Class for detection of installed versions of MySQL on Windows OS.
  *
- * @author jhavlin
  */
 public class WindowsStandaloneMultiInstallation implements MultiInstallation {
 

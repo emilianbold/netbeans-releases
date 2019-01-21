@@ -66,7 +66,6 @@ import org.openide.util.NbBundle;
 /**
  * Provides support for our base samples
  * 
- * @author David Van Couvering
  */
 public class BaseSampleProvider implements SampleProvider {
     private static final Logger LOGGER = Logger.getLogger(BaseSampleProvider.class.getName());

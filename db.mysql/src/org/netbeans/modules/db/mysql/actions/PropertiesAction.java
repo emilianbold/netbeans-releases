@@ -52,7 +52,6 @@ import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author David Van Couvering
  */
 public class PropertiesAction extends CookieAction {
     

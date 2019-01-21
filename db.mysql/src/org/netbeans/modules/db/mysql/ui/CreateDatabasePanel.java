@@ -76,7 +76,6 @@ import org.openide.util.TaskListener;
 
 /**
  *
- * @author  rob
  */
 public class CreateDatabasePanel extends javax.swing.JPanel {
 

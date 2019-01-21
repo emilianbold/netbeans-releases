@@ -67,7 +67,6 @@ import org.openide.util.NbBundle;
 /**
  * Provider implementation for Sakila
  *
- * @author David Van Couvering
  */
 public class SakilaSampleProvider implements SampleProvider {
     private static final String SAMPLE_NAME = "sakila";

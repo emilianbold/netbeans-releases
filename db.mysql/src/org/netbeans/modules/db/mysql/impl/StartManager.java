@@ -69,7 +69,6 @@ import org.openide.util.RequestProcessor;
  * Manages starting of a server, including posting messages if start fails
  * and allowing users to edit properties or keep waiting as needed.
  * 
- * @author David Van Couvering
  */
 public final class StartManager {
     private static final StartManager DEFAULT = new StartManager();

@@ -52,7 +52,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
 
 /**
- * @author David Van Couvering
  */
 public class StartAction extends CookieAction {
     private static final Class[] COOKIE_CLASSES = new Class[] { DatabaseServer.class };

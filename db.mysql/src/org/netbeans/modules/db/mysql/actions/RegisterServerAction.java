@@ -54,7 +54,6 @@ import org.openide.util.actions.NodeAction;
 /**
  * The ation to register the MySQL Server Provider.  
  * 
- * @author David Van Couvering
  */
 public class RegisterServerAction extends NodeAction {
     

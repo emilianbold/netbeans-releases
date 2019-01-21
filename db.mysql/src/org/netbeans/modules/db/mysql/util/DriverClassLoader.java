@@ -60,7 +60,6 @@ import org.openide.filesystems.URLMapper;
  * A classloader that uses the search path for a JDBCDriver to build
  * a classloader that can load the Driver class 
  * 
- * @author David Van Couvering
  */
 public class DriverClassLoader extends URLClassLoader {
     private static Logger LOGGER = 

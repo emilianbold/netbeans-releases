@@ -54,7 +54,6 @@ import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author David Van Couvering
  */
 public class CreateDatabaseAction extends CookieAction {
     private static Logger LOGGER = Logger.getLogger(CreateDatabaseAction.class.getName());

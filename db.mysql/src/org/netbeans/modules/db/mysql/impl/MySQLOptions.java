@@ -58,7 +58,6 @@ import org.openide.util.NbPreferences;
  * Storage and retrieval of options for MySQL support.  These options are
  * stored persistently using NbPreferences API.
  * 
- * @author David Van Couvering
  */
 public final class MySQLOptions {
     private String adminPassword;

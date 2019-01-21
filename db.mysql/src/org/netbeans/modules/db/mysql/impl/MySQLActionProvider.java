@@ -53,7 +53,6 @@ import org.openide.util.actions.SystemAction;
  * Provides the actions for this module to be registered under the
  * Databases node in the DB Explorer
  * 
- * @author David Van Couvering
  */
 public class MySQLActionProvider implements ActionProvider {
 
