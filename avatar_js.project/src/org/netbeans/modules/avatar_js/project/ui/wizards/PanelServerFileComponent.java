@@ -58,7 +58,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author martin
  */
 class PanelServerFileComponent extends javax.swing.JPanel {
     

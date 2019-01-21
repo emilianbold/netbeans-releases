@@ -72,7 +72,6 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author Martin
  */
 public class AvatarJSLogicalViewProvider implements LogicalViewProvider2 {
     

@@ -48,7 +48,6 @@ import java.io.IOException;
 /**
  * Search for the native libraries.
  * 
- * @author Martin
  */
 public final class NativeLibrarySearch {
     

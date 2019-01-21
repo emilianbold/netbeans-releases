@@ -66,7 +66,6 @@ import org.openide.modules.InstalledFileLocator;
 
 /**
  *
- * @author Martin Entlicher
  */
 class AvatarJSExecutor {
     

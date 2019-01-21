@@ -52,7 +52,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Martin
  */
 public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.ValidatingPanel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
     

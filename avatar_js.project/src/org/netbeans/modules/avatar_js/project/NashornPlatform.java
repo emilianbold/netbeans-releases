@@ -51,7 +51,6 @@ import org.openide.modules.SpecificationVersion;
 
 /**
  *
- * @author Martin
  */
 public final class NashornPlatform {
     

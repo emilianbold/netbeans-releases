@@ -52,7 +52,6 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Martin
  */
 public class UpdateProjectImpl implements UpdateImplementation {
     

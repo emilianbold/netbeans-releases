@@ -65,7 +65,6 @@ import org.openide.util.ChangeSupport;
 
 /**
  *
- * @author Martin
  */
 public class MainFileChooser extends javax.swing.JPanel implements ExplorerManager.Provider {
     

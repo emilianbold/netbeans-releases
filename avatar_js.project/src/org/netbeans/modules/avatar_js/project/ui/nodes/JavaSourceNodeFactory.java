@@ -55,7 +55,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Martin
  */
 @NodeFactory.Registration(projectType=AvatarJSProject.ID, position=200)
 public class JavaSourceNodeFactory implements NodeFactory {

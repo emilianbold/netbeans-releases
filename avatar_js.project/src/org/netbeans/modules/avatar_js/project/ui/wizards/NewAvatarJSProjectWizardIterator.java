@@ -64,7 +64,6 @@ import org.openide.util.NbBundle;
 /**
  * Wizard that creates a new Avatar.js project.
  * 
- * @author Martin
  */
 public class NewAvatarJSProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 

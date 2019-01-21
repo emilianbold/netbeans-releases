@@ -58,7 +58,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class AvatarJSProjectTest extends NbTestCase {
     

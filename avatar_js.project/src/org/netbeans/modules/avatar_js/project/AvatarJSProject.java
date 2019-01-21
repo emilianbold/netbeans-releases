@@ -86,7 +86,6 @@ import org.openide.util.lookup.Lookups;
 /**
  * Represents an Avatar.js project.
  * 
- * @author Martin
  */
 @AntBasedProjectRegistration(
     type=AvatarJSProject.TYPE,

@@ -49,7 +49,6 @@ import org.netbeans.spi.project.ui.support.NodeList;
 
 /**
  *
- * @author Martin
  */
 //@NodeFactory.Registration(projectType=AvatarJSProject.ID, position=100)
 public class AvatarJSProjectNodeFactory implements NodeFactory {

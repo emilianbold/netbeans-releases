@@ -106,7 +106,6 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author Martin
  */
 public class AvatarJSActionProvider extends BaseActionProvider {
     

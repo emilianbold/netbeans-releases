@@ -72,7 +72,6 @@ import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
- * @author Martin
  */
 @NodeFactory.Registration(projectType=AvatarJSProject.ID, position=100)
 public class JSSourceNodeFactory implements NodeFactory {

@@ -53,7 +53,6 @@ import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
  * but assuring, that it will not show the default platform in case it is not
  * a Nashorn platform.
  * 
- * @author Martin Entlicher
  */
 class NashornPlatformComboBoxModel implements ComboBoxModel {
     

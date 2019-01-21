@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Martin
  */
 @TemplateRegistrations({
     @TemplateRegistration(folder = NewAvatarJSServerFileWizardIterator.FOLDER, position = 100, content = "../resources/ServerFile.js.template", scriptEngine = "freemarker", displayName = "#ServerFile.js", iconBase = NewAvatarJSServerFileWizardIterator.JS_ICON_BASE, description = "../resources/ServerFile.html", category = {"avatar_js"}),

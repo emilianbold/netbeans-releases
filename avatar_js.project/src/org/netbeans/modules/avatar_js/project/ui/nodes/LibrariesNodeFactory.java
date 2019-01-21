@@ -73,7 +73,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author mkleint, Martin
  */
 @NodeFactory.Registration(projectType=AvatarJSProject.ID, position=300)
 public final class LibrariesNodeFactory implements NodeFactory {

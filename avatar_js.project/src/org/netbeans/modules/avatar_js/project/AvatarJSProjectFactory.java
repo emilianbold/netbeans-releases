@@ -94,7 +94,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @ServiceProvider(service = ProjectFactory.class)
 public final class AvatarJSProjectFactory implements ProjectFactory2 {

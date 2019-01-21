@@ -70,7 +70,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Martin
  */
 class PanelConfigureProjectComponent extends javax.swing.JPanel {
     

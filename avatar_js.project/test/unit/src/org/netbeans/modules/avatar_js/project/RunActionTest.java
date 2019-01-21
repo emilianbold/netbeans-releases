@@ -55,7 +55,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class RunActionTest extends NbTestCase {
     
