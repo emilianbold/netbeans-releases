@@ -72,8 +72,8 @@ public class UpdateTest extends JellyTestCase {
 
     static final String PROJECT1 = "Project1";
     static final String PROJECT2 = "Project2";
-    static final String cvsRoot1 = ":pserver:test@qa-linux-s6:/usr/local/CVSrepo";
-    static final String cvsRoot2 = ":pserver:pvcs@peterp.czech.sun.com:/usr/cvsrepo";
+    static final String cvsRoot1 = ":pserver:";
+    static final String cvsRoot2 = ":pserver:";
     //static final String[] nodes1 = new String[] {"aa|NewClass1.java", "aa|NewClass2.java", "aa|NewClass3.java", "aa|NewClass4.java", "aa|NewClass5.java",
     //        "bb|NewClass1.java", "bb|NewClass2.java", "bb|NewClass3.java", "bb|NewClass4.java", "bb|NewClass5.java",
     //        "cc|NewClass1.java", "cc|NewClass2.java", "cc|NewClass3.java", "cc|NewClass4.java", "cc|NewClass5.java"};
@@ -137,7 +137,7 @@ public class UpdateTest extends JellyTestCase {
     }
 
     public void testUpdate() throws Exception {
-        String cvsRoot = ":pserver:anoncvs@cvsnetbeansorg.sfbay.sun.com:/cvs";
+        String cvsRoot = ":pserver:";
         Node node;
         org.openide.nodes.Node nodeIDE;
         String color;

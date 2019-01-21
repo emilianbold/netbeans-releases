@@ -53,7 +53,7 @@ public class CVSApi extends TestCase {
     public void testIsRepository () {
         assertEquals(false, CVS.isRepository("blabla"));
         assertEquals(false, CVS.isRepository("http://www.netbeans.org/"));
-        assertEquals(true, CVS.isRepository(":pserver:pvcs@peterp.czech.sun.com:/usr/cvsrepo"));
+        assertEquals(true, CVS.isRepository(":pserver:"));
         assertEquals(true, CVS.isRepository(":local:/usr/cvsrepo"));
     }
 }
