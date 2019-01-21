@@ -86,7 +86,7 @@ import org.openide.util.actions.SystemAction;
 /**
  * Responsible for coloring file labels and file icons in the IDE and providing IDE with menu items.
  * 
- * @author Maros Sandor
+ * 
  */
 public class ClearcaseAnnotator extends VCSAnnotator {
       

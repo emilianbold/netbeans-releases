@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class Label implements ActionListener, DocumentListener {
     private final String contextTitle;

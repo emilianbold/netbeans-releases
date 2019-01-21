@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 /**
  * Extends framework <code>VersioningSystem</code> to Clearcase module functionality.
  * 
- * @author Maros Sandor
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
 public class ClearcaseVCS extends VersioningSystem implements PropertyChangeListener, VersioningListener {

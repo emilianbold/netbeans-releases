@@ -50,7 +50,7 @@ import java.io.File;
 /**
  * A checkout command.
  * 
- * @author Maros Sandor
+ * 
  */
 public class MkElemCommand extends FilesCommand {
     

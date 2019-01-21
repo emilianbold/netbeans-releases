@@ -52,7 +52,7 @@ import java.io.FileWriter;
 /**
  * A reserve command.
  * 
- * @author Maros Sandor
+ * 
  */
 public class ReserveCommand extends FilesCommand {
     

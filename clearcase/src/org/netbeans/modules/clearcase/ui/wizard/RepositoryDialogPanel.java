@@ -45,7 +45,7 @@ package org.netbeans.modules.clearcase.ui.wizard;
 
 /**
  *
- * @author  Tomas Stupka
+ *  Stupka
  */
 public class RepositoryDialogPanel extends javax.swing.JPanel {
 

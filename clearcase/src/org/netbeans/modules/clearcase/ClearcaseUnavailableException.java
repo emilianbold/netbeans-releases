@@ -46,7 +46,7 @@ package org.netbeans.modules.clearcase;
 /**
  * Indicates that clearcase is not installed.
  *
- * @author Maros Sandor
+ * 
  */
 public class ClearcaseUnavailableException extends ClearcaseException {
 

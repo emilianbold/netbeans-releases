@@ -51,7 +51,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class DelegateInputStream extends InputStream {
     private List<InputStream> delegates = new ArrayList<InputStream>();

@@ -50,7 +50,7 @@ import java.io.File;
 /**
  * Gets a specific revision of a file into the specified location.
  * 
- * @author Maros Sandor
+ * 
  */
 public class GetCommand extends ClearcaseCommand {
     

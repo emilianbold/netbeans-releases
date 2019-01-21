@@ -48,7 +48,7 @@ import org.netbeans.modules.clearcase.Clearcase;
 /**
  * Conveniece notification listener that prints all messages to the designated Output tab.
  * 
- * @author Maros Sandor
+ * 
  */
 public class OutputWindowNotificationListener implements NotificationListener {
 

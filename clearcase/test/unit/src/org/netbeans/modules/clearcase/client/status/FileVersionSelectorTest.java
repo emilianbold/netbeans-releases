@@ -46,7 +46,7 @@ import junit.framework.TestCase;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class FileVersionSelectorTest extends TestCase {
     

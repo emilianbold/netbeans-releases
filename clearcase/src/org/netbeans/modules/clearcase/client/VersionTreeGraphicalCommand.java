@@ -50,7 +50,7 @@ import java.io.File;
 /**
  * Launches external Graphical Version Tree browser.  
  * 
- * @author Maros Sandor
+ * 
  */
 public class VersionTreeGraphicalCommand extends FilesCommand {
 

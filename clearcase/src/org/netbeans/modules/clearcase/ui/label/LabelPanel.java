@@ -47,7 +47,7 @@ package org.netbeans.modules.clearcase.ui.label;
 
 /**
  *
- * @author  tomas
+ * 
  */
 public class LabelPanel extends javax.swing.JPanel {
 

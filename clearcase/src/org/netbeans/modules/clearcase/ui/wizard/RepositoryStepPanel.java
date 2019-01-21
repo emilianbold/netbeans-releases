@@ -46,7 +46,7 @@ package org.netbeans.modules.clearcase.ui.wizard;
 
 /**
  *
- * @author  Petr Kuzel, Ramin Moazeni
+ *  Kuzel, Ramin Moazeni
  */
 public class RepositoryStepPanel extends javax.swing.JPanel {
 

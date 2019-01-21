@@ -78,7 +78,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots. 
  * 
- * @author Maros Sandor 
+ *  
  */
 class VersioningPanel extends JPanel implements ExplorerManager.Provider, PreferenceChangeListener, PropertyChangeListener, VersioningListener, ActionListener {
     

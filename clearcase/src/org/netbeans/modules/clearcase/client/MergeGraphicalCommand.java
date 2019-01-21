@@ -50,7 +50,7 @@ import java.io.File;
 /**
  * Launches external Merge tool.  
  * 
- * @author Maros Sandor
+ * 
  */
 public class MergeGraphicalCommand extends FilesCommand {
 

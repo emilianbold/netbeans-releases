@@ -52,7 +52,7 @@ import java.io.*;
 /**
  * Encapsulates Clearcase shell process. 
  * 
- * @author Maros Sandor
+ * 
  */
 public class DummyCleartool {
     private CommandExecutor executor;

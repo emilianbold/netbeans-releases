@@ -59,7 +59,7 @@ import org.netbeans.modules.clearcase.client.ExecutionUnit;
  * Retrieves a files {@link FileEntry} (or entries if directory and {@link #handleChildren} true) 
  * by calling 'ct ls' first and 'ct lsco' to get additional info for checkedout files eventually.
  * 
- * @author Tomas Stupka
+ * 
  */
 public class ListStatus extends ExecutionUnit {
 

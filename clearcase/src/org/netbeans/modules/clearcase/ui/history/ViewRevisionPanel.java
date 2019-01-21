@@ -50,7 +50,7 @@ import org.netbeans.modules.clearcase.ClearcaseModuleConfig;
 /**
  * View Revision customization panel.
  *
- * @author Maros Sandor
+ * 
  */
 class ViewRevisionPanel extends javax.swing.JPanel {
     

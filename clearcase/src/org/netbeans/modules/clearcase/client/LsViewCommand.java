@@ -50,7 +50,7 @@ import java.util.*;
 /**
  * Simple "lsview" command.
  * 
- * @author Maros Sandor
+ * 
  */
 public class LsViewCommand extends ClearcaseCommand {
 

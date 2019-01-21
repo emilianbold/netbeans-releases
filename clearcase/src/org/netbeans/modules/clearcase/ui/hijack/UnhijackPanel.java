@@ -48,7 +48,7 @@ import org.netbeans.modules.clearcase.ClearcaseModuleConfig;
 /**
  * Unhijack confirmation panel.
  *
- * @author Maros Sandor
+ * 
  */
 public class UnhijackPanel extends javax.swing.JPanel {
     

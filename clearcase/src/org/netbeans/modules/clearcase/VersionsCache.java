@@ -55,7 +55,7 @@ import java.io.IOException;
 /**
  * Now the 'cache' does not cache revisions of files, it fetches them everytime they are needed.
  * 
- * @author Maros Sandor
+ * 
  */
 public class VersionsCache implements NotificationListener {
     

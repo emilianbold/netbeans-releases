@@ -63,7 +63,7 @@ import java.beans.BeanInfo;
  *
  * <p>Lookup contains a string identifing rpresented path.
  *
- * @author Petr Kuzel
+ * 
  */
 public class RepositoryPathNode extends AbstractNode {
 

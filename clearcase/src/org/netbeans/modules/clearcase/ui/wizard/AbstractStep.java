@@ -65,7 +65,7 @@ import java.awt.*;
  * <p>Components use 3:2 (60x25 chars) size mode
  * to avoid wizard resizing after [next>].
  *
- * @author Petr Kuzel
+ * 
  */
 public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
 

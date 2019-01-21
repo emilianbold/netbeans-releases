@@ -45,7 +45,7 @@ package org.netbeans.modules.clearcase;
 
 /**
  *
- * @author Ramin Moazeni
+ * 
  */
 public class RepositoryFile {
 

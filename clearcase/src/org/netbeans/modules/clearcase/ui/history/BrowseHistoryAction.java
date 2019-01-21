@@ -58,7 +58,7 @@ import java.util.*;
 /**
  * Launches external Graphical History browser.  
  * 
- * @author Maros Sandor
+ * 
  */
 public class BrowseHistoryAction extends AbstractAction {
     

@@ -59,7 +59,7 @@ import org.netbeans.modules.versioning.util.Utils;
 /**
  * Clearcase Options Controller.
  * 
- * @author Maros Sandor
+ * 
  */
 class ClearcaseOptionsController extends OptionsPanelController {
     

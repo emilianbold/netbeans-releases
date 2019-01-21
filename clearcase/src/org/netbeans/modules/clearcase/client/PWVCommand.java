@@ -51,7 +51,7 @@ import java.util.*;
 /**
  * Simple "cleartool pwv" command.
  * 
- * @author Ramin Moazeni
+ * 
  */
 public class PWVCommand extends ClearcaseCommand {
 

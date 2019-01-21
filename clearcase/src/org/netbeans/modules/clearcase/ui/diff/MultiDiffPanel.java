@@ -90,7 +90,7 @@ import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
 
 /**
  *
- * @author Maros Sandor
+ * 
  */
 class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, VersioningListener, DiffSetupSource, PropertyChangeListener {
     

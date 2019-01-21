@@ -51,7 +51,7 @@ import java.util.*;
 /**
  * Simple "lstype" command.
  * 
- * @author Tomas Stupka
+ * 
  */
 public class LsTypeCommand extends ClearcaseCommand {    
 

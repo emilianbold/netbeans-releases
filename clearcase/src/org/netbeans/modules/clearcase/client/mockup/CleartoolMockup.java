@@ -65,7 +65,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class CleartoolMockup extends Process implements Runnable {
     

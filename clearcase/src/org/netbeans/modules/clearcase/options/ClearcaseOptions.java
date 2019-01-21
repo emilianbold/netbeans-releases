@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 /**
  * Clearcase Options.
  *
- * @author Maros Sandor
+ * 
  */
 public final class ClearcaseOptions extends AdvancedOption {
 

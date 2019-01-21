@@ -60,7 +60,7 @@ import org.openide.DialogDisplayer;
 
 /**
  *
- * @author Maros Sandor
+ * 
  */
 class ClearcaseOptionsPanel extends javax.swing.JPanel {
 

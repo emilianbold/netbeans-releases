@@ -59,7 +59,7 @@ import java.util.logging.Level;
 /**
  * Visible in the Search History Diff view.
  * 
- * @author Maros Sandor
+ * 
  */
 class DiffNode extends AbstractNode {
     

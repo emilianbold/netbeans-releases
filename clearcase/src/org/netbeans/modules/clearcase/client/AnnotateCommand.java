@@ -50,7 +50,7 @@ import java.io.File;
 /**
  * Retrieves versioning annotations for a file.
  * 
- * @author Maros Sandor
+ * 
  */
 public class AnnotateCommand extends FilesCommand {
     

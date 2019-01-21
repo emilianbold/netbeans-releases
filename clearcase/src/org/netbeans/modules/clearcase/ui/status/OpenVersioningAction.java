@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
- * @author Maros Sandor
+ * 
  */
 public class OpenVersioningAction extends SystemAction {
 

@@ -67,7 +67,7 @@ import org.netbeans.modules.clearcase.util.ProgressSupport;
 /**
  * Checks all files/folders in the context out, making them editable by the user.
  * 
- * @author Maros Sandor
+ * 
  */
 public class ReserveAction extends AbstractAction {
 

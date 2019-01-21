@@ -52,7 +52,7 @@ import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 /**
  * Hides files that are known to clearcase and should not be visible.
  * 
- * @author Maros Sandor
+ * 
  */
 public class ClearcaseVisibilityQuery extends VCSVisibilityQuery {
 

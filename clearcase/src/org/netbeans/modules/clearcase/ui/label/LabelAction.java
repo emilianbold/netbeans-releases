@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 /**
  * Label action.
  * 
- * @author Tomas Stupka
+ * 
  */
 public class LabelAction extends AbstractAction {
     

@@ -67,7 +67,7 @@ import org.netbeans.modules.versioning.util.SortedTable;
 /**
  * {@link #getComponent Table} that displays nodes in the checkin dialog.
  * 
- * @author Maros Sandor
+ * 
  */
 class CheckinTable implements AncestorListener, TableModelListener {
 

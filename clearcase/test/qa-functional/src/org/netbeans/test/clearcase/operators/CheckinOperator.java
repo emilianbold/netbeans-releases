@@ -52,7 +52,7 @@ import org.netbeans.test.clearcase.operators.actions.CheckinAction;
 
 /** Class implementing all necessary methods for handling "Checkin" NbDialog.
  *
- * @author peter
+ * 
  * @version 1.0
  */
 public class CheckinOperator extends NbDialogOperator {

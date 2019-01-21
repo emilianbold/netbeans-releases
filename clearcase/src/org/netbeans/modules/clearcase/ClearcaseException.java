@@ -46,7 +46,7 @@ package org.netbeans.modules.clearcase;
 /**
  * Generic exception from the Clearcase framework.
  *
- * @author Maros Sandor
+ * 
  */
 public class ClearcaseException extends Exception {
 

@@ -50,7 +50,7 @@ import java.io.File;
 /**
  * Base class for commands that operate on set of files.
  * 
- * @author Maros Sandor
+ * 
  */
 public abstract class FilesCommand extends ClearcaseCommand {
     

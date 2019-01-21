@@ -79,7 +79,7 @@ import org.openide.util.WeakListeners;
 
 /**
  * 
- * @author Maros Sandor
+ * 
  */
 class DiffFileTable implements MouseListener, ListSelectionListener, AncestorListener {
     

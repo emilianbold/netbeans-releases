@@ -49,7 +49,7 @@ import java.util.*;
 /**
  * Encapsulates arguments of cleartool command.
  * 
- * @author Maros Sandor
+ * 
  */
 public final class Arguments implements Iterable<String> {
     

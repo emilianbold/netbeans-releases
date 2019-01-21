@@ -69,7 +69,7 @@ import org.openide.filesystems.FileUtilTestHidden;
 import org.openide.filesystems.URLMapperTestHidden;
 
 /**
- * @author Tomas Stupka
+ * 
  */
 public class ClearcaseFileSystemTest extends FileSystemFactoryHid {
 

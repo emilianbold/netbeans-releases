@@ -57,7 +57,7 @@ import org.openide.util.HelpCtx;
  *
  *
  *
- * @author Tomas Stupka
+ * 
  */
 public class RepositoryStep extends AbstractStep implements WizardDescriptor.AsynchronousValidatingPanel, PropertyChangeListener {
 

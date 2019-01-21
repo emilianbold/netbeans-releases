@@ -50,7 +50,7 @@ import java.io.File;
 /**
  * A delete command.
  * 
- * @author Tomas Stupka
+ * 
  */
 public class MoveCommand extends FilesCommand {
          

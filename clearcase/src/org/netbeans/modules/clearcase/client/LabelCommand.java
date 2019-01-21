@@ -53,7 +53,7 @@ import org.netbeans.modules.clearcase.Clearcase;
 /**
  * The Label command.
  * 
- * @author Tomas Stupka
+ * 
  */
 public class LabelCommand extends FilesCommand {
     

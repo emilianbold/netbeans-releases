@@ -52,7 +52,7 @@ import org.netbeans.test.clearcase.operators.actions.AddToControlAction;
 
 /** Class implementing all necessary methods for handling "Add - CCtest" NbDialog.
  *
- * @author peter
+ * 
  * @version 1.0
  */
 public class AddToControlOperator extends NbDialogOperator {

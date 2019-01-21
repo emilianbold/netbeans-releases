@@ -50,7 +50,7 @@ import java.io.File;
 /**
  * An update command.
  * 
- * @author Maros Sandor
+ * 
  */
 public class UpdateCommand extends FilesCommand {
 

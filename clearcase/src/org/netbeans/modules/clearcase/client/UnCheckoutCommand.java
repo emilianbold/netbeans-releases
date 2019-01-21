@@ -50,7 +50,7 @@ import java.io.File;
 /**
  * An uncheckout command.
  * 
- * @author Maros Sandor
+ * 
  */
 public class UnCheckoutCommand extends FilesCommand {
 

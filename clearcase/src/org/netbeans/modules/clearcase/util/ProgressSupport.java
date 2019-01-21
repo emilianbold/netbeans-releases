@@ -58,7 +58,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public abstract class ProgressSupport implements Runnable, Cancellable {
 

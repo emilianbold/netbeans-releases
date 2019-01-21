@@ -53,7 +53,7 @@ import org.openide.NotifyDescriptor;
 /**
  * Launches external Merge tool.  
  * 
- * @author Maros Sandor
+ * 
  */
 public class MergeAction extends AbstractAction {
     

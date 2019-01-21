@@ -55,7 +55,7 @@ import java.io.File;
 /**
  * Opens the Diff view panel.
  * 
- * @author Maros Sandor
+ * 
  */
 public class DiffAction extends AbstractAction {
     

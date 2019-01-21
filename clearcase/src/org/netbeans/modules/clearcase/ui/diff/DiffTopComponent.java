@@ -57,7 +57,7 @@ import org.openide.util.lookup.ProxyLookup;
  * Diff TopComponent, synchronizing selected node and providing
  * diff setup source.
  *
- * @author Petr Kuzel
+ * 
  */
 public class DiffTopComponent extends TopComponent implements DiffSetupSource {
 

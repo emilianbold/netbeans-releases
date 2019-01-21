@@ -65,7 +65,7 @@ import org.netbeans.test.clearcase.utils.TestKit;
 
 /**
  *
- * @author pvcs
+ * 
  */
 public class ActionsTest extends JellyTestCase {
 

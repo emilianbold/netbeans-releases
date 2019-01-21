@@ -52,7 +52,7 @@ import org.openide.util.Exceptions;
 /**
  * Encapsulates a command given to a ClearCase client. 
  * 
- * @author Maros Sandor
+ * 
  */
 public abstract class ClearcaseCommand implements NotificationListener {
         

@@ -46,7 +46,7 @@ package org.netbeans.modules.clearcase.ui.add;
 
 /**
  *
- * @author  Petr Kuzel, Ramin Moazeni
+ *  Kuzel, Ramin Moazeni
  */
 public class ImportPanel extends javax.swing.JPanel {
 

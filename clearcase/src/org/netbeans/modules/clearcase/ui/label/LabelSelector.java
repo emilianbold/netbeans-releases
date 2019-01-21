@@ -66,7 +66,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Provides chooser from list of strings.
  *
- * @author  Maros Sandor
+ *  Sandor
  */
 public class LabelSelector extends javax.swing.JPanel implements MouseListener {
 

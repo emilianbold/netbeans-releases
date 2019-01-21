@@ -48,7 +48,7 @@ import org.netbeans.modules.clearcase.ClearcaseModuleConfig;
 /**
  * Uncheckout confirmation panel.
  *
- * @author Maros Sandor
+ * 
  */
 public class UncheckoutPanel extends javax.swing.JPanel {
     

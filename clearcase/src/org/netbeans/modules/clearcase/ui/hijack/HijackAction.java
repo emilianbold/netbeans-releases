@@ -71,7 +71,7 @@ import org.openide.awt.Mnemonics;
 /**
  * Hijacks all files/folders in the context, making them editable by the user.
  * 
- * @author Maros Sandor
+ * 
  */
 public class HijackAction extends AbstractAction {
 

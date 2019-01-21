@@ -50,7 +50,7 @@ import org.netbeans.modules.clearcase.util.ClearcaseUtils;
 /**
  * Refreshes the status for files and the relevent filesystems after a {@link ClearcaseCommand} finnishes
  * 
- * @author Tomas Stupka
+ * 
  * 
  */    
 public class AfterCommandRefreshListener implements NotificationListener {

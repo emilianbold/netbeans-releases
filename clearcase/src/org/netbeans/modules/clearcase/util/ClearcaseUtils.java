@@ -68,7 +68,7 @@ import org.openide.util.HelpCtx;
 /**
  * Clearase specific utility methods.
  * 
- * @author Maros Sandor
+ * 
  */
 public class ClearcaseUtils {
     /**

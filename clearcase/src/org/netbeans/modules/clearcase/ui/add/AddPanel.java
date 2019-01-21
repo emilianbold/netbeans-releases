@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
 /**
  * Add To Clearcase customization panel.
  *
- * @author Maros Sandor
+ * 
  */
 class AddPanel extends javax.swing.JPanel {
     

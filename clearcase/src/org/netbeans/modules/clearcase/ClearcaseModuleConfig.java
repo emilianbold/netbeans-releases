@@ -52,7 +52,7 @@ import java.util.regex.Pattern;
 import java.io.File;
 
 /**
- * @author Maros Sandor
+ * 
  */
 public class ClearcaseModuleConfig {
        

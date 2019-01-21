@@ -74,7 +74,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Checkin action.
  * 
- * @author Maros Sandor
+ * 
  */
 public class CheckinAction extends AbstractAction {
     

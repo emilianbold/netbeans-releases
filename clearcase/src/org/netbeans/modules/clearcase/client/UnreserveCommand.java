@@ -52,7 +52,7 @@ import java.io.FileWriter;
 /**
  * An unreserve command.
  * 
- * @author Maros Sandor
+ * 
  */
 public class UnreserveCommand extends FilesCommand {
     

@@ -54,7 +54,7 @@ import java.util.*;
 /**
  * Checkout confirmation panel.
  *
- * @author Maros Sandor
+ * 
  */
 class CheckoutPanel extends javax.swing.JPanel {
         

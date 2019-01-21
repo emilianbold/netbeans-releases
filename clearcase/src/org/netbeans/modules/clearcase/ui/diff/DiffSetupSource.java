@@ -53,7 +53,7 @@ import java.util.*;
  * TopComponets or it can be added in their lookup
  * (it allows proxing).
  *
- * @author Maros Sandor
+ * 
  */
 public interface DiffSetupSource {
 

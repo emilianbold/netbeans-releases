@@ -51,7 +51,7 @@ import org.netbeans.test.clearcase.operators.actions.CheckoutAction;
 
 /** Class implementing all necessary methods for handling "Checkout" NbDialog.
  *
- * @author peter
+ * 
  * @version 1.0
  */
 public class CheckoutOperator extends NbDialogOperator {

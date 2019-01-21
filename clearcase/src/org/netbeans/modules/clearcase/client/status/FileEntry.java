@@ -49,7 +49,7 @@ import java.io.File;
 /**
  * Holds detailed information about a managed file, ie VersionSelector-s, annotation, ...
  * 
- * @author Maros Sandor
+ * 
  */
 public class FileEntry { 
                        

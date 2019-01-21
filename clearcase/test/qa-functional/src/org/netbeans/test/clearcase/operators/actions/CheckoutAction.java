@@ -46,7 +46,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  *
- * @author peter
+ * 
  */
 public class CheckoutAction extends ActionNoBlock {
     public static final String VERSIONING_ITEM = "Versioning";

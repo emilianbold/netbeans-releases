@@ -48,7 +48,7 @@ import java.util.List;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 class FileEntry {
     private final File file;

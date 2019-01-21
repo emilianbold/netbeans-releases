@@ -46,7 +46,7 @@ package org.netbeans.modules.clearcase.ui.wizard;
 
 /**
  *
- * @author  Ramin Moazeni
+ *  Moazeni
  */
 public class RepositoryPanel extends javax.swing.JPanel {
 

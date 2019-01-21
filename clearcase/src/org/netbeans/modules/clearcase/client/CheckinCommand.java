@@ -52,7 +52,7 @@ import java.io.FileWriter;
 /**
  * A checkout command.
  * 
- * @author Maros Sandor
+ * 
  */
 public class CheckinCommand extends FilesCommand {
     

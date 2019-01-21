@@ -47,7 +47,7 @@ package org.netbeans.modules.clearcase.ui.checkin;
 import org.openide.util.NbBundle;
 
 /**
- * @author Maros Sandor
+ * 
  */
 public abstract class CheckinOptions {
 

@@ -78,7 +78,7 @@ import org.openide.filesystems.FileUtil;
 /**
  * Main entry point for Clearcase functionality, use getInstance() to get the Clearcase object.
  * 
- * @author Maros Sandor
+ * 
  */
 public class Clearcase {
 

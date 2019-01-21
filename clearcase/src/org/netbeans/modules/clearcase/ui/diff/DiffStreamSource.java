@@ -62,7 +62,7 @@ import java.util.*;
 /**
  * Stream source for diffing CC managed files.
  *
- * @author Maros Sandor
+ * 
  */
 public class DiffStreamSource extends StreamSource {
 

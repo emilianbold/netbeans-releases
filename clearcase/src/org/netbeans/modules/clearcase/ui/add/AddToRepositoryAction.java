@@ -95,7 +95,7 @@ import java.awt.event.ActionEvent;
  * data folders.
  *
  *
- * @author Petr Kuzel, Ramin Moazeni
+ * , Ramin Moazeni
  */
 public final class AddToRepositoryAction extends AbstractAction implements ChangeListener, NotificationListener {
 

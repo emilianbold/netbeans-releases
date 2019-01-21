@@ -94,7 +94,7 @@ import org.netbeans.modules.versioning.util.SortedTable;
  * in the Versioning view. The table is  {@link #setTableModel populated)
  * from VersioningPanel.
  * 
- * @author Maros Sandor
+ * 
  */
 class SyncTable implements MouseListener, ListSelectionListener, AncestorListener {
 

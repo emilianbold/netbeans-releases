@@ -61,7 +61,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class InteceptorTest extends NbTestCase {
    

@@ -52,7 +52,7 @@ import org.netbeans.modules.clearcase.Clearcase;
 
 /**
  *
- * @author Maros Sandor
+ * 
  */
 public class CheckoutActionPanel extends javax.swing.JPanel {
     

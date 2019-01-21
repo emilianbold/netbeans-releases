@@ -48,7 +48,7 @@ import org.netbeans.modules.clearcase.ClearcaseException;
 /**
  * Simple "hostinfo" command.
  * 
- * @author Maros Sandor
+ * 
  */
 public class HostInfoCommand extends ClearcaseCommand {
 

@@ -59,7 +59,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ListStatusTest extends TestCase {
     

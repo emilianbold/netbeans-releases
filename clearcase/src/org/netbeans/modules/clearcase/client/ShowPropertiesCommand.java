@@ -50,7 +50,7 @@ import java.io.File;
 /**
  * Launches external Describe (properties) dialog.  
  * 
- * @author Maros Sandor
+ * 
  */
 public class ShowPropertiesCommand extends FilesCommand {
 

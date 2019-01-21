@@ -53,7 +53,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class AnnotateAction extends VcsAnnotateAction {
 

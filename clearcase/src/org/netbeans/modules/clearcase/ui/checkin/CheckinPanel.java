@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Maros Sandor
+ * 
  */
 class CheckinPanel extends javax.swing.JPanel {
     

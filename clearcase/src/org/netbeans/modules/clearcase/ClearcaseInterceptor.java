@@ -66,7 +66,7 @@ import org.netbeans.modules.versioning.util.Utils;
 /**
  * Listens on file system changes and reacts appropriately, mainly refreshing affected files' status.
  * 
- * @author Maros Sandor
+ * 
  */
 public class ClearcaseInterceptor extends VCSInterceptor {
 

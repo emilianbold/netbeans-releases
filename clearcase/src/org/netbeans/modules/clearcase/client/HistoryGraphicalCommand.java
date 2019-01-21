@@ -50,7 +50,7 @@ import java.io.File;
 /**
  * Launches external Graphical History browser.  
  * 
- * @author Maros Sandor
+ * 
  */
 public class HistoryGraphicalCommand extends FilesCommand {
 

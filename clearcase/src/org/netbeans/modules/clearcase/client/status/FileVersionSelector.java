@@ -51,7 +51,7 @@ import org.netbeans.modules.clearcase.Clearcase;
  * e.g /main/CHECKEDOUT
  *     /main/1  
  * 
- * @author Tomas Stupka
+ * 
  */
 public class FileVersionSelector {   
     

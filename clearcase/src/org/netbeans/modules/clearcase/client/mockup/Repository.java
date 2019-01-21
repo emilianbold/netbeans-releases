@@ -54,7 +54,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 class Repository {
     

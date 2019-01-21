@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 /**
  * Execeutes clearfsimport command.
  * 
- * @author Ramin Moazeni
+ * 
  */
 public class Clearfsimport {
     

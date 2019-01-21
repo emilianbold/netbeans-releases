@@ -55,7 +55,7 @@ import org.netbeans.modules.clearcase.util.ClearcaseUtils;
 /**
  * Immutable class encapsulating status of a file.
  *
- * @author Maros Sandor
+ * 
  */
 public class FileInformation implements Serializable {
 

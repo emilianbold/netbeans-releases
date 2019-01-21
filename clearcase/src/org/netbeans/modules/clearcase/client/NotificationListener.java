@@ -46,7 +46,7 @@ package org.netbeans.modules.clearcase.client;
 /**
  * Listener for cleartool responses to some command. 
  * 
- * @author Maros Sandor
+ * 
  */
 public interface NotificationListener {
     

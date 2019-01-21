@@ -59,7 +59,7 @@ import org.openide.util.RequestProcessor.Task;
 /**
  * Encapsulates Clearcase shell process. 
  * 
- * @author Maros Sandor
+ * 
  */
 class Cleartool {
     

@@ -55,7 +55,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * This whole class is a hack until we won't have a serializable VCSContext. see issue #129268
- * @author Tomas Stupka
+ * 
  */
 class Context implements Serializable {        
     private static final long serialVersionUID = 1L;

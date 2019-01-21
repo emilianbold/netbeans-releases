@@ -84,7 +84,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Add action
  * 
- * @author Maros Sandor
+ * 
  */
 public class AddAction extends AbstractAction {
     

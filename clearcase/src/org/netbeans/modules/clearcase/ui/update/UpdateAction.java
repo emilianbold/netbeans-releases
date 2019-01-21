@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 /**
  * Updates selected files/folders in the snapshot view.
  * 
- * @author Maros Sandor
+ * 
  */
 public class UpdateAction extends AbstractAction {
     

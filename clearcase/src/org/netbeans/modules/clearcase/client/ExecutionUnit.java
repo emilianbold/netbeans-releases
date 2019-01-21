@@ -50,7 +50,7 @@ import java.util.List;
 /**
  * Represents one logical, atomic, cancellable execution unit that may consist of several cc commands.
  * 
- * @author Maros Sandor
+ * 
  */
 public class ExecutionUnit implements Iterable<ClearcaseCommand>, Iterator<ClearcaseCommand> {
 

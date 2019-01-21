@@ -59,7 +59,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
 
 /**
- * @author Maros Sandor
+ * 
  */
 public class IgnoreAction extends AbstractAction {
     

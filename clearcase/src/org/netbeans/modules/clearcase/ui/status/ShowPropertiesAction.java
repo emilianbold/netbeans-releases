@@ -58,7 +58,7 @@ import java.util.*;
 /**
  * Launches external Describe (properties) dialog.  
  * 
- * @author Maros Sandor
+ * 
  */
 public class ShowPropertiesAction extends AbstractAction {
     

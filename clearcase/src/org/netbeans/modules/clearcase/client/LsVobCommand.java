@@ -50,7 +50,7 @@ import java.util.*;
 /**
  * Simple "lsvob" command.
  * 
- * @author Maros Sandor
+ * 
  */
 public class LsVobCommand extends ClearcaseCommand {
 

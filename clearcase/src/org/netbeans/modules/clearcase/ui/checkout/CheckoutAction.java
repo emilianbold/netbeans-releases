@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
 /**
  * Checks all files/folders in the context out, making them editable by the user.
  * 
- * @author Maros Sandor
+ * 
  */
 public class CheckoutAction extends AbstractAction {
 

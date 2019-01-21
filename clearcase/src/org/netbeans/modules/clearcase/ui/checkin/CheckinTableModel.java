@@ -57,7 +57,7 @@ import java.io.File;
 /**
  * Table model for the Commit dialog table.
  *
- * @author Maros Sandor
+ * 
  */
 class CheckinTableModel extends AbstractTableModel {
 

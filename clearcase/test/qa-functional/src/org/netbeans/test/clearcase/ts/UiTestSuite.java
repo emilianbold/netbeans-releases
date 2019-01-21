@@ -49,7 +49,7 @@ import org.netbeans.test.clearcase.ui.ActionsTest;
 
 /**
  *
- * @author peter
+ * 
  */
 public class UiTestSuite extends JellyTestCase {
     

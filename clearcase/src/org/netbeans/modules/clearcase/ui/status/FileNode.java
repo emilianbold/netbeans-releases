@@ -57,7 +57,7 @@ import org.netbeans.modules.clearcase.FileStatusCache;
 /**
  * Represents real or virtual (non-local) file.
  *
- * @author Tomas Stupka
+ * 
  */
 public class FileNode {
 

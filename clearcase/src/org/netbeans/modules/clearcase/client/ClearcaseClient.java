@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
  * Interface to Clearcase functionality. 
  * ClearcaseClient commands execution is synchronized and serialized.
  * 
- * @author Maros Sandor
+ * 
  */
 public class ClearcaseClient {
 
