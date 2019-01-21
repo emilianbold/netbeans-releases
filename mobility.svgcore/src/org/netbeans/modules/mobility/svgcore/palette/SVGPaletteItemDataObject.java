@@ -67,7 +67,7 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 @MIMEResolver.ExtensionRegistration(
     mimeType="text/x-svg-palette-item",

@@ -48,7 +48,7 @@ import org.openide.nodes.Children;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class SVGDataNode extends DataNode {    
     private static final String IMAGE_ICON_BASE = "org/netbeans/modules/mobility/svgcore/resources/svg.png"; //NOI18N

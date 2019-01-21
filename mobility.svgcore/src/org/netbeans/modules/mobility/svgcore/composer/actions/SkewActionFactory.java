@@ -59,7 +59,7 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class SkewActionFactory extends AbstractComposerActionFactory {
     private static final ActionMouseCursor SKEW_MOUSE_CURSOR = new ActionMouseCursor( 

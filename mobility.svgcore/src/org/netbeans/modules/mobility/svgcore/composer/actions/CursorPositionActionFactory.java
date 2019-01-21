@@ -54,7 +54,7 @@ import org.w3c.dom.svg.SVGPoint;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class CursorPositionActionFactory extends AbstractComposerActionFactory {
     

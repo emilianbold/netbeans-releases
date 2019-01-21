@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public class SVGDataLoader extends UniFileLoader {
     

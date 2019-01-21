@@ -53,7 +53,7 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public class SVGDataLoaderBeanInfo extends SimpleBeanInfo {
     

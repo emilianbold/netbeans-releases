@@ -55,7 +55,7 @@ import org.w3c.dom.svg.SVGRect;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class PatchedGroup extends Group implements PatchedTransformableElement {
     private String    m_idBackup  = null;

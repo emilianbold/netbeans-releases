@@ -53,7 +53,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObjectOutline;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class TranslateAction extends AbstractComposerAction {
     private final SVGObject m_translated;

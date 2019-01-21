@@ -58,7 +58,7 @@ import java.lang.ref.*;
 /**
  * Panel that can collapse to a small size and be reexpanded.
  *
- * @author Tim Boudreau
+ * 
  */
 public final class TapPanel extends javax.swing.JPanel {
     public static final int UP = 0;

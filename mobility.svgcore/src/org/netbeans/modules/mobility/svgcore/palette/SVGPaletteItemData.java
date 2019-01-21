@@ -69,7 +69,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class SVGPaletteItemData {
     private static final String PROP_NAME         = "name"; //NOI18N

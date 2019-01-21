@@ -50,7 +50,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class PatchedDefs extends Defs implements PatchedElement {
     private String    m_idBackup = null;

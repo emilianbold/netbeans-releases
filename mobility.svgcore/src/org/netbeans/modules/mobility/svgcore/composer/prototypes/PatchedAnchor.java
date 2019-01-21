@@ -50,7 +50,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class PatchedAnchor extends Anchor implements PatchedTransformableElement {
     private String m_idBackup = null;

@@ -64,7 +64,7 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class RotateActionFactory extends AbstractComposerActionFactory {
     private static final int   ROTATE_PIVOT_SIZE          = 4;

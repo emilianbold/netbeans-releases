@@ -58,7 +58,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public class ScaleActionFactory extends AbstractComposerActionFactory {
 //    private static final ActionMouseCursor SCALE_MOUSE_CURSOR = new ActionMouseCursor( 

@@ -47,7 +47,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author karol harezlak
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.mobility.svgcore.api.snippets.SVGSnippetsProvider.class)
 public class SVGSnipetsProviderClassic implements SVGSnippetsProvider{

@@ -66,7 +66,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class ImportPaletteFolderAction extends SystemAction {
     private static final String ACTION_ID = "svg_palette_import"; //NOI18N

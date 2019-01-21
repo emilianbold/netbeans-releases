@@ -54,7 +54,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public class SVGPaletteItemDataLoaderBeanInfo extends SimpleBeanInfo {
 

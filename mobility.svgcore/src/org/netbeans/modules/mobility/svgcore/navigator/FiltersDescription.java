@@ -49,7 +49,7 @@ import java.util.List;
 import javax.swing.Icon;
 
 /**
- * @author Dafe Simonek
+ * 
  */
 public final class FiltersDescription {
     

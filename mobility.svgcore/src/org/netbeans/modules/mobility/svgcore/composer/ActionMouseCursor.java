@@ -47,7 +47,7 @@ import java.awt.Cursor;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class ActionMouseCursor {
     private final Cursor m_cursor;

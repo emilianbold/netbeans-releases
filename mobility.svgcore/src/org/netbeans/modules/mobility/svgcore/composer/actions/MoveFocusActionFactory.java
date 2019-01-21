@@ -66,7 +66,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class MoveFocusActionFactory extends AbstractComposerActionFactory {
     private static final ActionMouseCursor ACTIVATE_MOUSE_CURSOR = new ActionMouseCursor( 

@@ -52,7 +52,7 @@ import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class MoveBackwardActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
     private final AbstractSVGAction  m_moveBackwardAction = 

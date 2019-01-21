@@ -56,7 +56,7 @@ import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGToggleAction;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class HighlightActionFactory extends AbstractComposerActionFactory {
     

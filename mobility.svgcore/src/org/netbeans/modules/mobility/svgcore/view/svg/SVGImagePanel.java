@@ -64,8 +64,7 @@ import javax.swing.JPanel;
 
 /**
  *
- * @author Pavel Benes
- * @author ads
+ * 
  */
 public abstract class SVGImagePanel extends JPanel {
     public static final int CROSS_SIZE = 10;

@@ -49,7 +49,7 @@ import org.w3c.dom.svg.SVGRect;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public abstract class GraphicUtils {
     

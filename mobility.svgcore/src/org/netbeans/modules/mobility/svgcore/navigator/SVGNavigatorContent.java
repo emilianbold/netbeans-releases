@@ -92,7 +92,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Pavel Benes (based on the class NavigatorContent by Marek Fukala)
  */
 public class SVGNavigatorContent extends JPanel implements SceneManager.SelectionListener {
     public static final String ATTRIBUTES_FILTER = "attrs"; //NOI18N

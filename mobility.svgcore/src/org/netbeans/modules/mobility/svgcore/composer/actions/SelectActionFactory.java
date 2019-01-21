@@ -62,7 +62,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class SelectActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
     private final AbstractSVGAction       m_navigateBackAction = 

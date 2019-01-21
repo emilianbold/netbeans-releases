@@ -83,7 +83,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 final class ParsingTask extends Thread implements HyperlinkListener { 
     private static final String HTML_BEGIN  = "<html><body><font face=\"Monospaced\" size=\"4\" color=\"black\">"; //NOI18N

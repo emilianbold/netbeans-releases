@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /** An implementation of NavigatorPanel for XML navigator.
  *
- * @author Pavel Benes (based on the class NavigatorPanel by Marek Fukala)
  * @version 1.0
  */
 public class SVGNavigatorPanel implements NavigatorPanel {

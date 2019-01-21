@@ -50,7 +50,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class ActionWrapperFactory {
     private static final String CLASS_EXT = ".class"; //NOI18N

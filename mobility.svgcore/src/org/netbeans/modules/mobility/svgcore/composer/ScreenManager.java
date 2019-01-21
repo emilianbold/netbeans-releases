@@ -72,7 +72,7 @@ import org.w3c.dom.svg.SVGSVGElement;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class ScreenManager {
     private static final Color VIEWBOXBORDER_COLOR = Color.DARK_GRAY;

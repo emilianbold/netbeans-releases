@@ -48,7 +48,7 @@ import java.awt.Graphics;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public interface ComposerAction {
     public boolean consumeEvent(AWTEvent event, boolean isOutsideEvent);

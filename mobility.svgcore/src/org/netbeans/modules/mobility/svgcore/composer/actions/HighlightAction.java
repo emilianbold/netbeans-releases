@@ -56,7 +56,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class HighlightAction extends AbstractComposerAction {
     private final SVGObject m_highlighted;

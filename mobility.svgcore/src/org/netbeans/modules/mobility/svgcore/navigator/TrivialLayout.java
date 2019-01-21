@@ -56,7 +56,7 @@ import java.awt.*;
  * Trivial layout manager class used by the panels for selecting look and filter.  Simply uses the preferred size of the
  * first compnent and fills the rest of the space with the second, to the height of the tallest.
  *
- * @author Tim Boudreau
+ * 
  */
 final class TrivialLayout implements LayoutManager {
     public void addLayoutComponent (String name, Component comp) {

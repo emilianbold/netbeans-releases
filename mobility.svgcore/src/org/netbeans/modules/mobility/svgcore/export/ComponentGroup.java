@@ -57,7 +57,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 /**
  * Simple data binding between Swing components
  * 
- * @author Pavel Benes
+ * 
  */
     
 public class ComponentGroup implements ActionListener, ChangeListener {

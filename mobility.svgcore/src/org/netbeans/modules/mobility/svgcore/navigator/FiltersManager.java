@@ -66,7 +66,7 @@ import javax.swing.event.ChangeEvent;
 
 /** Handles creation and manipulation with boolean state filters. 
  *
- * @author Dafe Simomek
+ * 
  */
 public final class FiltersManager implements Serializable {
     private static final long  serialVersionUID = 123471457562776148L;

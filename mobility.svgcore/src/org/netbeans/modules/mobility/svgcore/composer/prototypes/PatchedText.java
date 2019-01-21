@@ -54,7 +54,7 @@ import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class PatchedText extends Text implements PatchedTransformableElement {
     private String    m_idBackup  = null;

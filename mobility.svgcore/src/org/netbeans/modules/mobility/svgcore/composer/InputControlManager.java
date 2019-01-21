@@ -51,7 +51,7 @@ import java.awt.event.MouseMotionListener;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class InputControlManager {
     private final SceneManager       m_sceneMgr;

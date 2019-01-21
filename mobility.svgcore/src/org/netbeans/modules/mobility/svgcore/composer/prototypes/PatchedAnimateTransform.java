@@ -51,7 +51,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class PatchedAnimateTransform extends AnimateTransform implements PatchedAnimationElement {
     private String    m_idBackup = null;

@@ -51,7 +51,7 @@ import org.openide.util.actions.CallableSystemAction;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class SVGPaletteManagerAction extends CallableSystemAction {
 

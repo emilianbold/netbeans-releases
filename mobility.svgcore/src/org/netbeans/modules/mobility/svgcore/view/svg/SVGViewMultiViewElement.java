@@ -60,7 +60,6 @@ import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
- * @author Pavel Benes
  */
 public final class SVGViewMultiViewElement extends AbstractMultiViewElement {
     private static final long serialVersionUID = 7526471457562007148L;        

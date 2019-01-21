@@ -46,7 +46,7 @@ import com.sun.perseus.j2d.Transform;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public interface PatchedTransformableElement extends PatchedElement {
 

@@ -53,7 +53,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class SelectAction extends AbstractComposerAction {
     private static final Color SELECTION_BODY_COLOR = new Color( 64, 64, 255, 64);

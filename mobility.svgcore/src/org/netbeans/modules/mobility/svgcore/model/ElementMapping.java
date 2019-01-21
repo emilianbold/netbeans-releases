@@ -64,7 +64,7 @@ import org.netbeans.modules.editor.structure.api.DocumentModel;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class ElementMapping {
     private static final String ID_COUPLING_PREFIX = "_"; //NOI18N

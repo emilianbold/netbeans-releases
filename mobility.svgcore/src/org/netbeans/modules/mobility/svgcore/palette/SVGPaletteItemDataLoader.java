@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public class SVGPaletteItemDataLoader extends UniFileLoader {
     public static final String REQUIRED_MIME = "text/x-svg-palette-item"; //NOI18N

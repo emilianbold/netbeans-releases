@@ -50,7 +50,7 @@ import org.w3c.dom.svg.SVGRect;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class SVGObjectOutline {
     private static final int   ROUND_CORNER_SIZE   = 3;

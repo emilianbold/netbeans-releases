@@ -53,7 +53,7 @@ import org.w3c.dom.svg.SVGMatrix;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class PatchedEllipse extends Ellipse implements PatchedTransformableElement {
     private String    m_idBackup  = null;

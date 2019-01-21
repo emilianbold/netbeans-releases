@@ -76,7 +76,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
     private          SpinnerNumberModel m_previewSpinnerModel;

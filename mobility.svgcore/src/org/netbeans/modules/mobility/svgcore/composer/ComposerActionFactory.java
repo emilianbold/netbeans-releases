@@ -49,7 +49,7 @@ import javax.swing.Action;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public interface ComposerActionFactory {
     public ComposerAction    startAction(AWTEvent event, boolean isOutsideEvent);

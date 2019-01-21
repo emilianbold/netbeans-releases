@@ -56,7 +56,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class TranslateActionFactory extends AbstractComposerActionFactory {
     private static final ActionMouseCursor TRANSLATE_MOUSE_CURSOR = new ActionMouseCursor( Cursor.MOVE_CURSOR, 1);

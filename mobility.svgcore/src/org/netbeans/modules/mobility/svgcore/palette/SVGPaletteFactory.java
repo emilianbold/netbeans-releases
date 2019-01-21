@@ -66,7 +66,7 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class SVGPaletteFactory {
     public static final String SVGXML_PALETTE_FOLDER        = "SVGXMLPalette";  //NOI18N

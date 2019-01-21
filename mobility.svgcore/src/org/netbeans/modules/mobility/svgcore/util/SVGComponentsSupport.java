@@ -44,7 +44,7 @@ package org.netbeans.modules.mobility.svgcore.util;
 
 /**
  *
- * @author karol harezlak
+ * 
  */
 public class SVGComponentsSupport {
 

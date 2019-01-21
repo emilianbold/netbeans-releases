@@ -62,7 +62,6 @@ import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author Pavel Benes, suchys, akorostelev
  */
 public final class SaveElementAsImage extends AbstractSaveAction {// implements Presenter.Popup, Presenter.Menu {
 

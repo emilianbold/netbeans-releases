@@ -56,7 +56,7 @@ import org.netbeans.editor.BaseDocument;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 @SuppressWarnings("unchecked")
 public class EncodingInputStream extends InputStream {

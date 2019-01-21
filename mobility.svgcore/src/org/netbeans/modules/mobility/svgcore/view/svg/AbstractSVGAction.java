@@ -62,7 +62,7 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public abstract class AbstractSVGAction extends AbstractAction implements Presenter.Popup {
     public static final String ICON_PATH_PREFIX = "org/netbeans/modules/mobility/svgcore/resources/"; //NOI18N

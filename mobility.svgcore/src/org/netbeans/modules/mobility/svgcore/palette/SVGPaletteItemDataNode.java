@@ -58,7 +58,7 @@ import org.openide.util.datatransfer.ExTransferable;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class SVGPaletteItemDataNode extends DataNode {
     private static final String IMAGE_ICON_BASE = "org/netbeans/modules/mobility/svgcore/resources/svg.png"; //NOI18N

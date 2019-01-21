@@ -92,7 +92,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class SceneManager {   
     public static final int    EVENT_ANIM_STARTED    = AWTEvent.RESERVED_ID_MAX + 534;

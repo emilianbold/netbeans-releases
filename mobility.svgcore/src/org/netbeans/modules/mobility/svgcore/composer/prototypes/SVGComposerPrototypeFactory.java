@@ -53,7 +53,7 @@ import java.util.Vector;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 @SuppressWarnings({"unchecked"})
 public abstract class SVGComposerPrototypeFactory  {

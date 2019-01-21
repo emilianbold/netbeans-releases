@@ -66,7 +66,7 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public class SVGSourceMultiViewElement extends XmlMultiViewElement {
     private static final long serialVersionUID = 7525761714575627761L;        

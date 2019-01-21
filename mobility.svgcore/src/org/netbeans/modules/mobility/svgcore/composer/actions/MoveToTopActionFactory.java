@@ -53,7 +53,7 @@ import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class MoveToTopActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener{
     private final AbstractSVGAction  m_moveToTopAction = 

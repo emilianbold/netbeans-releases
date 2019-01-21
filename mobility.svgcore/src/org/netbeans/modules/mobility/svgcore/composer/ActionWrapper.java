@@ -47,7 +47,7 @@ import javax.swing.Action;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class ActionWrapper {
     private final Action m_action;

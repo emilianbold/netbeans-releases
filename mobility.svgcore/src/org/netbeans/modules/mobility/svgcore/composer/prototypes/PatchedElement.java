@@ -46,7 +46,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public interface PatchedElement {
     public void      attachSVGObject(SVGObject obj);

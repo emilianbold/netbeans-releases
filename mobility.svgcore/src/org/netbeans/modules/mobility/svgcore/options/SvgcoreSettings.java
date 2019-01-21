@@ -52,7 +52,7 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Pavel Benes (based on initial version created by suchys)
+ *  (based on initial version created by suchys)
  */
 public class SvgcoreSettings {
 

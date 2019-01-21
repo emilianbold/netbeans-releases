@@ -85,7 +85,7 @@ import org.w3c.dom.svg.SVGSVGElement;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class PerseusController {
     public static final int ANIMATION_NOT_AVAILABLE = 0;

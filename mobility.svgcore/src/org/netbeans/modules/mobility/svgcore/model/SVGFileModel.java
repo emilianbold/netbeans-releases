@@ -93,7 +93,7 @@ import org.w3c.dom.svg.SVGRect;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class SVGFileModel {
     protected static final int      MAX_TOOLTIP_ATTR_SIZE = 100;

@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class ImportPaletteFolderPanel extends JPanel {
     private static String s_lastSelection = ""; //NOI18N

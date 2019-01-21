@@ -50,7 +50,7 @@ import javax.swing.ImageIcon;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public abstract class AbstractSVGToggleAction extends AbstractSVGAction {
     private static final long serialVersionUID  = 5862679852552354L;

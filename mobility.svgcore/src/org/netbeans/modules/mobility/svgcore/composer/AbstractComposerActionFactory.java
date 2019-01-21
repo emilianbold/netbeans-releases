@@ -49,7 +49,7 @@ import javax.swing.Action;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public abstract class AbstractComposerActionFactory implements ComposerActionFactory {
     protected final SceneManager m_sceneMgr;

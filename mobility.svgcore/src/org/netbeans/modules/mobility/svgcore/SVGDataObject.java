@@ -86,7 +86,7 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 @MIMEResolver.ExtensionRegistration(
     mimeType="image/svg+xml",

@@ -52,7 +52,6 @@ import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author breh
  */
 public class ExternalEditAction extends CookieAction {
 

@@ -53,7 +53,7 @@ import javax.swing.JMenuItem;
 
 /** Popup submenu consisting of boolean state filters
  *
- * @author Dafe Simonek
+ * 
  */
 public final class FilterActions extends AbstractAction {
     

@@ -60,7 +60,6 @@ import org.openide.util.Utilities;
 
 /** TreeCellRenderer implementatin for the XML Navigator.
  *
- * @author Pavel Benes (based on the class NavigatorTreeCellRenderer by Marek Fukala)
  * @version 1.0
  */
 class SVGNavigatorTreeCellRenderer extends DefaultTreeCellRenderer {    

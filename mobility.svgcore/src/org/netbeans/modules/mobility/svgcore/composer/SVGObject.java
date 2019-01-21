@@ -58,7 +58,7 @@ import org.w3c.dom.svg.SVGRect;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class SVGObject {
     private final SceneManager        m_sceneMgr;

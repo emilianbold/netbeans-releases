@@ -46,7 +46,7 @@ package org.netbeans.modules.mobility.svgcore.api.snippets;
 
 /**
  *
- * @author karol harezlak
+ * 
  */
 public interface SVGSnippetsProvider {
 

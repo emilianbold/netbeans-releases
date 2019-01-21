@@ -63,7 +63,6 @@ import org.openide.ErrorManager;
  * TreeNodeAdapter is an implementation of j.s.t.TreeNode encapsulating a DocumentElement
  * instance and listening on its changes.
  *
- * @author Pavel Benes (based on the class TreeNodeAdapter by Marek Fukala)
  */
 final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
     private final SVGNavigatorTree        m_nodeTree;

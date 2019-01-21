@@ -90,7 +90,7 @@ import org.w3c.dom.svg.SVGSVGElement;
 
 /**
  *
- * @author  Pavel Benes
+ *  Benes
  */
 public abstract class SVGRasterizerPanel extends JPanel implements AnimationRasterizer.Params {
     protected final    SVGDataObject       m_dObj;

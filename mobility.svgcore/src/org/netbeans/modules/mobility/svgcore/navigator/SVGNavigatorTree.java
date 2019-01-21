@@ -57,7 +57,7 @@ import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public final class SVGNavigatorTree extends JTree {
     public static byte VISIBILITY_DIRECT     = 1;

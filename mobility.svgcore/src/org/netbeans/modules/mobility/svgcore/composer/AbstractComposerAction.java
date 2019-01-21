@@ -49,7 +49,7 @@ import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public abstract class AbstractComposerAction implements ComposerAction{
     protected final ComposerActionFactory m_factory;
