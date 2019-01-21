@@ -71,7 +71,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author martin
  */
 @ActionsProvider.Registration(path="netbeans-JPDASession/"+TruffleStrataProvider.TRUFFLE_STRATUM,
                               actions={"stepInto", "stepOver", "stepOut", "continue"})

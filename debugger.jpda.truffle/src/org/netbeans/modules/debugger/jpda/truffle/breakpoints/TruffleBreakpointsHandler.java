@@ -88,7 +88,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Martin
  */
 public class TruffleBreakpointsHandler {
     

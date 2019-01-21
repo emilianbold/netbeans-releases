@@ -76,7 +76,6 @@ import java.util.WeakHashMap;
  * <code>com.oracle.truffle.api.vm.PolyglotEngine.dispatchExecutionEvent()</code> and
  * <code>com.oracle.truffle.api.vm.PolyglotEngine.dispatchSuspendedEvent()</code> methods.
  * 
- * @author Martin
  */
 public class JPDATruffleAccessor extends Object {
     

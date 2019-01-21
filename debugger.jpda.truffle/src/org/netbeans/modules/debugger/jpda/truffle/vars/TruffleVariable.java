@@ -46,7 +46,6 @@ import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
 
 /**
  *
- * @author Martin
  */
 public interface TruffleVariable {
     

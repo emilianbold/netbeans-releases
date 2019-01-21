@@ -55,7 +55,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Martin
  */
 final class SourceConnection extends URLConnection {
     

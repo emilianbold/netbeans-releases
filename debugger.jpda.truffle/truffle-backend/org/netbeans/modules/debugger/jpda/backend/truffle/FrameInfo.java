@@ -50,7 +50,6 @@ import java.util.ArrayList;
 /**
  * Collects stack frame information.
  * 
- * @author martin
  */
 final class FrameInfo {
     final DebugStackFrame frame;  // the top frame instance

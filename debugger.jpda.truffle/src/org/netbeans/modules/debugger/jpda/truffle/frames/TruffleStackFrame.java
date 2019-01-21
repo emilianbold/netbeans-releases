@@ -58,7 +58,6 @@ import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
 
 /**
  *
- * @author Martin
  */
 public final class TruffleStackFrame {
 

@@ -70,7 +70,6 @@ import org.openide.windows.InputOutput;
 
 /**
  * Start the JPDA debugger
- * @author Milos Kleint
  */
 public class JPDAStart implements Runnable {
 

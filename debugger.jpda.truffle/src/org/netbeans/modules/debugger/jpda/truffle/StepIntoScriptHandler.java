@@ -67,7 +67,6 @@ import org.openide.util.Exceptions;
 /**
  * Handler of step into language code from Java.
  * 
- * @author Martin
  */
 @LazyActionsManagerListener.Registration(path="netbeans-JPDASession/Java")
 public class StepIntoScriptHandler extends LazyActionsManagerListener implements PropertyChangeListener {

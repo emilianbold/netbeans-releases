@@ -49,7 +49,6 @@ import java.util.Set;
 /**
  * Provides the MIME types of languages supported by a GraalVM instance.
  * 
- * @author martin
  */
 public class GetMIMETypes {
     

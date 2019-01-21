@@ -68,7 +68,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Martin
  */
 @DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
                              types=NodeActionsProviderFilter.class,

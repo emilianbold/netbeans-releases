@@ -56,7 +56,6 @@ import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
 /**
  * Container of information about the current program counter.
  * 
- * @author Martin
  */
 public class CurrentPCInfo {
     

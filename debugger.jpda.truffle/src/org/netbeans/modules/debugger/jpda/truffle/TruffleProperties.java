@@ -53,7 +53,6 @@ import org.openide.util.BaseUtilities;
 
 /**
  *
- * @author martin
  */
 public final class TruffleProperties {
     

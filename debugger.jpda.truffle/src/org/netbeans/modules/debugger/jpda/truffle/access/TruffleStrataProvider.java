@@ -51,7 +51,6 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 /**
  *
- * @author martin
  */
 @DebuggerServiceRegistration(path = "netbeans-JPDASession", types = { StrataProvider.class })
 public class TruffleStrataProvider implements StrataProvider {

@@ -54,7 +54,6 @@ import org.netbeans.spi.debugger.jpda.Evaluator;
 
 /**
  *
- * @author Martin
  */
 @Evaluator.Registration(language=TruffleStrataProvider.TRUFFLE_STRATUM)
 public class TruffleEvaluator implements Evaluator<TruffleExpression> {

@@ -49,7 +49,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Martin
  */
 final class SourceFilesCache {
     

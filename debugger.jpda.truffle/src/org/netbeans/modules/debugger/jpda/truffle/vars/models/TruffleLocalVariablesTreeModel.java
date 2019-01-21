@@ -63,7 +63,6 @@ import org.openide.util.WeakSet;
 
 /**
  *
- * @author Martin
  */
 @DebuggerServiceRegistration(path="netbeans-JPDASession/"+TruffleStrataProvider.TRUFFLE_STRATUM+"/LocalsView",  types = TreeModelFilter.class)
 public class TruffleLocalVariablesTreeModel extends TruffleVariablesTreeModel {

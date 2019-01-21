@@ -89,7 +89,6 @@ import org.openide.util.Exceptions;
 /**
  * Currently JavaScript-specific Run to cursor action provider.
  * 
- * @author Martin Entlicher
  */
 @ActionsProvider.Registration(path="netbeans-JPDASession/"+TruffleStrataProvider.TRUFFLE_STRATUM,
                               actions={"runToCursor"}, activateForMIMETypes={"text/javascript"})

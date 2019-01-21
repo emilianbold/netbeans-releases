@@ -46,7 +46,6 @@ import org.openide.filesystems.MIMEResolver;
 /**
  * Inform the IDE of MIME types of files interpreted by Truffle/Graal.
  * 
- * @author martin
  */
 public class LanguageResolvers {
     

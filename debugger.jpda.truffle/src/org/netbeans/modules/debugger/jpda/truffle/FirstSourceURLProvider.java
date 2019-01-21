@@ -54,7 +54,6 @@ import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 
 /**
  *
- * @author Martin
  */
 @SourcePathProvider.Registration(path = "netbeans-JPDASession")
 public class FirstSourceURLProvider extends SourcePathProvider {

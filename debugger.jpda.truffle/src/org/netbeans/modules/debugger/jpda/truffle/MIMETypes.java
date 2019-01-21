@@ -72,7 +72,6 @@ import org.openide.filesystems.FileUtil;
 /**
  * Get the MIME types of languages installed in the Truffle/Graal platform.
  * 
- * @author Martin
  */
 public final class MIMETypes {
 

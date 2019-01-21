@@ -60,7 +60,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Martin
  */
 public final class Source {
     

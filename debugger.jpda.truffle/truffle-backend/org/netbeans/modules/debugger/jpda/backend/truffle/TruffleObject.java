@@ -54,7 +54,6 @@ import java.util.Objects;
 
 /**
  *
- * @author Martin
  */
 public class TruffleObject {
     

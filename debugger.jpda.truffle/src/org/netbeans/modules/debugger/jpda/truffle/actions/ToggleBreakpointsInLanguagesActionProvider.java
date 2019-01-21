@@ -62,7 +62,6 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Martin
  */
 @ActionsProvider.Registration(path="", actions={ "toggleBreakpoint" })
 public class ToggleBreakpointsInLanguagesActionProvider extends ActionsProviderSupport

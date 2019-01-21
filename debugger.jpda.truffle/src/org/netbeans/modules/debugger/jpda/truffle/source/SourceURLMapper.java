@@ -66,7 +66,6 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Support for URLs of the form js_sources://fs&lt;ID&gt;/folder/file
  * 
- * @author Martin
  */
 @ServiceProvider(service=URLMapper.class)
 public final class SourceURLMapper extends URLMapper {

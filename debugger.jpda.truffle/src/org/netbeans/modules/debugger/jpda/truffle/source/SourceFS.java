@@ -64,7 +64,6 @@ import org.openide.util.io.ReaderInputStream;
 
 /**
  *
- * @author Martin
  */
 @NbBundle.Messages("SourceFSDisplayName=Truffle Sources")
 final class SourceFS extends AbstractFileSystem {

@@ -47,7 +47,6 @@ import java.util.WeakHashMap;
 
 /**
  *
- * @author Martin
  */
 final class SourcePosition {
 

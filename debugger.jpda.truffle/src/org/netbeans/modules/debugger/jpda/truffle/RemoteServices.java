@@ -121,7 +121,6 @@ import org.openide.windows.InputOutput;
 /**
  * The remote class could sit on a long sleep, which we can it interrupt from.
  * 
- * @author Martin Entlicher
  */
 public class RemoteServices {
     

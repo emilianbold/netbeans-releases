@@ -66,7 +66,6 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
  *
- * @author Martin
  */
 @DebuggerServiceRegistrations({
     @DebuggerServiceRegistration(path="netbeans-JPDASession/"+TruffleStrataProvider.TRUFFLE_STRATUM+"/LocalsView",  types = TableModelFilter.class),

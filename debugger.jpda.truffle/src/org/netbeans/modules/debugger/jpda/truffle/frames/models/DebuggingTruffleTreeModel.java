@@ -67,7 +67,6 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
  *
- * @author Martin
  */
 @DebuggerServiceRegistration(path="netbeans-JPDASession/"+TruffleStrataProvider.TRUFFLE_STRATUM+"/DebuggingView",
                              types={ TreeModelFilter.class })

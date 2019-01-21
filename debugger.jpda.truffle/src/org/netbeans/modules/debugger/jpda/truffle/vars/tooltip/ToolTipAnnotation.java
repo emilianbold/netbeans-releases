@@ -74,7 +74,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Martin
  */
 public class ToolTipAnnotation extends Annotation implements Runnable {
     

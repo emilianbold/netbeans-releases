@@ -44,7 +44,6 @@ package org.netbeans.modules.debugger.jpda.truffle.vars;
 
 /**
  *
- * @author martin
  */
 public final class TruffleExpression {
     

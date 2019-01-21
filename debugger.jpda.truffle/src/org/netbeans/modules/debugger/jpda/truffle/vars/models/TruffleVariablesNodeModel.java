@@ -65,7 +65,6 @@ import org.openide.util.datatransfer.PasteType;
 
 /**
  *
- * @author Martin
  */
 @DebuggerServiceRegistrations({
     @DebuggerServiceRegistration(path="netbeans-JPDASession/"+TruffleStrataProvider.TRUFFLE_STRATUM+"/LocalsView",  types=ExtendedNodeModelFilter.class),

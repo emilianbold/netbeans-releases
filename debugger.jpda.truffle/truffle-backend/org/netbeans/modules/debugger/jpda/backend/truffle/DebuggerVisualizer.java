@@ -48,7 +48,6 @@ import com.oracle.truffle.api.source.SourceSection;
 
 /**
  *
- * @author Martin
  */
 final class DebuggerVisualizer {
     

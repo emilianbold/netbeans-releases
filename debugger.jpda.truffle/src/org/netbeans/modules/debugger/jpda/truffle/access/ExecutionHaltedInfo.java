@@ -47,7 +47,6 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 
 /**
  *
- * @author Martin
  */
 class ExecutionHaltedInfo {
     

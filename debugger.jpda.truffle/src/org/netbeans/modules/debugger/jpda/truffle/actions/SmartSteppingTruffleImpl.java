@@ -57,7 +57,6 @@ import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;
 /**
  * Step out from com.oracle.truffle.*
  * 
- * @author Martin
  */
 @SmartSteppingCallback.Registration(path="netbeans-JPDASession")
 public class SmartSteppingTruffleImpl extends SmartSteppingCallback {

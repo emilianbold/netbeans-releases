@@ -46,7 +46,6 @@ import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 
 /**
  *
- * @author martin
  */
 public class TruffleLineBreakpoint extends JSLineBreakpoint {
     

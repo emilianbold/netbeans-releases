@@ -96,7 +96,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Martin
  */
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class TruffleDebugManager extends DebuggerManagerAdapter {

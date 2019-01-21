@@ -71,7 +71,6 @@ import org.openide.util.WeakSet;
 /**
  * Assure that the thread we stop in is automatically expanded.
  * 
- * @author Martin Entlicher
  */
 @DebuggerServiceRegistration(path="netbeans-JPDASession/"+TruffleStrataProvider.TRUFFLE_STRATUM+"/DebuggingView",
                              types={ TreeExpansionModelFilter.class })

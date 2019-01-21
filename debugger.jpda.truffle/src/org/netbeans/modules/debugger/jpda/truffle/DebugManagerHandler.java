@@ -90,7 +90,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author martin
  */
 class DebugManagerHandler {
     

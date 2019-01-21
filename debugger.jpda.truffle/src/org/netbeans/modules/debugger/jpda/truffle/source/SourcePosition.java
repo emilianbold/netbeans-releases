@@ -47,7 +47,6 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 /**
  * A script source position.
  * 
- * @author Martin Entlicher
  */
 public class SourcePosition {
 

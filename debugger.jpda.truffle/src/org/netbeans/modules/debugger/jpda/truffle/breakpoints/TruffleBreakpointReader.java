@@ -56,7 +56,6 @@ import org.openide.filesystems.URLMapper;
 
 /**
  *
- * @author martin
  */
 @DebuggerServiceRegistration(types={Properties.Reader.class})
 public class TruffleBreakpointReader implements Properties.Reader {

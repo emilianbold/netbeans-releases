@@ -48,7 +48,6 @@ import javax.swing.UIManager;
 
 /**
  *
- * @author Martin
  */
 public class Utils {
     

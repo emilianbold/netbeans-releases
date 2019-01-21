@@ -56,7 +56,6 @@ import java.lang.ref.WeakReference;
 
 /**
  *
- * @author martin
  */
 class JPDATruffleDebugManager implements SuspendedCallback {
     

@@ -42,7 +42,6 @@ package org.netbeans.modules.debugger.jpda.backend.truffle;
 /**
  * Errors in a language implementation.
  * 
- * @author martin
  */
 final class LangErrors {
     
