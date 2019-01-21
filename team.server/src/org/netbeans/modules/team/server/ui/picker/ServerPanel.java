@@ -86,7 +86,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Mega-menu content for a sing TeamServer.
  * 
- * @author S. Aubrecht
+ * 
  */
 class ServerPanel extends JPanel {
 

@@ -60,7 +60,7 @@ import org.netbeans.modules.team.server.ui.spi.RemoteMachineHandle;
 /**
  * Node representing a remote machine.
  *
- * @author Tomas Stupka
+ * 
  */
 public class RemoteMachineNode extends LeafNode {
 

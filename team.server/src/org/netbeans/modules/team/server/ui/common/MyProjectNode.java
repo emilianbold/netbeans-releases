@@ -48,7 +48,7 @@ import org.netbeans.modules.team.commons.treelist.TreeListNode;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  * @param <P>
  */
 public abstract class MyProjectNode<P> extends LeafNode {

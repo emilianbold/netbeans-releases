@@ -63,7 +63,7 @@ import org.netbeans.modules.team.commons.ColorManager;
 /**
  * Button with no border painted looking like a hypertext link.
  *
- * @author S. Aubrecht
+ * 
  */
 public class LinkButton extends JButton {
 

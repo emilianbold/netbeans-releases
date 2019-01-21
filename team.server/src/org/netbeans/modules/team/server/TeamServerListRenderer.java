@@ -53,7 +53,7 @@ import org.netbeans.modules.team.server.ui.spi.TeamServer;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class TeamServerListRenderer implements ListCellRenderer {
 

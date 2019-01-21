@@ -45,7 +45,7 @@ import java.beans.PropertyChangeListener;
 /**
  * Abstraction of a single issue query (a line in Issues section).
  *
- * @author S. Aubrecht
+ * 
  */
 public abstract class QueryHandle {
 

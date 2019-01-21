@@ -45,7 +45,7 @@ package org.netbeans.modules.team.server.ui.spi;
  *
  * @see ActionsFactory.getOpenQueryResultAction
  *
- * @author S. Aubrecht
+ * 
  */
 public abstract class QueryResultHandle {
 

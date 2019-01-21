@@ -62,7 +62,7 @@ import org.netbeans.modules.team.commons.treelist.TreeListNode;
 /**
  * Node for build status.
  *
- * @author S. Aubrecht
+ * 
  */
 public class BuildNode extends LeafNode implements PropertyChangeListener {
 

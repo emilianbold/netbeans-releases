@@ -55,7 +55,7 @@ import org.netbeans.modules.team.commons.treelist.TreeLabel;
 /**
  * Empty Node. E.g. No Projects Open, No Projects Bookmarked
  *
- * @author Jan Becicka
+ * 
  */
 public class EmptyNode extends LeafNode {
 

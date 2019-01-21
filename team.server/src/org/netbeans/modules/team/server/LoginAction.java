@@ -51,7 +51,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 
 /**
- * @author Jan Becicka
+ * 
  */
 public final class LoginAction extends AbstractAction {
 

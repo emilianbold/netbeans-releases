@@ -57,7 +57,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class EditInstanceAction extends AbstractAction {
 

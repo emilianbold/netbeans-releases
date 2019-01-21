@@ -45,7 +45,7 @@ import javax.swing.JComponent;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public interface LoginPanelSupport {
 

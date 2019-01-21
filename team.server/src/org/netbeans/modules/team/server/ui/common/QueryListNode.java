@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
 /**
  * Node for project's issues section.
  *
- * @author S. Aubrecht
+ * 
  */
 public class QueryListNode<P> extends SectionNode {
     private final DashboardProvider<P> dashboard;

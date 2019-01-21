@@ -55,7 +55,7 @@ import org.netbeans.modules.team.server.ui.spi.TeamServer.Status;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class LogoutPanel extends javax.swing.JPanel {
 

@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 /**
  * Node to open other project
  *
- * @author Jan Becicka
+ * 
  */
 public class OpenNbProjectNode<P> extends LeafNode {
 

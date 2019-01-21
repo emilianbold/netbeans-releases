@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 /**
  * The one and only one selected project
  *
- * @author Tomas Stupka
+ * 
  */
 public class SelectedProjectNode extends LeafNode {
 

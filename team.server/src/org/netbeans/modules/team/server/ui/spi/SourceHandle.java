@@ -46,7 +46,7 @@ import org.netbeans.modules.team.ide.spi.IDEProject;
 /**
  * Abstraction for a single source repository (a line in 'Sources' section).
  *
- * @author S. Aubrecht
+ * 
  */
 public abstract class SourceHandle {
 

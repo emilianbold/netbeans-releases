@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * @author Jan Becicka
+ * 
  */
 public final class LogoutAction extends AbstractAction {
 

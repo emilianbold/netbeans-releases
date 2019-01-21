@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 /**
  * Node to open a directory in the favorites tab
  *
- * @author Jan Becicka
+ * 
  */
 public class OpenFavoritesNode<P> extends LeafNode {
 

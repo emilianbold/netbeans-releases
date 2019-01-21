@@ -56,7 +56,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  * Top component which displays something.
- * @author Jan Becicka
+ * 
  */
 public final class TeamServerTopComponent extends TopComponent {
 

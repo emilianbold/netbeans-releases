@@ -46,7 +46,7 @@ import org.netbeans.modules.team.server.ui.spi.TeamServer;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class TeamServerComparator implements Comparator<TeamServer> {
     @Override

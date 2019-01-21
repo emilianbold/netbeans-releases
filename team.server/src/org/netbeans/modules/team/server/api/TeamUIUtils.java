@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
 
 /**
  * This class is not yet final. We be changed
- * @author Jan Becicka
+ * 
  */
 public final class TeamUIUtils {
 

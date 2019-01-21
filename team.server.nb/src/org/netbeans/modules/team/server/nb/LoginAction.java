@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
- * @author Jan Becicka
+ * 
  */
 final class LoginAction extends AbstractAction {
 

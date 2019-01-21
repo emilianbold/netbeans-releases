@@ -47,7 +47,7 @@ import javax.swing.Action;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public abstract class MemberAccessor<P> {
     public abstract List<MemberHandle> getMembers(ProjectHandle<P> project );

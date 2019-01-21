@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
 /**
  * Base class for nodes representing an expandable section under project's node.
  *
- * @author S. Aubrecht
+ * 
  */
 public abstract class SectionNode extends TreeListNode implements PropertyChangeListener {
 

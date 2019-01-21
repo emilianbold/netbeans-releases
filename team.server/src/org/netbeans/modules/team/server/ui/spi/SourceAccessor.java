@@ -51,7 +51,7 @@ import org.netbeans.modules.team.ide.spi.IDEProject;
  * However the Dashboard UI may declare appropriate service(s) as unreachable
  * after some configurable time out interval.
  *
- * @author S. Aubrecht
+ * 
  */
 public abstract class SourceAccessor<P> {
 

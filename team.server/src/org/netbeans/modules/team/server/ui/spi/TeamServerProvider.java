@@ -48,7 +48,7 @@ import java.util.Collection;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public interface TeamServerProvider {
     

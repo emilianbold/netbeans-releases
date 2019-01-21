@@ -51,7 +51,7 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public final class URLDisplayerAction extends AbstractAction {
 

@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
 /**
  * Node for project's builds section.
  *
- * @author S. Aubrecht
+ * 
  */
 public class BuildListNode extends SectionNode {
 

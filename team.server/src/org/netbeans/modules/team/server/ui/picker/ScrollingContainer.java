@@ -56,7 +56,7 @@ import javax.swing.Scrollable;
  * Special scroll pane that supports mouse-wheel scrolling and has custom scroll buttons
  * (it doesn't show any scrollbars).
  *
- * @author S. Aubrecht
+ * 
  */
 final class ScrollingContainer extends JPanel implements MouseWheelListener  {
 

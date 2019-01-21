@@ -58,7 +58,6 @@ import org.openide.util.NbBundle;
 /**
  * Node for project's sources section.
  *
- * @author S. Aubrecht, Jan Becicka
  */
 public class SourceListNode<P> extends SectionNode {
     private final DashboardProvider<P> dashboard;

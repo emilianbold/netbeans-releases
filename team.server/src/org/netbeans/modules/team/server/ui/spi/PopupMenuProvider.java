@@ -46,7 +46,7 @@ import org.netbeans.api.project.Project;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public interface PopupMenuProvider {
 

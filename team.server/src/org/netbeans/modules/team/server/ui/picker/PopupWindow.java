@@ -75,7 +75,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author phrebejk
  */
 final class PopupWindow  {
     

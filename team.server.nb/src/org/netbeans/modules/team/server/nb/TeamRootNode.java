@@ -73,7 +73,7 @@ import org.openide.windows.WindowManager;
 
 /**
  * Root node in Services tab.
- * @author Jan Becicka
+ * 
  */
 public class TeamRootNode extends AbstractNode {
 

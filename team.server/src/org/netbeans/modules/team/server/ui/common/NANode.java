@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 @NbBundle.Messages({"LBL_NA=N/A"})
 public class NANode extends LeafNode {

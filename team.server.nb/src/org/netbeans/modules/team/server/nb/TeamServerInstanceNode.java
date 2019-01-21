@@ -56,7 +56,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class TeamServerInstanceNode extends AbstractNode {
 

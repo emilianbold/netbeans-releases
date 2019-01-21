@@ -52,7 +52,7 @@ import javax.swing.ListSelectionModel;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 class TeamServerCheckListRenderer implements ListCellRenderer {
 

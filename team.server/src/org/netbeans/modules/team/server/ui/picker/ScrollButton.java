@@ -61,7 +61,7 @@ import org.openide.util.ImageUtilities;
 /**
  * Button for scrolling, keeps sending scrolling the container until mouse is released.
  * 
- * @author S. Aubrecht
+ * 
  */
 final class ScrollButton extends JButton implements ActionListener {
 

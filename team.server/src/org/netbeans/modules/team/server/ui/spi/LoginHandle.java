@@ -45,7 +45,7 @@ import java.beans.PropertyChangeListener;
 /**
  * Abstraction for logged-in user.
  *
- * @author S. Aubrecht
+ * 
  */
 public abstract class LoginHandle {
 

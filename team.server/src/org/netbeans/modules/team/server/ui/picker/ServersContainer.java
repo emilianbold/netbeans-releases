@@ -63,7 +63,7 @@ import javax.swing.event.AncestorListener;
 /**
  * Top-level container holding column-like panels for each TeamServer.
  *
- * @author S. Aubrecht
+ * 
  */
 class ServersContainer extends JPanel implements Scrollable {
 

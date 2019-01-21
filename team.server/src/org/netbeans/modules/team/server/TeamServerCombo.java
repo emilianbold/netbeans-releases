@@ -55,7 +55,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class TeamServerCombo extends JComboBox {
 

@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
 /**
  * Project's root node
  *
- * @author S. Aubrecht
+ * 
  * @param <P>
  */
 class OpenProjectNode<P> extends TreeListNode {

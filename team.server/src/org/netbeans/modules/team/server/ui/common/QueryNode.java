@@ -69,7 +69,7 @@ import org.netbeans.modules.team.commons.treelist.TreeListNode;
 /**
  * Node query results.
  *
- * @author S. Aubrecht
+ * 
  */
 public class QueryNode<P> extends AsynchronousNode<List<QueryResultHandle>> implements PropertyChangeListener {
 

@@ -54,7 +54,7 @@ import org.openide.windows.WindowManager;
  *
  * <p>It's registered and instantiated from module manifest.
  *
- * @author Tomas Stupka
+ * 
  */
 public final class ModuleLifecycleManager extends ModuleInstall {
     @Override

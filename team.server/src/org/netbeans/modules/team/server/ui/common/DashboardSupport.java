@@ -56,7 +56,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  * @param <P> the team project type
  */
 @NbBundle.Messages("A11Y_TeamProjects=Team Projects")

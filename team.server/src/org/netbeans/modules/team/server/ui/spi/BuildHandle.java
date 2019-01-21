@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  * {@link JobHandle#addPropertyChangeListener(PropertyChangeListener)} to listen
  * for changes.
  *
- * @author S. Aubrecht
+ * 
  */
 @NbBundle.Messages({
     "# builder job status is 'running'",

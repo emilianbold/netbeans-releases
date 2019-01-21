@@ -56,7 +56,7 @@ import org.netbeans.modules.team.commons.treelist.TreeLabel;
 /**
  * Category Node. E.g. My Projects, Open Projects
  *
- * @author Jan Becicka
+ * 
  */
 public class CategoryNode extends LeafNode {
 

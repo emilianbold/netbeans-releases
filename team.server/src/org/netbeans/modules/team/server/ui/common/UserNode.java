@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 /**
  * The very first node in dashboard window showing logged-in user name.
  *
- * @author S. Aubrecht
+ * 
  */
 public class UserNode extends LeafNode {
 

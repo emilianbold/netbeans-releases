@@ -52,7 +52,7 @@ import org.netbeans.modules.team.commons.treelist.SelectionList;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public interface TeamServer {
     

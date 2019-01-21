@@ -78,7 +78,6 @@ import org.openide.windows.TopComponent;
 /**
  * Abstract class providing some common Team Dashboard functionality.
  *
- * @author S. Aubrecht, Tomas Stupka
  */
 final class DefaultDashboard<P> implements DashboardImpl<P> {
 

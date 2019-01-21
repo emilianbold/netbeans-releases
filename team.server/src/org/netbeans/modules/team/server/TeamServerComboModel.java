@@ -57,7 +57,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 class TeamServerComboModel extends AbstractListModel implements ComboBoxModel {
 

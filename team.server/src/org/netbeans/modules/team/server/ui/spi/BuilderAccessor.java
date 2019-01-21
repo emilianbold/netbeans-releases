@@ -52,7 +52,7 @@ import org.netbeans.modules.team.server.ui.spi.BuildHandle.Status;
  * However the Dashboard UI may declare appropriate service(s) as unreachable
  * after some configurable time out interval.
  *
- * @author S. Aubrecht
+ * 
  */
 public abstract class BuilderAccessor<P> {
 

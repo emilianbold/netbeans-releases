@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
 
 /**
  * Manager of Team server instances
- * @author Jan Becicka
+ * 
  */
 public final class TeamServerManager {
 

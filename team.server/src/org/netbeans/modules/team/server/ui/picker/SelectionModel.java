@@ -56,7 +56,7 @@ import org.openide.util.ChangeSupport;
 /**
  * Common selection model to ensure only a single project is selected.
  * 
- * @author S. Aubrecht
+ * 
  */
 final class SelectionModel {
 

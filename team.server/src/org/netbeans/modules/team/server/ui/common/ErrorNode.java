@@ -61,7 +61,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * Error message visualization in TreeList
  *
- * @author S. Aubrecht
+ * 
  */
 public class ErrorNode extends LeafNode {
 

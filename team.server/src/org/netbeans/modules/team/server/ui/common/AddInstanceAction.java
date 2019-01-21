@@ -72,7 +72,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 @Messages("CTL_AddInstance=Add Team Server...")
 public class AddInstanceAction extends AbstractAction {

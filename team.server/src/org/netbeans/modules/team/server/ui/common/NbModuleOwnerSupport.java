@@ -346,7 +346,7 @@ import org.openide.util.Union2;
  * they would get {@code null} because more specific pattern
  * &quot;bar/baz*&quot; overrides the assignment &quot;bar = John&quot;.
  *
- * @author Marian Petras
+ * 
  */
 public abstract class NbModuleOwnerSupport {
 

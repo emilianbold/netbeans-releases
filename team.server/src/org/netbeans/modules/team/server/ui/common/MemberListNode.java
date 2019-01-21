@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 /**
  * Node for project's sources section.
  *
- * @author Jan Becicka
+ * 
  */
 public class MemberListNode<P> extends SectionNode {
 

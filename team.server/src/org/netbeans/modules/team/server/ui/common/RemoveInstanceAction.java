@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class RemoveInstanceAction extends AbstractAction {
 

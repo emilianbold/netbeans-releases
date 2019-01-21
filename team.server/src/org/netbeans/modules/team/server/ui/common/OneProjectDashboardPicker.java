@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  * @param <P> project type
  */
 @NbBundle.Messages({"LBL_Switch=Select project", 

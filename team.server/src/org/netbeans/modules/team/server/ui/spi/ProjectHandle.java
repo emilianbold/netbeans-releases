@@ -46,7 +46,7 @@ import java.beans.PropertyChangeSupport;
 /**
  * Abstraction of a single Team project.
  *
- * @author S. Aubrecht
+ * 
  */
 public abstract class ProjectHandle<P> implements Comparable<ProjectHandle> {
 

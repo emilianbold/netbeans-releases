@@ -62,7 +62,7 @@ import javax.swing.event.ChangeListener;
 /**
  * Scrolls the content of a JScrollPane.
  *
- * @author S. Aubrecht
+ * 
  */
 class ScrollAction extends AbstractAction implements ChangeListener, MouseWheelListener {
 

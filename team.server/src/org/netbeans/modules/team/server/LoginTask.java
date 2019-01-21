@@ -48,7 +48,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class LoginTask implements Runnable {
 

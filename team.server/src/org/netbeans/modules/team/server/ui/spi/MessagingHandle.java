@@ -45,7 +45,7 @@ import java.beans.PropertyChangeListener;
 /**
  * Abstraction of messaging info associated with a team project.
  *
- * @author S. Aubrecht
+ * 
  */
 public abstract class MessagingHandle {
 

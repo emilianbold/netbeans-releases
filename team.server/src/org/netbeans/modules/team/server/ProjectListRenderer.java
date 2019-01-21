@@ -53,7 +53,7 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ProjectListRenderer implements ListCellRenderer {
 

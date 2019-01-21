@@ -66,8 +66,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
- * @author Jan Becicka
- * @author maros
+ * 
  */
 public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modules.team.server.ui.spi.LoginPanelSupport.LoginPanelCallback {
 

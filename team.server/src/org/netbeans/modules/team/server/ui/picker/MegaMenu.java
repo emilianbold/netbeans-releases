@@ -60,7 +60,7 @@ import org.netbeans.modules.team.server.api.TeamServerManager;
 
 /**
  *
- * @author S. Aubrecht
+ * 
  */
 public class MegaMenu {
 

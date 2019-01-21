@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 /**
  * Node for project's remote machines section.
  *
- * @author Tomas Stupka
+ * 
  */
 public class RemoteMachineListNode extends SectionNode {
 

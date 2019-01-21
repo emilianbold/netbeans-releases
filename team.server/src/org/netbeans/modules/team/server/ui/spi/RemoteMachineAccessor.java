@@ -48,7 +48,7 @@ import java.util.List;
  * However the Dashboard UI may declare appropriate service(s) as unreachable
  * after some configurable timeout interval.
  *
- * @author Tomas Stupka
+ * 
  * @param <P>
  */
 public abstract class RemoteMachineAccessor<P> {

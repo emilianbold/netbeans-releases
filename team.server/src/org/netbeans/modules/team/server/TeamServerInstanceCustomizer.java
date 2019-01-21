@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements java.beans.Customizer, DocumentListener, ActionListener {
 

@@ -51,7 +51,7 @@ import org.netbeans.modules.team.server.ui.common.NbModuleOwnerSupport.ConfigDat
 import org.netbeans.modules.team.server.ui.common.NbModuleOwnerSupport.OwnerInfo;
 
 /**
- * @author Marian Petras
+ * 
  */
 public class NbModuleOwnerSupportTest extends NbTestCase {
 

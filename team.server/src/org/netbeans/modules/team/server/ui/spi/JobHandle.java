@@ -49,7 +49,7 @@ import org.netbeans.api.annotations.common.NonNull;
 /**
  * Abstraction of a single build process (a line in Builds section)
  *
- * @author S. Aubrecht
+ * 
  */
 public abstract class JobHandle {
 

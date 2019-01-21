@@ -48,7 +48,7 @@ import javax.swing.plaf.ToolBarUI;
 
 /**
  *
- * @author S. Aubrecht
+ * 
  */
 class ServerToolbar extends JToolBar {
 

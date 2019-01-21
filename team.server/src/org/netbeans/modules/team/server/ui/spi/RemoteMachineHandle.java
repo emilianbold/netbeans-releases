@@ -47,7 +47,7 @@ import javax.swing.Action;
  * Handle for a remote machine.
  *
  *
- * @author Tomas Stupka
+ * 
  */
 public abstract class RemoteMachineHandle {
     

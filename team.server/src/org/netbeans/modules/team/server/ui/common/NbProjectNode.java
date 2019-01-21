@@ -62,7 +62,7 @@ import org.openide.util.Utilities;
 /**
  * Node for a single netbeans project.
  *
- * @author Jan Becicka
+ * 
  */
 public class NbProjectNode<P> extends LeafNode {
 

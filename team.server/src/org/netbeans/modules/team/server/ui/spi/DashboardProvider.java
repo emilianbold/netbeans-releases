@@ -52,7 +52,7 @@ import org.openide.util.Lookup;
 /**
  * Provides Team Dashboard relevant functionality.
  *
- * @author Tomas Stupka
+ * 
  * @param <P>
  */
 public abstract class DashboardProvider<P> {

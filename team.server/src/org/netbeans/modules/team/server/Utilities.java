@@ -51,7 +51,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Milan Kubec
+ * 
  */
 public class Utilities {
     private static RequestProcessor RP;
