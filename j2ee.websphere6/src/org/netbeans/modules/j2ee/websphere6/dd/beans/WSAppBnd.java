@@ -51,7 +51,7 @@ import java.io.*;
 
 /**
  *
- * @author dlm198383
+ * 
  */
 public class WSAppBnd extends DDXmi{
 

@@ -72,7 +72,6 @@ import org.netbeans.modules.j2ee.websphere6.dd.beans.WSEjbExt;
  * ws-ebj-jar-ext.xmi configuration files creation.
  *
  *
- * @author Arathi
  */
 public class WSEjbModuleConfiguration extends WSModuleConfiguration
         implements  DeploymentPlanConfiguration, PropertyChangeListener {

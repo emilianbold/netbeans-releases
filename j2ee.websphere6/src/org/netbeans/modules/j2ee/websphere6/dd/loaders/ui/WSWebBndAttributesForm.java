@@ -51,7 +51,7 @@ import org.netbeans.modules.xml.multiview.ui.*;
 
 /**
  *
- * @author dlm198383
+ * 
  */
 public class WSWebBndAttributesForm extends WSWebBndAttributesPanel {
     private final WSWebBnd webbnd;

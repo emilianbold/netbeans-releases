@@ -52,7 +52,6 @@ import org.netbeans.modules.j2ee.websphere6.dd.beans.WSEjbBnd;
 import org.openide.util.NbBundle;
 /**
  *
- * @author  dlm198383
  */
 public class WSEjbBndAttributesPanel extends SectionInnerPanel implements java.awt.event.ItemListener{
     /** Creates new form WSEjbExtAttributesPanel */

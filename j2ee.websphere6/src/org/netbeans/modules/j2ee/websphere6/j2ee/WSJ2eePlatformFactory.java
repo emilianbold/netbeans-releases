@@ -73,7 +73,7 @@ import org.openide.modules.InstalledFileLocator;
  * A sub-class of the J2eePlatformFactory that is set up to return the
  * plugin-specific J2eePlatform.
  *
- * @author Kirill Sorokin
+ * 
  */
 public class WSJ2eePlatformFactory extends J2eePlatformFactory {
     

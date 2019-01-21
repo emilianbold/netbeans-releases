@@ -60,7 +60,7 @@ import org.openide.util.RequestProcessor;
 import org.netbeans.modules.xml.multiview.Error;
 /**
  *
- * @author dlipin
+ * 
  */
 public class WSWebBndToolBarMVElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener, DDXmiConstants{
     

@@ -72,7 +72,7 @@ import org.netbeans.modules.j2ee.websphere6.ui.ServerProperties;
  * the server. Here user should choose among the the existing local instances,
  * or enter the host/port/username/password conbination for a remote one
  *
- * @author Kirill Sorokin
+ * 
  */
 public class ServerPropertiesVisual extends JPanel  {
     
@@ -538,7 +538,7 @@ public class ServerPropertiesVisual extends JPanel  {
     /**
      * Simple key listener that delegates the event to its parent's listeners
      *
-     * @author Kirill Sorokin
+     * 
      */
     public class KeyListener extends KeyAdapter {
         /**

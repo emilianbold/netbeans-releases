@@ -51,7 +51,7 @@ import java.io.*;
 
 /**
  *
- * @author dlm198383
+ * 
  */
 public class WSWebExt extends DDXmi{
     private static final String ROOT=TYPE_WEB_APP_EXT_ID;

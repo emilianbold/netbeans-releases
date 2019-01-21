@@ -47,8 +47,8 @@ package org.netbeans.modules.j2ee.websphere6.ui;
  * A model for the server instance. It contains all the critical properties
  * for the plugin: name, host, port, profile path.
  *
- * @author Kirill Sorokin
- * @author Dmitry Lipin
+ * 
+ * 
  */
 public final class Instance {
     /**

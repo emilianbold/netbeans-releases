@@ -49,7 +49,7 @@ import java.beans.*;
 import java.util.*;
 /**
  *
- * @author dlm198383
+ * 
  */
 public class ResRefBindingsType extends CommonRef implements DDXmiConstants{
 

@@ -57,7 +57,7 @@ import org.openide.WizardDescriptor.InstantiatingIterator;
  * start/stop, incremental deployment, custom wizard for instance addition and
  * the ability to locate the servlet for a jsp page.
  *
- * @author Kirill Sorokin
+ * 
  */
 public class WSOptionalDeploymentManagerFactory extends OptionalDeploymentManagerFactory {
 

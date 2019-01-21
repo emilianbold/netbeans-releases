@@ -53,7 +53,6 @@ import org.netbeans.modules.xml.multiview.Error;
 import org.openide.util.NbBundle;
 /**
  *
- * @author  dlm198383
  */
 public class WSEjbBindingsPanel extends SectionInnerPanel implements java.awt.event.ItemListener,DDXmiConstants{
     EjbBindingsType ejbBinding;

@@ -56,7 +56,7 @@ import org.w3c.dom.*;
 
 /**
  *
- * @author Dmitry Lipin
+ * 
  */
 public class EjbSynchronizer extends Synchronizer{
     

@@ -69,7 +69,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Petr Hejl
+ * 
  */
 public class WebModulesNode extends AbstractNode {
 

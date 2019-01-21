@@ -51,7 +51,7 @@ import java.io.*;
 
 /**
  *
- * @author dlm198383
+ * 
  */
 public class WSEjbExt extends DDXmi{
     private static final String ROOT=TYPE_EJB_EXT_ID;

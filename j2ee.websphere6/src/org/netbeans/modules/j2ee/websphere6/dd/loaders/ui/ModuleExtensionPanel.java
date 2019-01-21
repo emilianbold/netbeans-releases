@@ -48,7 +48,6 @@ import org.netbeans.modules.j2ee.websphere6.dd.beans.DDXmiConstants;
 
 /**
  *
- * @author  dlm198383
  */
 public class ModuleExtensionPanel extends javax.swing.JPanel {
 

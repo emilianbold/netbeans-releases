@@ -47,7 +47,6 @@ import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 
 /**
- * @author pfiala
  */
 public abstract class TextItemEditorModel extends ItemEditorHelper.ItemEditorModel {
 

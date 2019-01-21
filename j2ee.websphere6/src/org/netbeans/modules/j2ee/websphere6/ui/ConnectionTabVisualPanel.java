@@ -54,7 +54,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.awt.Mnemonics;
 /**
  *
- * @author  dlm198383
  */
 public class ConnectionTabVisualPanel extends javax.swing.JPanel {
     
@@ -495,7 +494,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
      * is the local server type is selected we should disable several fields
      * and enable some others instead.
      *
-     * @author Kirill Sorokin, edited by Dmitry Lipin
+     * , edited by Dmitry Lipin
      */
     private class ServerTypeActionListener implements ActionListener {
         /**
@@ -583,7 +582,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
      * A simple listeners that reacts to user's selectin a local instance. It
      * updates the selected instance info.
      *
-     * @author Kirill Sorokin
+     * 
      */
     private class InstanceSelectionListener implements ActionListener {
         /**

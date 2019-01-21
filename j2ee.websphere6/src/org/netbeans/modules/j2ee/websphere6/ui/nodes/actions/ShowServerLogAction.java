@@ -56,7 +56,7 @@ import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author Kirill Sorokin
+ * 
  */
 public class ShowServerLogAction extends CookieAction {
 

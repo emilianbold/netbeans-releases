@@ -53,7 +53,7 @@ import javax.swing.JComboBox;
  * PagesTablePanel - panel containing table for EJB references
  *
  *
- * @author dlm198383
+ * 
  */
 public class PagesTablePanel extends DefaultTablePanel {
     private PageTableModel model;

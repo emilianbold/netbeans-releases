@@ -51,7 +51,7 @@ import java.io.*;
 
 /**
  *
- * @author dlm198383
+ * 
  */
 public class WSAppExt extends DDXmi{
     private static final String ROOT=TYPE_APP_EXT_APP_ID;

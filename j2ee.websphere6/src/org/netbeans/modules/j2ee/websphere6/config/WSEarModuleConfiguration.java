@@ -70,7 +70,6 @@ import org.netbeans.modules.j2ee.websphere6.dd.beans.WSAppExt;
  * EAR application deployment configuration handles websphere-application.xml configuration
  * file creation.
  *
- * @author Arathi
  */
 
 public class WSEarModuleConfiguration extends WSModuleConfiguration 

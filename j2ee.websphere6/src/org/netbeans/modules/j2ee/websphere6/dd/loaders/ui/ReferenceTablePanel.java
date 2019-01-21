@@ -53,7 +53,7 @@ import javax.swing.JComboBox;
  * ReferenceTablePanel - panel containing table for EJB references
  *
  *
- * @author dlm198383
+ * 
  */
 public class ReferenceTablePanel extends DefaultTablePanel implements DDXmiConstants{
     private ReferencesTableModel model;

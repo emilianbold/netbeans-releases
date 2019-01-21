@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /*
  *
- * @author  dlm198383
  */
 public class WSExtendedServletPanel extends /*javax.swing.JPanel*/ SectionInnerPanel implements java.awt.event.ItemListener, javax.swing.event.ChangeListener {
     

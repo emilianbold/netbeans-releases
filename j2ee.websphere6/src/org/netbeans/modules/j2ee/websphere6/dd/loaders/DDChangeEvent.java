@@ -46,7 +46,7 @@ package org.netbeans.modules.j2ee.websphere6.dd.loaders;
 import org.openide.loaders.DataObject;
 /**
  *
- * @author dlm198383
+ * 
  */
 public class DDChangeEvent extends java.util.EventObject{
      /** Event fired when new web is added or copied from another location */

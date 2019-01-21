@@ -46,7 +46,6 @@ package org.netbeans.modules.j2ee.websphere6.dd.loaders;
 /** DDChangeEvent can be fired whenever an object that affacts deployment is updated.
  *  You can register to listen on these changes to be notified.
  *
- * @author  Ludovic Champenois
  */
 public interface DDChangeListener extends java.util.EventListener {
 

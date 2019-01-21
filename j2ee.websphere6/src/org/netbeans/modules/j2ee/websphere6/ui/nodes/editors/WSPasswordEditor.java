@@ -60,7 +60,7 @@ import org.netbeans.modules.j2ee.websphere6.util.*;
  * An editor for the password field that appears on the properties sheet for
  * the instance node.
  *
- * @author Kirill Sorokin
+ * 
  */
 public class WSPasswordEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
@@ -197,7 +197,7 @@ public class WSPasswordEditor extends PropertyEditorSupport implements ExPropert
      * This a listener that is attached to the editor field and watches
      * keystrokes appending the input characters to the value
      *
-     * @author Kirill Sorokin
+     * 
      */
     private class PasswordListener extends KeyAdapter {
         /**

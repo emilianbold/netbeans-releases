@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  dlm198383
  */
 public class EjbExtensionPanel extends SectionInnerPanel implements java.awt.event.ItemListener {
     EjbExtensionsType ejbExtension;

@@ -64,7 +64,7 @@ import org.openide.util.NbPreferences;
  * plugin and returns the DeploymentManagers required for deployment and
  * configuration. Does not directly perform any interaction with the server.
  *
- * @author Kirill Sorokin
+ * 
  */
 public class WSDeploymentFactory implements DeploymentFactory {
 

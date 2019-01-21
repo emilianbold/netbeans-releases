@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Petr Hejl
+ * 
  */
 public class WSDefaultModuleNode extends AbstractNode {
 

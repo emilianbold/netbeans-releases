@@ -44,7 +44,7 @@ package org.netbeans.modules.j2ee.websphere6;
 
 /**
  *
- * @author Petr Hejl
+ * 
  */
 public enum WSVersion {
 

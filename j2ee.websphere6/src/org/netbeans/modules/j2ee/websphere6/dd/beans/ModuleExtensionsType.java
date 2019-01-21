@@ -49,7 +49,7 @@ import java.beans.*;
 import java.util.*;
 /**
  *
- * @author dlm198383
+ * 
  */
 public class ModuleExtensionsType extends org.netbeans.modules.schema2beans.BaseBean implements DDXmiConstants {
     static Vector comparators = new Vector();

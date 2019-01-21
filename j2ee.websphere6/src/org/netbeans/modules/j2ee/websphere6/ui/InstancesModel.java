@@ -51,8 +51,8 @@ import java.util.*;
  * contains a vector of objects of Instance class that contain all data
  * for the instance
  *
- * @author Kirill Sorokin
- * @author Dmitry Lipin
+ * 
+ * 
  */
 public class InstancesModel extends AbstractListModel
         implements ComboBoxModel {

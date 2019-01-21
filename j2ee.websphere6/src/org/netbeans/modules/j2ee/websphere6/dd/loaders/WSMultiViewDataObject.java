@@ -63,7 +63,7 @@ import org.xml.sax.*;
 
 /**
  *
- * @author dlm198383
+ * 
  */
 public abstract class WSMultiViewDataObject extends XmlMultiViewDataObject{
     protected WSDesignView designView;

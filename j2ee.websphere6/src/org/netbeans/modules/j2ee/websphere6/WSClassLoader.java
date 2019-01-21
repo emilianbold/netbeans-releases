@@ -61,8 +61,7 @@ import java.util.logging.Logger;
  * This loader has exactly one instance per server domain and is set as the
  * thread's context classloader before any operation on WS classes is called.
  *
- * @author Kirill Sorokin
- * @author Arathi
+ * 
  */
 public class WSClassLoader extends URLClassLoader {
 
@@ -258,7 +257,7 @@ public class WSClassLoader extends URLClassLoader {
     /**
      * File filter that accepts only .jar files.
      *
-     * @author Kirill Sorokin
+     * 
      */
     private static class JarFileFilter implements FileFilter {
         /**

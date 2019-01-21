@@ -58,7 +58,6 @@ import org.openide.filesystems.FileStateInvalidException;
 /** Panel that contains list of changes for deployment descriptor
  * to accomodate recent servlet modification.
  *
- * @author  Radim Kubacki
  */
 public class DDChangesPanel extends JPanel {
     

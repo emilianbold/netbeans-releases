@@ -49,7 +49,6 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author dlm198383
  */
 public class WSURIManager {
 

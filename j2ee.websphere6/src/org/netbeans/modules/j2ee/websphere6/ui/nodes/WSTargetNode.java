@@ -54,7 +54,7 @@ import org.openide.util.Lookup;
  * As it gets filtered and does not appear in the registry we do not implement
  * anything special.
  *
- * @author Kirill Sorokin
+ * 
  */
 public class WSTargetNode extends AbstractNode {
 

@@ -47,7 +47,7 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 
 /**
  *
- * @author Petr Hejl
+ * 
  */
 public class WSDefaultModule {
 

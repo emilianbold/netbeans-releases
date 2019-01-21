@@ -45,7 +45,6 @@ package org.netbeans.modules.j2ee.websphere6.dd.loaders.ui;
 
 /**
  *
- * @author  dlm198383
  */
 public class WSAuthTablePanel extends javax.swing.JPanel {
 

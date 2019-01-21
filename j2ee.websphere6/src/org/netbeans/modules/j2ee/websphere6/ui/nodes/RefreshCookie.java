@@ -46,7 +46,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Petr Hejl
+ * 
  */
 public interface RefreshCookie extends Node.Cookie {
 

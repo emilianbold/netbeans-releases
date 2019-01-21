@@ -51,8 +51,6 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 /**
-
- * @author thuy
  */
 public class ServerLocationPanel  implements WizardDescriptor.Panel, ChangeListener {
     

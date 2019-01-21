@@ -65,7 +65,6 @@ import org.openide.loaders.DataObject;
 
 /**
  *
- * @author Arathi
  */
 public class WSModuleConfiguration implements ModuleConfiguration {
     

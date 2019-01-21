@@ -45,7 +45,7 @@ package org.netbeans.modules.j2ee.websphere6.dd.beans;
 
 /**
  *
- * @author dlm198383
+ * 
  */
 public interface DDXmiConstants {
 

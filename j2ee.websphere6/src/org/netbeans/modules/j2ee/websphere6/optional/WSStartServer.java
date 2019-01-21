@@ -71,7 +71,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
  * instance. It also supports starting the server in debug mode, so that
  * NetBeans can connect to it using its built-in JPDA debugger.
  *
- * @author Kirill Sorokin
+ * 
  */
 public class WSStartServer extends StartServer {
 
@@ -465,7 +465,7 @@ public class WSStartServer extends StartServer {
      * server in a separate thread, so that the IDE does not hang up during the
      * startup process.
      *
-     * @author Kirill Sorokin
+     * 
      */
     private class WSStartRunnable implements Runnable {
         
@@ -599,7 +599,7 @@ public class WSStartServer extends StartServer {
      * server in a separate thread, so that the IDE does not hang up during the
      * startup process.
      *
-     * @author Kirill Sorokin
+     * 
      */
     private class WSStartDebugRunnable implements Runnable {
         
@@ -742,7 +742,7 @@ public class WSStartServer extends StartServer {
      * separate thread, so that the IDE does not hang up during the stop
      * process.
      *
-     * @author Kirill Sorokin
+     * 
      */
     private class WSStopRunnable implements Runnable {
         
@@ -868,7 +868,7 @@ public class WSStartServer extends StartServer {
      * An implementation of the ProgressObject interface targeted at tracking
      * the server instance's startup/shutdown progress
      *
-     * @author Kirill Sorokin
+     * 
      */
     private static class WSServerProgress implements ProgressObject {
         

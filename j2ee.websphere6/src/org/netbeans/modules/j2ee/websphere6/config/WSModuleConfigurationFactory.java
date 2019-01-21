@@ -52,7 +52,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurati
 /**
  * WAS implementation of the ModuleConfigurationFactory.
  * 
- * @author Arathi
  */
 public class WSModuleConfigurationFactory implements ModuleConfigurationFactory {
 

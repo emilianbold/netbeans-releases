@@ -51,7 +51,6 @@ import org.netbeans.modules.xml.multiview.ui.*;
 
 /**
  *
- * @author  dlm198383
  */
 public class ReferencePanel extends javax.swing.JPanel implements DDXmiConstants{
     CommonRef ref;

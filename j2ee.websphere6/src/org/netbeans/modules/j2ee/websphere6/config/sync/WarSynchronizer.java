@@ -59,7 +59,7 @@ import org.w3c.dom.*;
 
 /**
  *
- * @author Dmitry Lipin
+ * 
  */
 public class WarSynchronizer extends Synchronizer {
     

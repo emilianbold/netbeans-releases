@@ -53,7 +53,7 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 
 /**
  *
- * @author dlm198383
+ * 
  */
 public class DeploymentManagerProperties {
 

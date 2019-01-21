@@ -55,8 +55,6 @@ import org.xml.sax.*;
 
 /**
  *
- * @author  mkuchtiak
- * @author  dlipin
  */
 public class DDUtils {
 

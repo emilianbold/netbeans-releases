@@ -50,7 +50,7 @@ import org.netbeans.modules.xml.multiview.ui.*;
 
 /**
  *
- * @author dlipin
+ * 
  */
 public class PanelFactory implements org.netbeans.modules.xml.multiview.ui.InnerPanelFactory {
     private WSWebExtDataObject dObj;

@@ -47,7 +47,6 @@ import org.netbeans.modules.j2ee.websphere6.dd.beans.*;
 
 /**
  *
- * @author  dlm198383
  */
 public class MarkupLanguagePanel extends javax.swing.JPanel {
 

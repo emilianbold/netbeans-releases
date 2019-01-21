@@ -51,7 +51,6 @@ import org.netbeans.modules.xml.multiview.ui.*;
 import org.netbeans.modules.xml.multiview.Error;
 /**
  *
- * @author  dlm198383
  */
 public class WSWebBndAttributesPanel extends /*javax.swing.JPanel*/ SectionInnerPanel{
 

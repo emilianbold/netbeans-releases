@@ -52,7 +52,7 @@ import org.openide.*;
 /**
  * Just a collection of static utility methods
  *
- * @author Kirill Sorokin
+ * 
  */
 public final class WSUtil {
 

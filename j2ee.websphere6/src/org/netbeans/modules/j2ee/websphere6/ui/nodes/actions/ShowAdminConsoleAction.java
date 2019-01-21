@@ -59,7 +59,7 @@ import org.openide.awt.HtmlBrowser.URLDisplayer;
 
 /**
  *
- * @author Kirill Sorokin
+ * 
  */
 public class ShowAdminConsoleAction extends CookieAction {
     protected void performAction(Node[] nodes) {

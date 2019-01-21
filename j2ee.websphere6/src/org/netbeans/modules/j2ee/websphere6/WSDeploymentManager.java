@@ -101,9 +101,8 @@ import org.openide.util.NbBundle;
  * server's implementation, with the thread's context classloader updated
  * if necessary.
  *
- * @author Kirill Sorokin
- * @author Petr Hejl
- * @author Arathi
+ * 
+ * 
  */
 @SuppressWarnings("deprecation")
 public class WSDeploymentManager implements DeploymentManager {

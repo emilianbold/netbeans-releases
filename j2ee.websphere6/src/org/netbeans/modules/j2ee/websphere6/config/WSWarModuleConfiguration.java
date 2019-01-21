@@ -71,8 +71,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Arathi
- * @author Petr Hejl
+ * 
  */
 public class WSWarModuleConfiguration extends WSModuleConfiguration
         implements ContextRootConfiguration, DeploymentPlanConfiguration, PropertyChangeListener {

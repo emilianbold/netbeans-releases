@@ -72,7 +72,7 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 /**
  * WebSphere instance customizer which is accessible from server manager.
  *
- * @author Dmitry Lipin 
+ *  
  */
 public class Customizer extends JTabbedPane {
 

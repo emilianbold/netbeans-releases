@@ -61,7 +61,7 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Dmitry Lipin
+ * 
  */
 public abstract class Synchronizer {
     

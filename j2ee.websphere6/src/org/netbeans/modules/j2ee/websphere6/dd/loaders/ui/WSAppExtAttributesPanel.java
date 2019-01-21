@@ -52,7 +52,6 @@ import org.netbeans.modules.xml.multiview.Error;
 
 /**
  *
- * @author  dlm198383
  */
 public class WSAppExtAttributesPanel extends SectionInnerPanel
         implements java.awt.event.ItemListener, javax.swing.event.ChangeListener, DDXmiConstants{

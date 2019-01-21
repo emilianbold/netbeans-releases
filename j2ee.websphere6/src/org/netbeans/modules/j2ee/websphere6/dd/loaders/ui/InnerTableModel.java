@@ -50,7 +50,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.*;
 
 /**
- * @author pfiala
  */
 public abstract class InnerTableModel extends AbstractTableModel {
 

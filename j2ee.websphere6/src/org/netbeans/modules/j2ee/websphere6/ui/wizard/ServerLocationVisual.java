@@ -76,8 +76,7 @@ import org.openide.util.NbBundle;
  * User is required to enter the local server's installation directory at this
  * phase.
  *
- * @author Kirill Sorokin
- * @author Arathi
+ * 
  */
 public class ServerLocationVisual extends JPanel {
     
@@ -411,7 +410,7 @@ public class ServerLocationVisual extends JPanel {
     /**
      * Simple key listener that delegates the event to its parent's listeners
      *
-     * @author Kirill Sorokin
+     * 
      */
     private class LocationKeyListener extends KeyAdapter {
         /**
@@ -434,7 +433,7 @@ public class ServerLocationVisual extends JPanel {
     /**
      * Simple listener that reacts on the user's clicking the Browse button
      *
-     * @author Kirill Sorokin
+     * 
      */
     private class BrowseActionListener implements ActionListener {
         /**
@@ -450,7 +449,7 @@ public class ServerLocationVisual extends JPanel {
      * An extension of the FileFilter class that is setup to accept only
      * directories.
      *
-     * @author Kirill Sorokin
+     * 
      */
     private static class DirectoryFileFilter extends FileFilter {
         /**

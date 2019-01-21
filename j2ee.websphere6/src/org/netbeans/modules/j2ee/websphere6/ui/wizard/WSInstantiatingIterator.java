@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  * It performs all the orchestration of the panels and actually creates the
  * instance.
  *
- * @author Kirill Sorokin
+ * 
  */
 public class WSInstantiatingIterator 
         implements WizardDescriptor.InstantiatingIterator {
@@ -560,7 +560,7 @@ public class WSInstantiatingIterator
      * A simple listener that only notifies the parent iterator of all the 
      * events that come to it
      * 
-     * @author Kirill Sorokin
+     * 
      */
     private class IteratorListener implements ChangeListener {
         /**

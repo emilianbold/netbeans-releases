@@ -77,7 +77,7 @@ import org.openide.util.actions.SystemAction;
  * Node that will appear in the Server Registry and represent a concrete server
  * instance.
  *
- * @author Kirill Sorokin
+ * 
  */
 public class WSManagerNode extends AbstractNode implements Node.Cookie {
 

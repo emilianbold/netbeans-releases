@@ -65,7 +65,7 @@ import org.openide.util.*;
 
 /**
  *
- * @author dlm198383
+ * 
  */
 public class ServerProperties {
 
@@ -802,7 +802,7 @@ public class ServerProperties {
      * An extension of the FileNameFilter class that is setup to accept only
      * directories.
      *
-     * @author Kirill Sorokin
+     * 
      */
     
     private static class DirectoryFilter implements FilenameFilter {
@@ -828,7 +828,7 @@ public class ServerProperties {
      * is the local server type is selected we should disable several fields
      * and enable some others instead.
      *
-     * @author Kirill Sorokin
+     * 
      */
     public class ServerTypeActionListener implements ActionListener {
         /**
@@ -953,7 +953,7 @@ public class ServerProperties {
     /**
      * Simple key listener that delegates the event to its parent's listeners
      *
-     * @author Kirill Sorokin
+     * 
      */
     public class KeyListener extends KeyAdapter {
         /**
@@ -1013,7 +1013,7 @@ public class ServerProperties {
      * A simple listeners that reacts to user's selectin a local instance. It
      * updates the selected instance info.
      *
-     * @author Kirill Sorokin
+     * 
      */
     public class InstanceSelectionListener implements ActionListener {
         /**

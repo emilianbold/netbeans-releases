@@ -51,7 +51,6 @@ import org.netbeans.modules.j2ee.websphere6.dd.loaders.ejbext.*;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.WSEjbExt;
 /**
  *
- * @author  dlm198383
  */
 public class WSEjbExtAttributesPanel extends SectionInnerPanel  {
 

@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.xml.multiview.Error;
 /**
  *
- * @author dlipin
+ * 
  */
 public class WSEjbExtToolBarMVElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener{
     

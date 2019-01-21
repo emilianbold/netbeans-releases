@@ -50,7 +50,6 @@ import org.netbeans.modules.xml.multiview.ui.*;
 
 /**
  *
- * @author  dlm198383
  */
 public class PagePanel extends javax.swing.JPanel {
     PageType page;

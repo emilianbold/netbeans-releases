@@ -52,7 +52,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
 /**
  * Factory that creates nodes that will appear in the server registry.
  *
- * @author Kirill Sorokin
+ * 
  */
 public class WSRegistryNodeFactory implements RegistryNodeFactory {
     /**

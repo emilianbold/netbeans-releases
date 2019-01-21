@@ -45,7 +45,7 @@ package org.netbeans.modules.j2ee.websphere6.dd.loaders;
 
 /**
  *
- * @author dlm198383
+ * 
  */
 public class SectionNodes {
 

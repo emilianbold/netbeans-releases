@@ -58,7 +58,7 @@ import org.openide.windows.*;
  * checks for changes at the specified intervals and outputs the changes to
  * the given I/O panel in NetBeans
  *
- * @author Kirill Sorokin
+ * 
  */
 public class WSTailer extends Thread {
     

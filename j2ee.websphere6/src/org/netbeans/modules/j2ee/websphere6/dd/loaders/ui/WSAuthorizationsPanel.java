@@ -54,7 +54,6 @@ import org.netbeans.modules.xml.multiview.Error;
 
 /**
  *
- * @author  dlm198383
  */
 public class WSAuthorizationsPanel extends SectionInnerPanel
         implements DDXmiConstants,

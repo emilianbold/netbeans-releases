@@ -49,7 +49,7 @@ import java.beans.*;
 import java.util.*;
 /**
  *
- * @author dlm198383
+ * 
  */
 public class EjbExtensionsType extends org.netbeans.modules.schema2beans.BaseBean implements DDXmiConstants {
 

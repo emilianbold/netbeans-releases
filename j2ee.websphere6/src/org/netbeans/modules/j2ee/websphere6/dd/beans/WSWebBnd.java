@@ -51,7 +51,7 @@ import java.io.*;
 
 /**
  *
- * @author dlm198383
+ * 
  */
 public class WSWebBnd extends DDXmi {
     private static final String ROOT=TYPE_WEB_APP_BND_ID;

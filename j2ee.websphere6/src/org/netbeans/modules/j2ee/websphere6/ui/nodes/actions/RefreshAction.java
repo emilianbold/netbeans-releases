@@ -49,7 +49,7 @@ import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author Petr Hejl
+ * 
  */
 public class RefreshAction extends NodeAction {
 

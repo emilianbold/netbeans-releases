@@ -53,7 +53,7 @@ import javax.swing.JComboBox;
  * ModuleExtensionTablePanel - panel containing table for EJB references
  *
  *
- * @author dlm198383
+ * 
  */
 public class ModuleExtensionTablePanel extends DefaultTablePanel {
     private ModuleExtensionTableModel model;

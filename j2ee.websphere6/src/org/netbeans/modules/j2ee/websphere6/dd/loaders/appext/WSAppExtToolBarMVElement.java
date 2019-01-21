@@ -53,7 +53,7 @@ import org.openide.util.RequestProcessor;
 import org.netbeans.modules.xml.multiview.Error;
 /**
  *
- * @author dlipin
+ * 
  */
 public class WSAppExtToolBarMVElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener{
     private ToolBarDesignEditor comp;

@@ -68,7 +68,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Petr Hejl
+ * 
  */
 public class EnterpriseModulesNode extends AbstractNode {
 
