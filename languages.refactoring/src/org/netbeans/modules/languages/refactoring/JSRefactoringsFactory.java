@@ -84,7 +84,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Daniel Prusa
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=100)
 public class JSRefactoringsFactory implements RefactoringPluginFactory {

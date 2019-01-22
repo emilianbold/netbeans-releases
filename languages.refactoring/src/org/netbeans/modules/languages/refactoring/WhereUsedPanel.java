@@ -51,7 +51,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 
 /**
- * @author  Daniel Prusa
+ * 
  */
 public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 

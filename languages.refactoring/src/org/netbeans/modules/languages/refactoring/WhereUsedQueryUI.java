@@ -60,7 +60,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Daniel Prusa
+ * 
  */
 public class WhereUsedQueryUI implements RefactoringUI {
     

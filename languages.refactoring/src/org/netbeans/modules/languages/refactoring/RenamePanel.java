@@ -54,7 +54,7 @@ import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 /**
  * JavaScript Rename refactoring parameters panel
  *
- * @author  Daniel Prusa
+ * 
  */
 public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
