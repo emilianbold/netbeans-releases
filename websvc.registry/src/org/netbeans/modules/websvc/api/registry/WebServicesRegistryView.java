@@ -58,7 +58,7 @@ import org.openide.filesystems.FileObject;
  *     registered services.  It will also need to allow external modules to
  *     register a WSDL, bypassing the UI, but doing the rest.
  *
- * @author Peter Williams
+ * 
  */
 public interface WebServicesRegistryView {
 	

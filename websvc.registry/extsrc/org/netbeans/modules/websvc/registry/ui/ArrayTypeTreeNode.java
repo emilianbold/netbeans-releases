@@ -49,7 +49,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author  David Botterill
+ * 
  */
 public class ArrayTypeTreeNode extends DefaultMutableTreeNode {
 

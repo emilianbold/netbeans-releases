@@ -54,7 +54,7 @@ import javax.swing.tree.TreeModel;
  * use <code>DefaultOutlineModel</code> than to implement this interface
  * directly.
  *
- * @author  Tim Boudreau  */
+ *   */
 public interface OutlineModel extends TableModel, TreeModel {
     /** Get the <code>TreePathSupport</code> object this model uses to manage
      * information about expanded nodes.  <code>TreePathSupport</code> implements

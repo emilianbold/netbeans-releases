@@ -48,7 +48,7 @@ import com.sun.xml.rpc.processor.model.java.JavaType;
 
 /**
  *
- * @author  David Botterill
+ * 
  */
 public interface NodeData {
 

@@ -55,7 +55,7 @@ import java.util.Iterator;
  * This class is meant to hold the pertinent data from the class
  * com.sun.xml.rpc.processor.model.Port.  This class will serve as a
  * JavaBean.  This class will be persisted with the WebServiceData.
- * @author  David Botterill
+ * 
  */
 public class WSPort {
 

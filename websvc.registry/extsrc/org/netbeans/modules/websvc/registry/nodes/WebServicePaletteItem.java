@@ -98,7 +98,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 /**
  * Construct a palette like item to drag and drop the webservices on to the web designer
  *
- * @author  Winston Prakash
+ * 
  */
 public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE FROM RAVE extends BeanPaletteItem {
     private String proxyName;

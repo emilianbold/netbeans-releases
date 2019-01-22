@@ -47,7 +47,7 @@ package org.netbeans.modules.websvc.registry.model;
 import java.util.EventListener;
 
 /**
- * @author Winston Prakash
+ * 
  */
 public interface WebServiceGroupListener extends EventListener {
 

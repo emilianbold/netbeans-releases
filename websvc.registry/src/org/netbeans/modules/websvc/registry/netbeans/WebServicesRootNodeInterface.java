@@ -52,7 +52,7 @@ import javax.swing.Action;
 
 /**
  * The top level node representing Web Services in the Server Navigator
- * @author Ludovic
+ * 
  */
 public interface WebServicesRootNodeInterface{
     public Image getIcon(int type);

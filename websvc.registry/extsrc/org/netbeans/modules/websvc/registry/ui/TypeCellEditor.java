@@ -78,7 +78,7 @@ import java.awt.event.ActionEvent;
 
 /**
  *
- * @author  david
+ * 
  */
 public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor {
     Component lastComponent;

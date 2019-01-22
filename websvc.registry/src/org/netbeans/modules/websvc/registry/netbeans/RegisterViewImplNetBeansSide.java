@@ -52,7 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
 /**
  *
- * @author  ludo
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.api.registry.WebServicesRegistryView.class)
 public class RegisterViewImplNetBeansSide implements WebServicesRegistryView/*, PropertyChangeListener*/ {

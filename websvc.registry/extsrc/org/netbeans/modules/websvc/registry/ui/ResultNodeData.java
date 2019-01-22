@@ -48,7 +48,7 @@ import com.sun.xml.rpc.processor.model.java.JavaType;
 
 /**
  * This class represents the data for each node in the Results TreeTable.
- * @author  David Botterill
+ * 
  */
 public class ResultNodeData implements NodeData {
 

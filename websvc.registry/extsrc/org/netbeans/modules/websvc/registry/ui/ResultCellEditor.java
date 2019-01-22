@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.registry.ui;
 
 /**
  *
- * @author  David Botterill
+ * 
  */
 
 import javax.swing.DefaultCellEditor;
@@ -71,7 +71,7 @@ import com.sun.xml.rpc.processor.model.java.JavaEnumerationType;
 
 /**
  *
- * @author  david
+ * 
  */
 public class ResultCellEditor extends DefaultCellEditor implements TableCellEditor {
     

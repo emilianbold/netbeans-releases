@@ -63,7 +63,7 @@ import org.openide.util.Utilities;
 /** A simple test of the Outline (aka TreeTable) class which implements
  * a filesystem browser.
  *
- * @author  Tim Boudreau
+ * 
  */
 public class TestOutline extends JFrame {
     private Outline outline;

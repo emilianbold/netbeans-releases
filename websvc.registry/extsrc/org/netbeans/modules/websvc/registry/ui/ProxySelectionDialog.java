@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Winston Prakash
+ * 
  */
 public class ProxySelectionDialog extends javax.swing.JPanel implements ActionListener {
     

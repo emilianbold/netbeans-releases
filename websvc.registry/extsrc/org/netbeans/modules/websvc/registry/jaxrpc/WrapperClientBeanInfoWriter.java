@@ -56,7 +56,7 @@ import java.util.Set;
 
 /**
  * A simple writer to write the Bean Info Class.
- * @author  Winston Prakash
+ * 
  */
 public class WrapperClientBeanInfoWriter extends java.io.PrintWriter {
 

@@ -70,7 +70,7 @@ import org.netbeans.modules.websvc.registry.WebServicePersistenceManager;
 /**
  * A model to keep track of web service data and their group
  * Nodes are created using this model
- * @author Winston Prakash
+ * 
  */
 public class WebServiceListModel {
 

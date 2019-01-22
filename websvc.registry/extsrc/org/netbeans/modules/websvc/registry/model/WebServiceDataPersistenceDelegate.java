@@ -49,7 +49,7 @@ import java.beans.Encoder;
 
 /**
  *
- * @author  david
+ * 
  */
 public class WebServiceDataPersistenceDelegate extends DefaultPersistenceDelegate {
 

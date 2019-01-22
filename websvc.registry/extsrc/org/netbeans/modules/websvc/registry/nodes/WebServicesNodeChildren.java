@@ -51,7 +51,6 @@ import com.sun.xml.rpc.processor.model.java.JavaMethod;
 import com.sun.xml.rpc.processor.model.Port;
 
 /** Node Children for the Webservice Node
- * @author  octav, Winston Prakash
  */
 public class WebServicesNodeChildren extends Children.Keys {
 

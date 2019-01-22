@@ -46,7 +46,7 @@ package org.netbeans.swing.outline;
 
 /**
  * This interface provides information about nodes as they related to rows.
- * @author  David Botterill
+ * 
  */
 public interface NodeRowModel {
     /**

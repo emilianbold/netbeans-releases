@@ -80,7 +80,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public class RegistryViewImpl implements WebServicesRegistryView, PropertyChangeListener {
 

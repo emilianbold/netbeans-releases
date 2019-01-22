@@ -61,7 +61,7 @@ import javax.swing.Action;
 
 /**
  * A second level node representing Group of Web Services
- * @author Winston Prakash
+ * 
  */
 public class WebServiceGroupNode extends AbstractNode implements WebServiceGroupCookie {
     WebServiceGroup websvcGroup;

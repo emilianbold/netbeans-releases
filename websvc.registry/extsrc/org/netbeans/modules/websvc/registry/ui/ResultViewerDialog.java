@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  david
+ * 
  */
 public class ResultViewerDialog extends javax.swing.JPanel {
     private JButton okButton = new JButton(NbBundle.getMessage(ResultViewerDialog.class, "OPTION_OK"));

@@ -59,7 +59,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
  *
- * @author  David Botterill
+ * 
  */
 public class ResultRowModel implements RowModel {
     

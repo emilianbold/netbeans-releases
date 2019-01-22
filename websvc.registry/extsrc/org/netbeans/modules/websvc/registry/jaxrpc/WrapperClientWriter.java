@@ -61,7 +61,7 @@ import java.util.Set;
 
 /**
  * A simple writer to write the Java Source.
- * @author  Winston Prakash
+ * 
  */
 public class WrapperClientWriter extends java.io.PrintWriter {
     

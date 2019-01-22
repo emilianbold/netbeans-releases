@@ -56,7 +56,7 @@ package org.netbeans.swing.outline;
  * actual table.
  * <p>
  *
- * @author Tim Boudreau
+ * 
  */
 public interface RowModel {
     /** Get the column count.  Do not include the base (nodes) column

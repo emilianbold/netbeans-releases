@@ -53,7 +53,7 @@ import java.net.URLClassLoader;
 
 /**
  *
- * @author  David Botterill
+ * 
  */
 public class StructureTypeTreeNode extends DefaultMutableTreeNode {
     private URLClassLoader urlClassLoader;

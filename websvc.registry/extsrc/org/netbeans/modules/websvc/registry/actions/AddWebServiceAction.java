@@ -54,7 +54,7 @@ import org.openide.util.*;
 
 /**
  *
- * @author  octav
+ * 
  */
 public class AddWebServiceAction extends NodeAction {
 

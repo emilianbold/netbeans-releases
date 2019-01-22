@@ -60,7 +60,7 @@ import java.awt.Dialog;
 
 /**
  * This Dialog will show exceptions encountered while a user is testing a web service client method.
- * @author  David Botterill
+ * 
  */
 public class MethodExceptionDialog extends javax.swing.JPanel {
     

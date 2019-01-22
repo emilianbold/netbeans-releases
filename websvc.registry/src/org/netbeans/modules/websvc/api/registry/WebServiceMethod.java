@@ -47,7 +47,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public interface WebServiceMethod extends Node.Cookie {
     public Object/*com.sun.xml.rpc.processor.model.java.JavaMethod*/ getJavaMethod();

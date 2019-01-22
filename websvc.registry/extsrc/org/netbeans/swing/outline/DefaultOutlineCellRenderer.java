@@ -59,7 +59,7 @@ import javax.swing.tree.TreePath;
 /** An outline-aware TableCellRenderer which knows how to paint expansion
  * handles and indent child nodes an appropriate amount.
  *
- * @author  Tim Boudreau
+ * 
  */
 public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     private boolean expanded = false;

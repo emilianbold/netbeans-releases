@@ -90,7 +90,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 
 /**
  *
- * @author  David Botterill
+ * 
  */
 public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener*/ {
     private Dialog dialog;

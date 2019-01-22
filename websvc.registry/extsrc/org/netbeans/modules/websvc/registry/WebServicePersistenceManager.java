@@ -44,7 +44,7 @@
 
 /**
  * WebServicePersistenceManager.java
- * @author  Winston Prakash
+ * 
  */
 
 package org.netbeans.modules.websvc.registry;

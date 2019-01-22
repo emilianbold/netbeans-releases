@@ -59,7 +59,7 @@ import javax.swing.tree.*;
 
 /**
  *
- * @author  David Botterill
+ * 
  */
 public class TypeDataProvider implements RenderDataProvider {
     

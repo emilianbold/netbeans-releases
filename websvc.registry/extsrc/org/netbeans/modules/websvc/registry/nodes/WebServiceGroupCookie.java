@@ -49,7 +49,7 @@ import org.netbeans.modules.websvc.registry.model.WebServiceGroup;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public interface WebServiceGroupCookie extends Node.Cookie {
 	

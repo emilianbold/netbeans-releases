@@ -60,7 +60,7 @@ import javax.swing.tree.ExpandVetoException;
  * it that the pending TableModelEvent will never be fired.  It is not of much
  * interest to the rest of the world.
  *
- * @author  Tim Boudreau
+ * 
  */
 public interface ExtTreeWillExpandListener extends TreeWillExpandListener {
     

@@ -59,7 +59,7 @@ import java.util.Iterator;
 import org.netbeans.modules.websvc.registry.model.WebServiceData;
 /**
  *
- * @author  david
+ * 
  */
 public class WebServicesPortNode  extends AbstractNode {
 

@@ -45,7 +45,7 @@
 package org.netbeans.modules.websvc.registry;
 
 /**
- * author octav
+ * 
  */
 public class NotFoundException extends Exception implements java.io.Serializable {
     public String thingNotFound = null;

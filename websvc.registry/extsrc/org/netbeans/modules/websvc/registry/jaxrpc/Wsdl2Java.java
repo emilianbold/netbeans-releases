@@ -76,7 +76,7 @@ import org.openide.awt.StatusDisplayer;
 
 
 /**
- * @author  Winston Prakash
+ * 
  */
 public class Wsdl2Java {
     

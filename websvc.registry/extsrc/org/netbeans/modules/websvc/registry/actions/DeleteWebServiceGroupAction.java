@@ -95,7 +95,7 @@ import org.netbeans.modules.websvc.registry.model.WebServiceGroup;
 
 /**
  * This action will delete a web service group from the server navigator
- * @author  David Botterill
+ * 
  */
 
 public class DeleteWebServiceGroupAction extends NodeAction {

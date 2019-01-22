@@ -54,7 +54,7 @@ import org.netbeans.modules.websvc.registry.util.Util;
 
 /**
  *
- * @author  Winston Prakash
+ * 
  */
 public class WebServiceGroup {
 

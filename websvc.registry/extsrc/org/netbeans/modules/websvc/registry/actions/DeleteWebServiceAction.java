@@ -58,7 +58,6 @@ import org.netbeans.modules.websvc.registry.model.WebServiceListModel;
 import org.netbeans.modules.websvc.registry.model.WebServiceData;
 /**
  * This action will delete a web service from the server navigator
- * @author  Lukas Jungman, Milan Kuchtiak
  */
 
 public class DeleteWebServiceAction extends NodeAction {

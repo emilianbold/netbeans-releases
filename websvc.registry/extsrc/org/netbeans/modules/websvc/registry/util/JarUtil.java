@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.registry.util;
 
 /**
  *
- * @author  Winston Prakash
+ * 
  */
 
 import java.util.*;

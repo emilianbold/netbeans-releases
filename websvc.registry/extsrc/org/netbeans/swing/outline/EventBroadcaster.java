@@ -68,7 +68,7 @@ import javax.swing.tree.TreePath;
  * DefaultOutlineModel, but is separated for better readability and separation
  * of concerns.
  *
- * @author  Tim Boudreau
+ * 
  */
 final class EventBroadcaster implements TableModelListener, TreeModelListener, ExtTreeWillExpandListener, TreeExpansionListener {
     

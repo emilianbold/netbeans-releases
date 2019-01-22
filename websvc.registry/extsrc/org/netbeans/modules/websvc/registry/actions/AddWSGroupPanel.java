@@ -48,7 +48,7 @@ import javax.swing.text.Document;
 
 /** AddWSGroupPanel.java - simple panel with one text field for Web Service Group name
  *
- * @author  mkuchtiak
+ * 
  * Created on 22. November 2005, 10:54
  */
 public class AddWSGroupPanel extends javax.swing.JPanel {

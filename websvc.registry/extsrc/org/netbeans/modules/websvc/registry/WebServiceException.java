@@ -47,7 +47,7 @@ package org.netbeans.modules.websvc.registry;
 /**
  * This exception is meant to be used as a wrapper for exceptions that occur during web service processing.  This
  * method should be used between classes where one class knows about the UI while the other SHOULD not like "Util".
- * @author David Botterill
+ * 
  */
 public class WebServiceException extends Exception {
 

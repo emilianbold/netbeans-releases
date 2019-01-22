@@ -51,7 +51,6 @@ import org.openide.ErrorManager;
 
 /**
  * Display an icon and a string for each object in the list
- * @author  Jeff Hoffman & Octavian Tanase
  */
 public class WSListCellRenderer extends JLabel implements ListCellRenderer {
     private ImageIcon longIcon = null;

@@ -50,7 +50,7 @@ import org.openide.windows.*;
 /**
  * Debug class, facilitates printing debug messages to the IDE's output window
  * probably should not be included in the released product
- * @author  octav
+ * 
  */
 public class DebugMonitor {
 

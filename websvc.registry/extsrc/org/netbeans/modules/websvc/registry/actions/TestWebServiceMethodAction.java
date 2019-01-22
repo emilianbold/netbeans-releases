@@ -62,7 +62,7 @@ import javax.swing.SwingUtilities;
 
 /**
  *
- * @author  david
+ * 
  */
 public class TestWebServiceMethodAction extends NodeAction { 
     

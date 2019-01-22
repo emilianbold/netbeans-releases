@@ -55,7 +55,7 @@ import javax.swing.Icon;
  * its columns, so it is possible to affect the display of both property
  * columns and the tree column via this interface.
  *
- * @author  Tim Boudreau
+ * 
  */
 public interface RenderDataProvider {
     /** Convert an object in the tree to the string that should be used to

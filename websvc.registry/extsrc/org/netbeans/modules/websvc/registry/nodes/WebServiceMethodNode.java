@@ -75,7 +75,7 @@ import javax.swing.Action;
  * each node represents an element in that model. In this case, you should see
  * the Container Node template which will permit you to create a whole tree of
  * such nodes with the proper behavior.
- * @author octav
+ * 
  */
 public class WebServiceMethodNode extends AbstractNode implements WebServiceMethod {
     

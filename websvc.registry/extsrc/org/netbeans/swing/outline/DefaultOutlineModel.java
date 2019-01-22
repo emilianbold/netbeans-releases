@@ -111,7 +111,7 @@ import javax.swing.tree.VariableHeightLayoutCache;
  * with assertions.  All events fired by the underlying table and tree model
  * must be fired on the event dispatch thread.
  *
- * @author  Tim Boudreau
+ * 
  */
 public class DefaultOutlineModel implements OutlineModel {
     private TreeModel treeModel;

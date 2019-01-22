@@ -59,7 +59,7 @@ import java.net.URLClassLoader;
 
 /**
  *
- * @author  David Botterill
+ * 
  */
 public class TypeRowModel implements RowModel {
 

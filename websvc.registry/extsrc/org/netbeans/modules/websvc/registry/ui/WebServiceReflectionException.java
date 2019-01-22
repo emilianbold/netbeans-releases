@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.registry.ui;
 
 /**
  * This Exception class wraps Reflection Exceptions so the Web Service code can catch a single exception.
- * @author  David Botterill
+ * 
  */
 public class WebServiceReflectionException extends Exception {
 

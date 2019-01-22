@@ -55,7 +55,7 @@ import javax.swing.table.TableModel;
  * column of an OutlineModel.  This model supplies the additional
  * rows of the TableModel to the OutlineModel.
  *
- * @author  Tim Boudreau
+ * 
  */
 final class ProxyTableModel implements TableModel, NodeRowModel {
     private List listeners = new ArrayList();

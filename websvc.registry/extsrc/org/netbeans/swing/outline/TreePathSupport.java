@@ -80,7 +80,7 @@ import javax.swing.tree.TreePath;
  * <code>ExtTreeWillExpandListener</code>, so such a listener may be notified
  * if some other listener vetos a pending expansion event.
  *
- * @author  Tim Boudreau
+ * 
  */
 public final class TreePathSupport {
     private OutlineModel mdl;

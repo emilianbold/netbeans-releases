@@ -61,7 +61,7 @@ import org.netbeans.modules.websvc.registry.nodes.WebServiceGroupNode;
 import org.openide.nodes.Node;
 
 /** Add a webservice group node to the root node
- * @author  Winston Prakash
+ * 
  */
 public class AddWebServiceGroupAction extends NodeAction {
     

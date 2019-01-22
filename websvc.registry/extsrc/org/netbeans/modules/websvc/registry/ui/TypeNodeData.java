@@ -50,7 +50,7 @@ import com.sun.xml.rpc.processor.model.java.JavaType;
 /**
  * This class represents the data for each node in the TreeTable.
  *
- * @author  David Botterill
+ * 
  */
 public class TypeNodeData implements NodeData {
 

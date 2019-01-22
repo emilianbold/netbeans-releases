@@ -81,7 +81,7 @@ import org.openide.util.Utilities;
 /** Another Outline test app - this one allows dynamic adding and removal of
  * nodes and provides an editable column called "comment".
  *
- * @author  Tim Boudreau
+ * 
  */
 public class TestOutlineDynamic extends JFrame implements ActionListener {
     private Outline outline;

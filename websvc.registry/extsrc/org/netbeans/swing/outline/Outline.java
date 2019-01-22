@@ -182,7 +182,7 @@ import javax.swing.tree.TreePath;
  *   }
  * </pre>
  *
- * @author  Tim Boudreau
+ * 
  */
 public final class Outline extends JTable {
     //XXX plenty of methods missing here - add/remove tree expansion listeners,

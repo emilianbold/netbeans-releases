@@ -57,7 +57,6 @@ import javax.swing.Action;
 
 /**
  * The top level node representing Web Services in the Server Navigator
- * @author octav, Winston Prakash
  */
 public class WebServicesRootNode extends AbstractNode implements WebServiceGroupCookie , org.netbeans.modules.websvc.registry.netbeans.WebServicesRootNodeInterface{
     

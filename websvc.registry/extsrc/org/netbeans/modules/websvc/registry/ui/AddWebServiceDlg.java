@@ -135,7 +135,6 @@ import org.openide.windows.WindowManager;
 /**
  * Enables searching for Web Services, via an URL, on the local file system
  * or in some uddiRegistry (UDDI)
- * @author  Jeff Hoffman, Octavian Tanase, Winston Prakash
  */
 public class AddWebServiceDlg extends JPanel implements ActionListener, HyperlinkListener {
     

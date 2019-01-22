@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Winston Prakash
+ * 
  */
 public class WSDLInfo {
     

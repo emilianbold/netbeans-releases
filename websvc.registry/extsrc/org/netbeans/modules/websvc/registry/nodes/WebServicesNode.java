@@ -74,7 +74,6 @@ import javax.swing.Action;
  * none may be shown initially, unless we decide to persist the nodes
  * as links between Rave sessions
  *
- * @author octav, Winston Prakash
  */
 public class WebServicesNode extends AbstractNode implements WebServicesCookie { // FIXME CUT-PASTE FROM RAVE implements PaletteItemSetCookie  {
     

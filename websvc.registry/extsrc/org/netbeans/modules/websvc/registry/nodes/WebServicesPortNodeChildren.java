@@ -53,7 +53,7 @@ import com.sun.xml.rpc.processor.model.java.JavaMethod;
 
 /**
  *
- * @author  David Botterill
+ * 
  */
 public class WebServicesPortNodeChildren extends Children.Keys {
 

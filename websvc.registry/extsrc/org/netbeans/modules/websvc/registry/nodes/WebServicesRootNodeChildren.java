@@ -62,7 +62,6 @@ import java.util.List;
 /** List of children of a containing node.
  * Remember to document what your permitted keys are!
  *
- * @author octav, Winston Prakash
  */
 public class WebServicesRootNodeChildren extends Children.Keys implements WebServiceGroupListener, WebServiceListModelListener{
     

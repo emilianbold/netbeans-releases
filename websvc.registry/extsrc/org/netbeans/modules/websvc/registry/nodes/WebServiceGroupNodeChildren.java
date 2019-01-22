@@ -56,7 +56,7 @@ import org.netbeans.modules.websvc.registry.util.*;
 
 /** List of children of a webservices group node.
  *
- * @author Winston Prakash
+ * 
  */
 public class WebServiceGroupNodeChildren extends Children.Keys implements WebServiceGroupListener{
     

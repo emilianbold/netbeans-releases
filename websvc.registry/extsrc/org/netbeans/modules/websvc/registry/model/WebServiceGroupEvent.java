@@ -45,7 +45,7 @@
 package org.netbeans.modules.websvc.registry.model;
 
 /**
- * @author  Winston Prakash
+ * 
  */
 public class WebServiceGroupEvent {
     String websvcId;

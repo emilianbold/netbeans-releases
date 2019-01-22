@@ -70,7 +70,6 @@ import java.util.HashMap;
  * A webservice model. Holds the URL & methods information etc
  * When the WSDL is parsed for each port a WebServiceData is created and added to the
  * WebService Node Model.
- * @author octav, Winston Prakash, David Botterill
  */
 public class WebServiceData {
     

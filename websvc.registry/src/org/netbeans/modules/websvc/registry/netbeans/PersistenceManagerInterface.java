@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.registry.netbeans;
 
 /**
  *
- * @author  ludo
+ * 
  */
 public interface PersistenceManagerInterface {
      public void load(ClassLoader cl);
