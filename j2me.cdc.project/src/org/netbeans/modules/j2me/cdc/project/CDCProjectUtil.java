@@ -54,7 +54,7 @@ import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 
 /**
  * Miscellaneous utilities for the cdcproject module.
- * @author  Jiri Rechtacek
+ * 
  */
 public class CDCProjectUtil {
     private CDCProjectUtil () {}

@@ -53,7 +53,7 @@ import java.util.logging.Logger;
 
 /**
  * Reads an @see java.io.InputStream does nothing with it
- * @author Ondrej Nekola
+ * 
  */
 class EatingReader extends Thread {
 

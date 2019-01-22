@@ -76,7 +76,6 @@ import ricoh.util.dom.*;
 
 /**
  *
- * @author  suchys, esanchez, Adam Sotona
  */
 public class RicohProjectCategoryCustomizer extends JPanel implements CustomizerPanel, VisualPropertyGroup {
 

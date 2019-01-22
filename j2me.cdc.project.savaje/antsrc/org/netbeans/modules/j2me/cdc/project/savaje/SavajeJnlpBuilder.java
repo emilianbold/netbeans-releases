@@ -56,7 +56,7 @@ import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 
 /**
- * @author suchys
+ * 
  */
 public class SavajeJnlpBuilder extends Task {
     private File dir;

@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  suchys
+ * 
  */
 final class PanelConfigurePlatformVisual extends javax.swing.JPanel {
     

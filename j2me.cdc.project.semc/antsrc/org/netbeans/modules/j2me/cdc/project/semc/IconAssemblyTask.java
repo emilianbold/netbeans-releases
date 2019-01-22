@@ -66,7 +66,7 @@ import java.util.regex.Pattern;
 import org.apache.tools.ant.*;
 
 /** 
- * @author suchys
+ * 
  */
 public class IconAssemblyTask extends Task {
     

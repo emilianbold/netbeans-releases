@@ -17,7 +17,7 @@ import java.awt.Graphics;
 import java.awt.Font;
 
 /**
- * @author ${user}
+ * ${user}
  */
 
 /*  If you need to change execution model, e.g. using main method, 

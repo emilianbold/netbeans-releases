@@ -53,7 +53,7 @@ import java.util.logging.Logger;
 
 /**
  * Reads an @see java.io.InputStream and fills output to a StringBuffer
- * @author suchys
+ * 
  */
 class StreamReader extends Thread {
 

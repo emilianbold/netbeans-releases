@@ -51,7 +51,7 @@ import javax.xml.parsers.*;
 
 /**
  *
- * @author esanchez
+ * 
  */
 abstract public class DOMHandler 
 {

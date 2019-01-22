@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  David Kaspar
+ * 
  */
 public class ImportCDCProjectWizardIterator implements TemplateWizard.Iterator {
     

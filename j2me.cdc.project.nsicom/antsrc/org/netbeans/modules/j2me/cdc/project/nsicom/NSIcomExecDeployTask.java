@@ -72,7 +72,7 @@ import org.netbeans.mobility.activesync.*;
 import org.openide.util.Exceptions;
 
 /**
- * @author suchys
+ * 
  */
 public class NSIcomExecDeployTask extends Task {
     

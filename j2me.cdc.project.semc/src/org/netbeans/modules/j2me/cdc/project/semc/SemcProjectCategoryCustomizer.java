@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  suchys
+ * 
  */
 public class SemcProjectCategoryCustomizer extends JPanel implements CustomizerPanel, VisualPropertyGroup {
     

@@ -89,7 +89,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author suchys
+ * 
  */
 final class RemoteFilesystemChooser extends JPanel implements ExplorerManager.Provider {
     

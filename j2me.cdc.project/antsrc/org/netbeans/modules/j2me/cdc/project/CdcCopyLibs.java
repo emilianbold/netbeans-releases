@@ -53,7 +53,7 @@ import org.apache.tools.ant.util.FileUtils;
 
 /**
  *
- * @author Tomas Zezula
+ * 
  */
 public class CdcCopyLibs extends Jar {
     

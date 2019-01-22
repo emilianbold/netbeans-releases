@@ -50,7 +50,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author suchys
+ * 
  */
 final public class CDCPlatformUtil {
     

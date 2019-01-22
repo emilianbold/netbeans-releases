@@ -56,7 +56,7 @@ import java.io.File;
 import org.apache.tools.ant.*;
 
 /**
- * @author suchys
+ * 
  */
 public class EpocPathSetter extends Task {
     

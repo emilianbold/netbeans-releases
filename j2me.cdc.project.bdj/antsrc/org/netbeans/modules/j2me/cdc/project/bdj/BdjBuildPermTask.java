@@ -66,7 +66,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
 /**
- * @author suchys
+ * 
  */
 public class BdjBuildPermTask extends Task {
     

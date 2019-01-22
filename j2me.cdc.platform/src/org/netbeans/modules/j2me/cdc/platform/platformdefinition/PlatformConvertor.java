@@ -77,7 +77,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 /**
  * Reads and writes the standard platform format implemented by PlatformImpl2.
  *
- * @author Svata Dedic
+ * 
  */
 public class PlatformConvertor implements Environment.Provider, InstanceCookie.Of, PropertyChangeListener, Runnable, InstanceContent.Convertor {
 

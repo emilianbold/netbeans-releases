@@ -77,7 +77,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
- * @author suchys
+ * 
  */
 public class DalpBuilder extends Task {
     

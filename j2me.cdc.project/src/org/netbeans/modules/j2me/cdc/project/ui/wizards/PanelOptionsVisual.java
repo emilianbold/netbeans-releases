@@ -62,7 +62,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  phrebejk
+ * 
  */
 public class PanelOptionsVisual extends SettingsPanel implements ActionListener, PropertyChangeListener {
     

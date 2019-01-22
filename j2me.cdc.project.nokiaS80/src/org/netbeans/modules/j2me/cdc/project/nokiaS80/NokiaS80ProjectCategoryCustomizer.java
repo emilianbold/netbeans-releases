@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  suchys
+ * 
  */
 public class NokiaS80ProjectCategoryCustomizer extends JPanel implements CustomizerPanel, VisualPropertyGroup  {
     

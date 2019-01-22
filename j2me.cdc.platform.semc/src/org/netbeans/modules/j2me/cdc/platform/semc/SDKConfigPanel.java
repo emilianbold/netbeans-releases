@@ -58,7 +58,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author  suchys
+ * 
  */
 public class SDKConfigPanel extends javax.swing.JPanel {
 

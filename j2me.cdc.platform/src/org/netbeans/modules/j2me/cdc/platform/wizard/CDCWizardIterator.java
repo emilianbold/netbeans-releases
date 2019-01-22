@@ -68,7 +68,6 @@ import org.openide.util.NbBundle;
  * 'bin{/}java[.exe]' underneath the platform's directory, which can be run to
  * produce the target platform's VM environment.
  *
- * @author Svata Dedic, Tomas Zezula
  */
 public class CDCWizardIterator implements WizardDescriptor.InstantiatingIterator {
 

@@ -79,8 +79,8 @@ import org.openide.util.NbBundle;
 
 /** 
  * Object that represents one file containing an image.
- * @author Petr Hamernik, Jaroslav Tulach, Ian Formanek, Michael Wever
- * @author  Marian Petras
+ * , Jaroslav Tulach, Ian Formanek, Michael Wever
+ * 
  */
 public class MBMDataObject extends MultiDataObject implements CookieSet.Factory {
     

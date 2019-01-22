@@ -57,7 +57,7 @@ import org.openide.util.HelpCtx;
 
 /**
  * Panel just asking for basic info.
- * @author Jesse Glick
+ * 
  */
 final public class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
     

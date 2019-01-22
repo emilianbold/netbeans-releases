@@ -53,7 +53,7 @@ import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 
 /**
  *
- * @author suchys
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor.class, position=200)
 public class BDJPropertiesDescriptor implements ProjectPropertiesDescriptor {

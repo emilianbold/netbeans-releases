@@ -54,7 +54,7 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author esanchez
+ * 
  */
 public class DalpDOMHandler extends DOMHandler
 {

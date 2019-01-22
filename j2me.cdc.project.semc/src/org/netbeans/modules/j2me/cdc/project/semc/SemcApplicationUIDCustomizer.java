@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  suchys
+ * 
  */
 public class SemcApplicationUIDCustomizer extends javax.swing.JPanel {
     

@@ -99,7 +99,7 @@ import org.openide.util.RequestProcessor.Task;
 
 /** Browses and allows to choose a project's main class.
  *
- * @author  Jiri Rechtacek
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2me.cdc.project.execui.MainClassChooser.class, position=10)
 public class MainClassChooserImpl extends MainClassChooser {

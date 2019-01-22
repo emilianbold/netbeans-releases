@@ -53,7 +53,6 @@ import org.apache.tools.ant.util.FileUtils;
 
 /**
  *
- * @author Tomas Zezula, Petr Suchomel
  */
 public class FatCopyLibs  {
        

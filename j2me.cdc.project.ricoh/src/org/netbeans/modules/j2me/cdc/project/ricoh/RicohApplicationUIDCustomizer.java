@@ -61,7 +61,7 @@ import ricoh.util.dom.DalpDOMHandler;
 
 /**
  *
- * @author  suchys
+ * 
  */
 public class RicohApplicationUIDCustomizer extends javax.swing.JPanel {
     

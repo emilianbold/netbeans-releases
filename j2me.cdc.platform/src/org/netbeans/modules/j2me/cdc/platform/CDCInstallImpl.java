@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 /**
  * Installer factory for standard CDC Platforms
  *
- * @author Svatopluk Dedic
+ * 
  */
 class CDCInstallImpl extends org.netbeans.spi.java.platform.PlatformInstall {
 

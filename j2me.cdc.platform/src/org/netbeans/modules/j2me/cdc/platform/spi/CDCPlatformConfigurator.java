@@ -48,7 +48,7 @@ import javax.swing.JPanel;
 
 /**
  *
- * @author suchys
+ * 
  */
 public abstract class CDCPlatformConfigurator {
     

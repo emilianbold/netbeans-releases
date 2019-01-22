@@ -49,7 +49,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author suchys
+ * 
  */
 public abstract class MainClassChooser extends JPanel {
 

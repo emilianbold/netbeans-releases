@@ -58,7 +58,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
 /**
- * @author jsvec
+ * 
  */
 public class BdjBuildBdmv extends Task {
 

@@ -50,7 +50,7 @@ import java.io.InputStream;
 
 /**
  *
- * @author suchys
+ * 
  */
 public class StreamReader extends Thread {
     

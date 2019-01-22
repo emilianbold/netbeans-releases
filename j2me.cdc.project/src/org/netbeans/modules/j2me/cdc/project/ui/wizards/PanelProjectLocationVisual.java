@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Petr Hrebejk
+ * 
  */
 
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {

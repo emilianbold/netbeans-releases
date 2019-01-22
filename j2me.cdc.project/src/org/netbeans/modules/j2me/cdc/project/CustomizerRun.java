@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class CustomizerRun extends JPanel implements CustomizerPanel, VisualPropertyGroup  {
     

@@ -54,7 +54,7 @@ import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor.class, position=30)
 public class SavajePropertiesDescriptor implements ProjectPropertiesDescriptor {

@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Manowar, suchys
+ * , suchys
  */
 public class MBMThumbnailAccessory extends JPanel implements PropertyChangeListener {
     

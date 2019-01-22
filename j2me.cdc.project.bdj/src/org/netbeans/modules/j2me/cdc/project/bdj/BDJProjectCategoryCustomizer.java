@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  suchys
+ * 
  */
 public class BDJProjectCategoryCustomizer extends JPanel implements CustomizerPanel, VisualPropertyGroup  {
     

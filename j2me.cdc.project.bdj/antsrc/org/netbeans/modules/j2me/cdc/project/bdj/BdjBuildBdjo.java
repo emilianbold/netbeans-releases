@@ -57,7 +57,7 @@ import org.apache.tools.ant.Task;
 import org.openide.util.Exceptions;
 
 /**
- * @author suchys
+ * 
  */
 public class BdjBuildBdjo extends Task {
     

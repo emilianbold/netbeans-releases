@@ -84,7 +84,7 @@ import org.openide.filesystems.URLMapper;
 
 /**
  *
- * @author  tom
+ * 
  */
 public class DefaultClassPathProvider implements ClassPathProvider {
     

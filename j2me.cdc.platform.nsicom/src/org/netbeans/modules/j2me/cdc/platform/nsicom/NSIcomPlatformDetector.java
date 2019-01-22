@@ -73,7 +73,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author suchys
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformDetector.class)
 public class NSIcomPlatformDetector extends CDCPlatformDetector {

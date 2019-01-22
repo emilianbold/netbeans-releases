@@ -103,7 +103,7 @@ import org.openide.util.Utilities;
  * (jdk name filled in) and autoconfig result (passed successfully) - and manages
  * Next/Finish button (valid state) according to those.
  *
- * @author Svata Dedic
+ * 
  */
 public class DetectPanel extends javax.swing.JPanel {
 

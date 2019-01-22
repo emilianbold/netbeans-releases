@@ -87,7 +87,7 @@ import org.xml.sax.InputSource;
 
 /**
  *
- * @author  Lukas Waldmann
+ * 
  */
 public class ImportCDCProjectPanel extends javax.swing.JPanel implements DocumentListener {
     

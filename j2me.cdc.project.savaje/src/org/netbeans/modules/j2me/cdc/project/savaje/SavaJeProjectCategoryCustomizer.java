@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class SavaJeProjectCategoryCustomizer extends JPanel implements CustomizerPanel, VisualPropertyGroup  {
     

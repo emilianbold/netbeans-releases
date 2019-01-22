@@ -58,7 +58,7 @@ import org.apache.tools.ant.*;
 import org.openide.util.Exceptions;
 
 /**
- * @author suchys
+ * 
  */
 public class FreePortRetriever extends Task {
     

@@ -70,7 +70,7 @@ import org.openide.util.io.ReaderInputStream;
 /**
  * Detector for the java ME SDK 3.0
  * 
- * @author Ondrej Nekola
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformDetector.class, position=1100)
 public final class JmeSdkCdcDetector extends CDCPlatformDetector {

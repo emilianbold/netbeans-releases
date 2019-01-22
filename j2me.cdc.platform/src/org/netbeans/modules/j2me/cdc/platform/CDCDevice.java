@@ -48,7 +48,7 @@ import java.util.Map;
 
 /**
  * Desribes CDCDevice
- * @author suchys
+ * 
  */
 public class CDCDevice {
 

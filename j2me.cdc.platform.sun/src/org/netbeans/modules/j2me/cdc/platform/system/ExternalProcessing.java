@@ -65,7 +65,7 @@ import org.openide.windows.OutputWriter;
 /**
  * Utility to call external executable.
  *
- * @author Ondrej Nekola
+ * 
  */
 public class ExternalProcessing {
 

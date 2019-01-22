@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author suchys
+ * 
  */
 public abstract class CDCPlatformDetector {
         

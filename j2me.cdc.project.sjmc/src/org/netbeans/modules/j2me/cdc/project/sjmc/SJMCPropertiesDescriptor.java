@@ -53,7 +53,7 @@ import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor.class, position=35)
 public class SJMCPropertiesDescriptor implements ProjectPropertiesDescriptor {

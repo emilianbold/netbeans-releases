@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class CDCPlatformCustomizer extends JPanel implements CustomizerPanel, VisualPropertyGroup, ActionListener {
     

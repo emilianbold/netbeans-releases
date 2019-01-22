@@ -62,7 +62,7 @@ import org.apache.tools.ant.taskdefs.Java;
 import org.apache.tools.ant.types.Path;
 
 /**
- * @author jsvec
+ * 
  */
 public class BdjRun extends Task {
 

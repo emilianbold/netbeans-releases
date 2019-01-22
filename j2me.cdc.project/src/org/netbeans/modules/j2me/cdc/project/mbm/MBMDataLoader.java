@@ -54,8 +54,7 @@ import org.openide.util.NbBundle;
 
 /** 
  * Data loader which recognizes image files.
- * @author Petr Hamernik, Jaroslav Tulach
- * @author Marian Petras
+ * 
  */
 public class MBMDataLoader extends UniFileLoader { 
 

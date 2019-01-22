@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class CustomizerCDCGeneral extends JPanel implements CustomizerPanel, VisualPropertyGroup {
     
