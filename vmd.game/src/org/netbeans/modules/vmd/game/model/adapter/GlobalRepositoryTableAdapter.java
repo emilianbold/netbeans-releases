@@ -51,7 +51,7 @@ import org.netbeans.modules.vmd.game.model.GlobalRepository;
 
 /**
  *
- * @author karel herink
+ * 
  */
 public class GlobalRepositoryTableAdapter extends DefaultTableModel {
 

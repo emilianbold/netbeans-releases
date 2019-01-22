@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.game.model.ImageResource;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class ResourceImageListModel extends AbstractListModel {
 	

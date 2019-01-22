@@ -51,7 +51,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class SequenceContainerCDProperties {
 	

@@ -114,7 +114,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Karel Herink
+ * 
  */
 public class GameController implements DesignDocumentAwareness, GlobalRepositoryListener, 
 		SceneListener, TiledLayerListener, SequenceContainerListener,

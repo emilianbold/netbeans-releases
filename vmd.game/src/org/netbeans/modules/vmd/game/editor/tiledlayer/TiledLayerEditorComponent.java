@@ -112,7 +112,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class TiledLayerEditorComponent extends JComponent implements MouseListener, Scrollable, TiledLayerListener {
     

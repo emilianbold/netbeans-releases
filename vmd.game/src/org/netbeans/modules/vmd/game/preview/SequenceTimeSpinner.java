@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class SequenceTimeSpinner extends JSpinner {
 	

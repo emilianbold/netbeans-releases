@@ -50,7 +50,7 @@ import java.awt.datatransfer.Transferable;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class FlowDescriptor {
 

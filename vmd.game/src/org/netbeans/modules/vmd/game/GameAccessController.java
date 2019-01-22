@@ -51,7 +51,7 @@ import org.netbeans.modules.vmd.game.model.GlobalRepository;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class GameAccessController implements AccessController {
 

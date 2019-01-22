@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.game.model.SpriteCD;
 import org.netbeans.modules.vmd.game.model.TiledLayerCD;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class GameDocumentSupport {
 	

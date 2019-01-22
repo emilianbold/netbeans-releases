@@ -48,7 +48,7 @@ import java.util.EventListener;
 
 /**
  *
- * @author kherink
+ * 
  */
 public interface EditorManagerListener extends EventListener {
 	

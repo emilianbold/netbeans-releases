@@ -62,7 +62,7 @@ import org.netbeans.modules.vmd.game.model.GlobalRepository;
 
 /**
  *
- * @author  kaja
+ * 
  */
 public class GameDesignPreviewComponent extends JPanel implements MouseListener, PropertyChangeListener {
 	

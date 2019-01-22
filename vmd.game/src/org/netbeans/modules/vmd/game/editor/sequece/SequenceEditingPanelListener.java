@@ -47,7 +47,7 @@ import java.util.EventListener;
 
 /**
  *
- * @author kherink
+ * 
  */
 interface SequenceEditingPanelListener extends EventListener {
 	

@@ -47,7 +47,7 @@ package org.netbeans.modules.vmd.game.model;
 /**
  * Immutable.
  * 
- * @author kherink
+ * 
  */
 public class Position {
 	private int row;

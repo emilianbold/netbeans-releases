@@ -80,7 +80,7 @@ import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.model.TileTransferable;
 /**
  *
- * @author kherink
+ * 
  */
 public class AnimatedTileList extends JList {
 	

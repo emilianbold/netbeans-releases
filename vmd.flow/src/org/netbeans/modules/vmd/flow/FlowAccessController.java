@@ -53,7 +53,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - incremental selection update in notifyEventFired method
 // TODO - model->flow selection bug - ListCD, ListElementCD flow presenters vs. the descriptors (ListCD.elements belongs to each element - not to the list)

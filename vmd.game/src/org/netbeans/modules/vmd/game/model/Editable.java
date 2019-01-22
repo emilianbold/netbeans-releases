@@ -50,7 +50,7 @@ import javax.swing.JComponent;
 
 
 /**
- * @author Karel Herink
+ * 
  */
 public interface Editable {
 

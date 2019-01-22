@@ -64,7 +64,7 @@ import javax.swing.table.TableCellRenderer;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class SequenceDefaultTableEditor extends JRadioButton implements TableCellRenderer, TableCellEditor, ActionListener, ItemListener {
 	

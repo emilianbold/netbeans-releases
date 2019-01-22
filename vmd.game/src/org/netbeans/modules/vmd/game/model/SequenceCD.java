@@ -50,7 +50,7 @@ import java.util.List;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class SequenceCD extends ComponentDescriptor {
 	

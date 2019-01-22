@@ -57,7 +57,7 @@ import java.util.Collections;
 
 
 /**
- * @author David Kaspar
+ * 
  */
 public class FlowEditorView implements DataEditorView {
 

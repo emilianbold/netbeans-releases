@@ -76,7 +76,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author kaja
+ * 
  */
 public class GameDesignOverViewPanel extends ScrollableFlowPanel implements ComponentListener {
 

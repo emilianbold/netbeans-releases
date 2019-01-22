@@ -61,7 +61,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  kherink
+ * 
  */
 public abstract class AbstractNameValidationDialog extends javax.swing.JPanel implements ActionListener {
 	

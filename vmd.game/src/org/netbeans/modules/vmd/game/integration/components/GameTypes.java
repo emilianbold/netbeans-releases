@@ -49,7 +49,6 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import java.awt.*;
 
 /**
- * @author David Kaspar, Karel Herink
  */
 public class GameTypes {
 

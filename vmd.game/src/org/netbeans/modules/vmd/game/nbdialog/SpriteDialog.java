@@ -95,7 +95,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  kherink
+ * 
  */
 public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	

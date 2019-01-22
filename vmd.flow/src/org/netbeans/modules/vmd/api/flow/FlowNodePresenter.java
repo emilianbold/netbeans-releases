@@ -51,7 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class FlowNodePresenter extends FlowPresenter implements FlowPresenter.FlowUIResolver {
 

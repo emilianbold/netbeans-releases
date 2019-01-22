@@ -102,7 +102,7 @@ When having more than one frame selected only play the selected frames in the pr
 */
 
 /**
- * @author kherink
+ * 
  */
  public class SequenceEditingPanel extends JComponent implements Scrollable, MouseMotionListener, MouseListener, SequenceListener {
 	

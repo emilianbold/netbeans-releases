@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
 import org.netbeans.modules.vmd.api.flow.FlowSupport;
 
 /**
- * @author David Kaspar
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.DataEditorViewFactory.class)
 public class FlowEditorViewFactory implements DataEditorViewFactory {

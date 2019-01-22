@@ -56,7 +56,7 @@ import org.netbeans.modules.vmd.game.model.AnimatedTile;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class AnimatedTileListCellRenderer extends DefaultListCellRenderer {
 	

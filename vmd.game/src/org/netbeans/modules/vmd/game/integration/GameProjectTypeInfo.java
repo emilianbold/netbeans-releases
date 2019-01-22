@@ -51,7 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * @author David Kaspar
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.ProjectTypeInfo.class)
 public class GameProjectTypeInfo extends ProjectTypeInfo {

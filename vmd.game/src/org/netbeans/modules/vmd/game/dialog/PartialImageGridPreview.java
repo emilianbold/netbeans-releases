@@ -61,7 +61,7 @@ import org.netbeans.modules.vmd.game.model.ImageUtils;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class PartialImageGridPreview extends AbstractImagePreviewComponent {
 

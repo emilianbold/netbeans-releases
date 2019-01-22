@@ -56,7 +56,7 @@ import org.netbeans.modules.vmd.game.preview.SequenceTimeSpinner;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class SequenceDelayTableEditor extends JSpinner implements TableCellEditor {
 	

@@ -51,7 +51,7 @@ import org.netbeans.modules.vmd.game.model.Scene;
 
 /**
  *
- * @author Thomas Rae
+ * 
  */
 
 public class SceneEditor {

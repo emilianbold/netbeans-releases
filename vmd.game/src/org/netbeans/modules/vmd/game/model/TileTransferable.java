@@ -53,7 +53,7 @@ import java.util.List;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class TileTransferable implements Transferable {
 	

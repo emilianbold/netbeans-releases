@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.flow.FlowAccessController;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class FlowSupport {
 

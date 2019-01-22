@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Karel Herink
+ * 
  */
 public class GameBuilderNavigator extends JPanel implements NavigatorPanel, EditorManagerListener {
     

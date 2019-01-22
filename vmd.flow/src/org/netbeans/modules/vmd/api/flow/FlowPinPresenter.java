@@ -52,7 +52,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class FlowPinPresenter extends FlowPresenter implements FlowPresenter.FlowUIResolver {
 

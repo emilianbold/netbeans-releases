@@ -33,7 +33,7 @@ package org.netbeans.modules.vmd.game.model;
 
 /**
  *
- * @author kaja
+ * 
  */
 public interface Identifiable {
 	

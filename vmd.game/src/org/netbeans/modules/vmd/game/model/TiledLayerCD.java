@@ -51,7 +51,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * @author David Kaspar, Karel Herink
  */
 public class TiledLayerCD extends ComponentDescriptor {
 	

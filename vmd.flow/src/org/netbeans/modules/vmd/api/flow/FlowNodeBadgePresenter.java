@@ -49,7 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class FlowNodeBadgePresenter extends FlowPresenter implements FlowPresenter.FlowUIResolver {
 

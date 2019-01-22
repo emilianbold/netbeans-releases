@@ -53,7 +53,7 @@ import java.util.Collection;
 
 /**
  * Note: Do not extends this class directly, use specific Flow*Presenters instead.
- * @author dave
+ * 
  */
 public abstract class FlowPresenter extends DynamicPresenter {
 

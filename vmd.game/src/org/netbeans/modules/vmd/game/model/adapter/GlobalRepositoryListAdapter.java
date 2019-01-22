@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class GlobalRepositoryListAdapter extends AbstractListModel implements GlobalRepositoryListener {
 	

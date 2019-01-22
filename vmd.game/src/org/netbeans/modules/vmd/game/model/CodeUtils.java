@@ -44,7 +44,7 @@
 
 /**
  *
- * @author karel herink
+ * 
  */
 public class CodeUtils {
 

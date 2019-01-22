@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class SequenceContainerEditor extends JPanel implements SequenceEditingPanelListener, SequenceContainerListener, PropertyChangeListener {
 	

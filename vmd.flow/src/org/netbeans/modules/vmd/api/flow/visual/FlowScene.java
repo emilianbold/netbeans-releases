@@ -76,7 +76,7 @@ import java.util.List;
 import org.openide.util.NbPreferences;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - should badges be a part of selection?
 // TODO - maybe updateBadges method should not be called from inside the attach*Widget, but it should be called from each particular presenter instead

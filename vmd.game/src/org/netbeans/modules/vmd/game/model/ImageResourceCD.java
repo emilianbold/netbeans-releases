@@ -56,7 +56,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 /**
  *
- * @author Karel Herink
+ * 
  */
 public class ImageResourceCD extends ComponentDescriptor {
 	

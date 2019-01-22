@@ -63,7 +63,7 @@ import org.netbeans.modules.vmd.game.model.Sprite;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 
 /**
- * @author Karel Herink
+ * 
  */
 public class GlobalRepositoryTreeAdapter implements TreeModel, GlobalRepositoryListener, SceneListener, PropertyChangeListener {
 

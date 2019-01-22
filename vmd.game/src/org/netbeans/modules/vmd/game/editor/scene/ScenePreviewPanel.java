@@ -58,7 +58,7 @@ import org.netbeans.modules.vmd.game.model.SceneListener;
 
 /**
  *
- * @author kaja
+ * 
  */
 public class ScenePreviewPanel extends JComponent implements SceneListener {
 

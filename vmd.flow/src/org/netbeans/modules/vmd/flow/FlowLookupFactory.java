@@ -56,7 +56,7 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 
 public class FlowLookupFactory implements DataEditorViewLookupFactory {

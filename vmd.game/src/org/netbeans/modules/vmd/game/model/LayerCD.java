@@ -50,7 +50,6 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author David Kaspar, Karel Herink
  */
 public class LayerCD extends ComponentDescriptor {
 	

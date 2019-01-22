@@ -58,7 +58,7 @@ import org.netbeans.modules.vmd.game.model.Position;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class FullImageGridPreview extends AbstractImagePreviewComponent {
 

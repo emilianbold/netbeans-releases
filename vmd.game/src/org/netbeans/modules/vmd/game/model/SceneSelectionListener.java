@@ -45,7 +45,7 @@ import java.util.EventListener;
 
 /**
  *
- * @author akorostelev
+ * 
  */
 public interface SceneSelectionListener extends EventListener {
 

@@ -64,7 +64,7 @@ import org.netbeans.modules.vmd.game.model.TileTransferable;
 
 /**
  *
- * @author kherink
+ * 
  */
 class ResourceImageList extends JList {
 	

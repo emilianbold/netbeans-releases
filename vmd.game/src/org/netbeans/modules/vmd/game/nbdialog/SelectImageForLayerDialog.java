@@ -72,7 +72,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  kherink
+ * 
  */
 public class SelectImageForLayerDialog extends javax.swing.JPanel implements ActionListener{
 	

@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class NewSimpleTiledLayerDialog extends AbstractNameValidationDialog {
 	

@@ -97,7 +97,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  kherink, akorostelev
  */
 public class TiledLayerDialog extends javax.swing.JPanel implements ActionListener {
 

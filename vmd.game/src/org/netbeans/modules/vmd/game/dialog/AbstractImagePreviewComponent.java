@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author kherink
+ * 
  */
 public abstract class AbstractImagePreviewComponent extends JPanel {
 

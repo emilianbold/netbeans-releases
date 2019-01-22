@@ -48,7 +48,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class FlowPinDescriptor extends FlowDescriptor {
 

@@ -47,7 +47,7 @@ import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.flow.visual.FlowDescriptor;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class FlowScenePresenter extends Presenter {
 

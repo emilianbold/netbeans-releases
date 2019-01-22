@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.api.model.*;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class GameRootCD extends ComponentDescriptor {
 

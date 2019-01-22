@@ -50,7 +50,7 @@ import java.util.List;
 
 /**
  *
- * @author Karel Herink
+ * 
  */
 public class SceneItemCD extends ComponentDescriptor {
 	

@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class NewAnimatedTileDialog extends AbstractNameValidationDialog {
 	

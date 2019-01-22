@@ -63,7 +63,7 @@ import java.awt.*;
 import java.util.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - polish serialized data - save dpi value for proper deserialization
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.DataSerializer.class)

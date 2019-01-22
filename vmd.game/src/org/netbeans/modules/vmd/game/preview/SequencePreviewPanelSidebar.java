@@ -60,7 +60,7 @@ import org.netbeans.modules.vmd.game.view.ImagePreviewComponent;
 
 /**
  *
- * @author  kherink
+ * 
  */
 public class SequencePreviewPanelSidebar extends javax.swing.JPanel implements 
 		SequenceListener, ComponentListener, 

@@ -56,7 +56,7 @@ import org.netbeans.modules.vmd.game.model.TiledLayerListener;
 
 /**
  *
- * @author kaja
+ * 
  */
 public class TiledLayerPreviewPanel extends JComponent implements TiledLayerListener {
 

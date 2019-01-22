@@ -52,7 +52,7 @@ import java.util.Collections;
 /**
  * This presenter manages a single edge.
  *
- * @author David Kaspar
+ * 
  */
 public abstract class FlowEdgePresenter extends FlowPresenter implements FlowPresenter.FlowUIResolver {
 

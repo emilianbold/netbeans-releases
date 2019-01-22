@@ -48,7 +48,7 @@ import javax.swing.ComboBoxModel;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class GlobalRepositoryComboBoxModel extends GlobalRepositoryListAdapter implements ComboBoxModel {
 	

@@ -52,7 +52,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * @author Karel Herink
+ * 
  */
 public class SceneCD extends ComponentDescriptor {
 

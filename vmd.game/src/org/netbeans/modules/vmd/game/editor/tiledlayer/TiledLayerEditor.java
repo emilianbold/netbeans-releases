@@ -71,7 +71,7 @@ import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 /**
  *
- * @author  kherink
+ * 
  */
 public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerListener, PropertyChangeListener {
         

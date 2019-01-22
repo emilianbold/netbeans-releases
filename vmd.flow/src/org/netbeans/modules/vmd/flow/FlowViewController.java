@@ -60,7 +60,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class FlowViewController implements DesignDocumentAwareness {
 

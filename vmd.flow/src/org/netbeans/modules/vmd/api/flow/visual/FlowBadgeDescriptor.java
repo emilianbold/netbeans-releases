@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class FlowBadgeDescriptor extends FlowDescriptor {
 

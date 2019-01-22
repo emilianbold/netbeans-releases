@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.game.model.SequenceContainer;
 
 /**
  *
- * @author  kherink
+ * 
  */
 public class SequenceContainerPreview extends javax.swing.JPanel implements ActionListener {
     

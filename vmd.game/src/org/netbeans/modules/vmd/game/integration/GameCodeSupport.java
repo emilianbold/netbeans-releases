@@ -67,7 +67,6 @@ import org.netbeans.modules.vmd.api.codegen.CodeGlobalLevelPresenter;
 import org.openide.util.Exceptions;
 
 /**
- * @author David Kaspar, Karel Herink
  */
 public class GameCodeSupport {
 

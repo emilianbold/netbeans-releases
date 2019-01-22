@@ -46,7 +46,7 @@ import java.awt.Color;
 
 /**
  *
- * @author kaja
+ * 
  */
 public interface ColorConstants {
 	Color COLOR_OUTLINE_SELECTED = new Color(0xff8500);

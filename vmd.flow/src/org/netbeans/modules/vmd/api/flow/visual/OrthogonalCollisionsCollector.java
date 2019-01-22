@@ -49,7 +49,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class OrthogonalCollisionsCollector implements ConnectionWidgetCollisionsCollector {
 

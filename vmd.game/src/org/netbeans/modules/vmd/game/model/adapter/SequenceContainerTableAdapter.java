@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class SequenceContainerTableAdapter implements TableModel, SequenceContainerListener, SequenceListener, PropertyChangeListener {
 	

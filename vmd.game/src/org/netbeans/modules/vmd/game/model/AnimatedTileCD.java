@@ -60,7 +60,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 /**
  *
- * @author kherink
+ * 
  */
 public class AnimatedTileCD extends ComponentDescriptor {
 	

@@ -52,7 +52,6 @@ import java.awt.*;
 import java.util.StringTokenizer;
 
 /**
- * @author David Kaspar, Karel Herink
  */
 // HINT - after making change, update GameCodeSupport too
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.PrimitiveDescriptorFactory.class)

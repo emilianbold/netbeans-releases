@@ -56,7 +56,7 @@ import org.netbeans.modules.vmd.game.model.TiledLayerListener;
 
 /**
  *
- * @author  kherink
+ * 
  */
 public class TiledLayerNavigator extends javax.swing.JPanel implements TiledLayerListener {
 

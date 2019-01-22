@@ -71,7 +71,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Karel Herink
+ * 
  */
 public class GameEditorView implements DataEditorView, EditorManagerListener {
 

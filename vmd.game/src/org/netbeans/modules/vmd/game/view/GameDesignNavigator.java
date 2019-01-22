@@ -56,7 +56,7 @@ import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.adapter.GlobalRepositoryTreeAdapter;
 
 /**
- * @author Karel Herink
+ * 
  */
 public class GameDesignNavigator extends JPanel {
 	
