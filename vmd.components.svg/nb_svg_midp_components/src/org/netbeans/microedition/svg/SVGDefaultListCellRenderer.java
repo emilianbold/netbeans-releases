@@ -84,7 +84,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * in this class. It should be present ( NPE will be thrown otherwise ).  
  * This renderer also needs selection element. 
  * 
- * @author ads
+ * 
  *
  */
 public class SVGDefaultListCellRenderer extends TextRenderer 

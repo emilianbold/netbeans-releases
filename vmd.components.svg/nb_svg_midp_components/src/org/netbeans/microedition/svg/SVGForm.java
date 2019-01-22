@@ -58,7 +58,7 @@ import org.netbeans.microedition.svg.input.PointerEvent;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityListener {
     private final Vector             components;

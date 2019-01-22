@@ -50,7 +50,7 @@ package org.netbeans.microedition.util;
  * succeeded or failed.
  *
  *
- * @author breh
+ * 
  */
 public interface Executable {
     

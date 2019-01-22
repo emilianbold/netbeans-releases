@@ -60,7 +60,7 @@ import javax.microedition.lcdui.Image;
 
 /**
  * System color schema - gets all colors from Display.getColor() method call.
- * @author breh
+ * 
  */
 public class SystemColorSchema extends ColorSchema {
     

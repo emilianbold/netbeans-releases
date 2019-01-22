@@ -76,7 +76,7 @@ import org.netbeans.microedition.lcdui.laf.SystemColorSchema;
  * happens. This gives the developer much higher flexibility for processing the action - it
  * is no longer limited to switching to another displayable, but it can do whatever developer wants.
  *
- * @author breh
+ * 
  */
 public abstract class AbstractInfoScreen extends Canvas {
 	

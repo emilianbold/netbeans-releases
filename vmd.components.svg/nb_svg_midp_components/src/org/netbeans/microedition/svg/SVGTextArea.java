@@ -69,7 +69,7 @@ import org.w3c.dom.svg.SVGRect;
  *       &lt;rect id="text_area_caret" visibility="visible" x="10" y="2" width="2" height="15" fill="black" stroke="black"/>
  *   &lt;/g>
  * </pre>
- * @author ads
+ * 
  * @deprecated
  *
  */

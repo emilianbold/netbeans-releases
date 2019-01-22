@@ -63,7 +63,7 @@ import javax.microedition.lcdui.Display;
  * compatible with older version. So if there is no command listener specified,
  * it still can use setNextDisplayable() method to specify the dismiss screen and
  * automatically switch to it.
- * @author breh
+ * 
  */
 public class SplashScreen extends AbstractInfoScreen {
 

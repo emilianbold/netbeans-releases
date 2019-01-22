@@ -48,7 +48,7 @@ package org.netbeans.microedition.svg;
  * {@link #getCellRendererComponent(SVGList, Object, int, boolean, boolean )} method 
  * is called in Document Update Thread. So one should not care about
  * safety of document access in implementation of this class. 
- * @author ads
+ * 
  *
  */
 public interface SVGListCellRenderer {

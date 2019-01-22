@@ -55,7 +55,7 @@ import org.w3c.dom.svg.SVGElement;
  * for SVG component.
  * This information consist of pair:
  * <code>key</code>, <code>value</code>. 
- * @author ads
+ * 
  *
  */
 public class MetaData extends Hashtable {

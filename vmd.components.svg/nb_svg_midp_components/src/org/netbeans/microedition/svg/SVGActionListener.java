@@ -47,7 +47,7 @@ package org.netbeans.microedition.svg;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public interface SVGActionListener {
     void actionPerformed( SVGComponent comp);

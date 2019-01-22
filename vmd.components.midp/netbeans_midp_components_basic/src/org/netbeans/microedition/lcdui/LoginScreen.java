@@ -52,7 +52,7 @@ import org.netbeans.microedition.lcdui.laf.DefaultColorSchema;
  * The <code>LoginScreen</code> custom component provides usefully UI with standard
  * elements like Username Filed, Password Field and Login Button 
  *
- * @author breh
+ * 
  */
 public class LoginScreen extends Canvas implements CommandListener {
 

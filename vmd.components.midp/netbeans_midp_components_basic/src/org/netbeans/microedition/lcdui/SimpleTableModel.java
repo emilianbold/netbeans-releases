@@ -58,7 +58,7 @@ import java.util.Vector;
  * Simple implementation of TableModel. This model can hold a matrix of String
  * values. A matrix means all rows have to have the same number of columns
  * and rows cannot be null.
- * @author breh
+ * 
  */
 public class SimpleTableModel implements TableModel {
 

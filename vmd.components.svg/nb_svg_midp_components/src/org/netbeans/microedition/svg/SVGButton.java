@@ -81,8 +81,8 @@ import org.w3c.dom.svg.SVGRGBColor;
  *   &lt;/g>
  *   &lt;/g>
  * </pre>
- * @author Pavel Benes
- * @author ads
+ * 
+ * 
  */
 public class SVGButton extends SVGAbstractButton {
     

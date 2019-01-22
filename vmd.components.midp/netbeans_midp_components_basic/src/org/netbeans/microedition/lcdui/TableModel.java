@@ -60,7 +60,7 @@ package org.netbeans.microedition.lcdui;
  * Table myTable = new Table();
  * myTable.setModel(myTableModel);
  * </code></p>
- * @author breh
+ * 
  */
 public interface TableModel {
 	

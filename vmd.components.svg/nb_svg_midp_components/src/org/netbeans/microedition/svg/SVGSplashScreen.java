@@ -64,7 +64,7 @@ import javax.microedition.m2g.SVGImage;
  * when the application starts. It waits for a specified amount of time (by default
  * 5000 milliseconds) and then calls specified command listener commandAction method
  * with DISMISS_COMMAND as command parameter. It displays an animation of SVG image.
- * @author breh
+ * 
  */
 public class SVGSplashScreen extends SVGAnimatorWrapper {
     

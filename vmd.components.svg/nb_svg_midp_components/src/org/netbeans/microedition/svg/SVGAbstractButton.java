@@ -53,8 +53,8 @@ import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
  *
- * @author Pavel Benes
- * @author ads
+ * 
+ * 
  */
 public abstract class SVGAbstractButton extends SVGComponent {
 

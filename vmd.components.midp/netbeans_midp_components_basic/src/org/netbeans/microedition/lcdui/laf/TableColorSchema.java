@@ -46,7 +46,7 @@ package org.netbeans.microedition.lcdui.laf;
 
 /**
  *
- * @author ads
+ * 
  */
 public abstract class TableColorSchema extends ColorSchema {
 

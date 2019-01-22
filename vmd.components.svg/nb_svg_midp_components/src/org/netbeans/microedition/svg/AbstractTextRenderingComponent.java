@@ -47,7 +47,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
 
 
 /**
- * @author ads
+ * 
  *
  */
 public abstract class AbstractTextRenderingComponent extends SVGComponent {

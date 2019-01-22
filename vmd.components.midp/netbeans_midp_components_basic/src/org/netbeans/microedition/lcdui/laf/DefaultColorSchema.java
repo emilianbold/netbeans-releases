@@ -51,7 +51,7 @@ import javax.microedition.lcdui.Image;
 
 /**
  *
- * @author breh
+ * 
  */
 public class DefaultColorSchema extends ColorSchema {
     

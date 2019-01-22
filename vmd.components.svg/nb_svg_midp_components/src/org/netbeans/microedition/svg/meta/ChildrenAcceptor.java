@@ -48,7 +48,7 @@ import org.w3c.dom.svg.SVGElement;
 
 
 /**
- * @author ads
+ * 
  *
  */
 public class ChildrenAcceptor {

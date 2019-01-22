@@ -95,7 +95,7 @@ import org.w3c.dom.svg.SVGRect;
  * Nested elements 'content' and 'bound' are necessary.
  * All other is used by default renderer. 
  * See {@link SVGDefaultListCellRenderer.}  
- * @author ads
+ * 
  *
  */
 public class SVGList extends SVGComponent implements DataListener {

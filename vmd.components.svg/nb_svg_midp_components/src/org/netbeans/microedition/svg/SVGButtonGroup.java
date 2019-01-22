@@ -49,8 +49,8 @@ import java.util.Vector;
 
 /**
  *
- * @author Pavel Benes
- * @author ads
+ * 
+ * 
  */
 public class SVGButtonGroup implements SVGActionListener {
 

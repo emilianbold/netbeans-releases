@@ -94,8 +94,8 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *   &lt;/g>
  * </pre>
  *
- * @author Pavel Benes
- * @author ads
+ * 
+ * 
  */
 public class SVGRadioButton extends SVGAbstractButton {
     

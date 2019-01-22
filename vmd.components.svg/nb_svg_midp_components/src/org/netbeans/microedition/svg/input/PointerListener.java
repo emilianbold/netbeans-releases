@@ -45,7 +45,7 @@ package org.netbeans.microedition.svg.input;
 
 
 /**
- * @author ads
+ * 
  *
  */
 public interface PointerListener {

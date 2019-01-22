@@ -75,8 +75,8 @@ import org.w3c.dom.svg.SVGRect;
  *       &lt;/g>
  *   &lt;/g>
  * </pre>
- * @author Pavel Benes
- * @author ads
+ * 
+ * 
  */
 public class SVGTextField extends AbstractTextRenderingComponent {
 

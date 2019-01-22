@@ -74,7 +74,7 @@ import org.netbeans.microedition.util.CancellableTask;
  * is called with SUCCESS_COMMAND as parameter, in the case of failure, the commandAction
  * method is called with FAILURE_COMMAND as parameter.
  * <p/>
- * @author breh
+ * 
  */
 public class SVGWaitScreen extends SVGAnimatorWrapper {
      

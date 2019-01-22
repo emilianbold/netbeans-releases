@@ -52,7 +52,7 @@ import org.netbeans.microedition.lcdui.laf.TableColorSchema;
 
 /**
  *
- * @author ads
+ * 
  */
 interface TablePaintStrategy {
 

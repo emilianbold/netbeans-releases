@@ -63,7 +63,7 @@ import org.w3c.dom.svg.SVGRect;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public abstract class SVGComponent implements SVGForm.FocusListener {
     public static final    String SVG_NS = "http://www.w3.org/2000/svg";  // NOI18N

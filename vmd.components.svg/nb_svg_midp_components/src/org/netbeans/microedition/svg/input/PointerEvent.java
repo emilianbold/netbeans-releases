@@ -47,7 +47,7 @@ import org.netbeans.microedition.svg.SVGComponent;
 
 
 /**
- * @author ads
+ * 
  *
  */
 public class PointerEvent {

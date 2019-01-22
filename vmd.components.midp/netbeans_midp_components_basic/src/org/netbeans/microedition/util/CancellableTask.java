@@ -54,7 +54,7 @@ package org.netbeans.microedition.util;
 /**
  * A CancellableTask object is used in <code>WaitScreen</code> component to be run in
  * the background.
- * @author breh
+ * 
  */
 public interface CancellableTask extends Runnable {
 	

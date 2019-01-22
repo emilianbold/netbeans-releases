@@ -48,7 +48,7 @@ import org.w3c.dom.svg.SVGRect;
 
 
 /**
- * @author ads
+ * 
  *
  */
 class TextRenderer {

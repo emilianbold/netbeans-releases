@@ -53,7 +53,7 @@ import org.netbeans.microedition.svg.SVGComponent;
 
 /**
  *
- * @author Pavel Benes
+ * 
  */
 public abstract class InputHandler {
     public static final int UP        = -1;

@@ -82,7 +82,7 @@ import org.w3c.dom.svg.SVGSVGElement;
  * <p>
  * Even though this class extends Canvas, the Canvas is utilized only
  * for forwarding command actions from Canvas created by SVGAnimator.
- * @author breh 
+ * 
  */
 public class SVGPlayer extends Canvas implements CommandListener { // need to use canvas, because of 
                                                                             // forwarding command actions

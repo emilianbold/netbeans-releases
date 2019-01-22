@@ -74,7 +74,7 @@ import org.w3c.dom.svg.SVGElement;
  * <p/> By default this component starts the animation automatically and runs in 
  * full screen mode.
  *
- * @author breh
+ * 
  */
 public class SVGMenu extends SVGAnimatorWrapper {
     

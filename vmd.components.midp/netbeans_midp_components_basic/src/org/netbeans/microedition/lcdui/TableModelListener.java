@@ -53,7 +53,7 @@ package org.netbeans.microedition.lcdui;
 
 /**
  * A listener for changes of the table model
- * @author breh
+ * 
  */
 public interface TableModelListener {
 	

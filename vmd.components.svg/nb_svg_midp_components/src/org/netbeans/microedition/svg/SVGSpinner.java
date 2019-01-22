@@ -104,7 +104,7 @@ import org.w3c.dom.svg.SVGRect;
  *   &lt;polygon transform="translate(28,14)"  points="0,0 2,0 1,2" fill="blue" stroke="black" stroke-width="2"/>
  *   &lt;/g>
  * </pre>
- * @author ads
+ * 
  *
  */
 public class SVGSpinner extends SVGComponent implements DataListener {

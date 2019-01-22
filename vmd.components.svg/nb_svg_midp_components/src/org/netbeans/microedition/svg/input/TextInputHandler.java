@@ -55,7 +55,7 @@ import org.netbeans.microedition.svg.SVGTextField;
 
 
 /**
- * @author ads
+ * 
  *
  */
 public class TextInputHandler extends InputHandler implements CommandListener {

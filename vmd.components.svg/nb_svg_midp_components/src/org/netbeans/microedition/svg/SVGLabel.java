@@ -59,7 +59,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *   &lt;/g>
  *   &lt;/g>
  * </pre>
- * @author ads
+ * 
  *
  */
 public class SVGLabel extends SVGComponent {

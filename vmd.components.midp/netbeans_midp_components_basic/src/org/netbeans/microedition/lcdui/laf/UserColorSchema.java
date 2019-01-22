@@ -62,7 +62,7 @@ import javax.microedition.lcdui.Image;
  * please note you have to manually repaint the shown component when the color is
  * changed. There is no event model which could inform the component about the change.
  *
- * @author breh
+ * 
  * edited: Karol Karol Harezlak
  */
 public class UserColorSchema extends ColorSchema {

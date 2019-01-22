@@ -72,7 +72,7 @@ import org.w3c.dom.svg.SVGRect;
  *   &lt;/g>
  *   &lt;/g>
  * </pre>
- * @author ads
+ * 
  *
  */
 public class SVGSlider extends SVGComponent {

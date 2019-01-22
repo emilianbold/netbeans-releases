@@ -81,7 +81,7 @@ import org.w3c.dom.svg.SVGSVGElement;
  * <p>
  * In this version this class simply extends SVGPlayer and does not define any 
  * methods/fields. It is kept here only for backward compatibility reasons
- * @author breh 
+ * 
  *
  * @deprecated This class has been deprected with 6.0 version of NetBeans. Please
  * use {@link SVGPlayer} instead of it.

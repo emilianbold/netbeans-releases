@@ -62,7 +62,7 @@ import javax.microedition.lcdui.Image;
  * images to be used when drawing custom components based on Canvas 
  * and CustomItem, which support this ColorSchema mechanism. 
  *
- * @author breh
+ * 
  */
 public abstract class ColorSchema {
 

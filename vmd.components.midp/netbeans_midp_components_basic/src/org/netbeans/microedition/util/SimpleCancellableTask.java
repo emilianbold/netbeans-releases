@@ -54,7 +54,7 @@ package org.netbeans.microedition.util;
 /**
  * A simple implementation of <code>CancellableTask</code>. This implementation uses a supplied
  * Runnable object, which is being run when this task starts.
- * @author breh
+ * 
  */
 public class SimpleCancellableTask implements CancellableTask {
     

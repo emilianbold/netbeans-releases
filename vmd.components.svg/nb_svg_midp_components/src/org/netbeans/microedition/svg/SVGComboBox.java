@@ -147,7 +147,7 @@ import org.w3c.dom.svg.SVGRect;
  *   &lt;/g
  * </pre>  
  * 
- * @author ads
+ * 
  *
  */
 public class SVGComboBox extends SVGComponent implements 

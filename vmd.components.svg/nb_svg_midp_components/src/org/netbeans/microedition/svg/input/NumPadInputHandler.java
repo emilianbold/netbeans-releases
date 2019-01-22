@@ -54,8 +54,8 @@ import org.netbeans.microedition.svg.SVGTextField;
 
 /**
  *
- * @author Pavel
- * @author ads
+ * 
+ * 
  */
 public class NumPadInputHandler extends TextInputHandler {
     private static final int MAX_REPEAT_TIME  = 1000;

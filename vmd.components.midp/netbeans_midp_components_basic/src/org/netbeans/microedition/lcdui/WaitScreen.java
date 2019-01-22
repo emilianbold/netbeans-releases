@@ -83,7 +83,7 @@ import org.netbeans.microedition.util.CancellableTask;
  * task is finished, <code>WaitScreen</code> switches back to the screen it was
  * previously visible on the display.
  *
- * @author breh
+ * 
  */
 public class WaitScreen extends AbstractInfoScreen {
     

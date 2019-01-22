@@ -66,7 +66,7 @@ import org.netbeans.microedition.lcdui.laf.TableColorSchema;
  * <p/>
  * The table can be larger than a screen in both  directions - user can use
  * a cursor to scroll in all directions.
- * @author breh
+ * 
  */
 public class TableItem extends CustomItem implements TableModelListener {
 

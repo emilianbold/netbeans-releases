@@ -45,7 +45,7 @@ package org.netbeans.microedition.svg;
 
 
 /**
- * @author ads
+ * 
  *
  */
 public interface DataListener {

@@ -56,7 +56,7 @@ import javax.microedition.lcdui.*;
  * directories. It's uses FileConnection Optional Package (JSR 75). The FileConnection
  * Optional Package APIs give J2ME devices access to file systems residing on mobile devices,
  * primarily access to removable storage media such as external memory cards.
- * @author breh
+ * 
  */
 
 public class FileBrowser extends List implements CommandListener {
