@@ -58,7 +58,7 @@ import org.netbeans.modules.ws.qaf.EjbWsValidation;
 
 /**
  *
- * @author jp154641
+ * 
  */
 public class IdentityValidationInEJB extends EjbWsValidation {
 

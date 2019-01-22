@@ -71,7 +71,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
- * @author Vitaly Bychkov
+ * 
  * @version 22 January 2006
  */
 public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIterator {

@@ -52,7 +52,7 @@ import org.netbeans.modules.identity.profile.api.configurator.SecurityMechanism;
  *
  * Created on June 10, 2006, 10:48 PM
  *
- * @author ptliu
+ * 
  */
 class SecurityMechanismImpl implements SecurityMechanism {
     

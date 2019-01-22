@@ -52,7 +52,7 @@ import javax.swing.JComboBox;
  * This Modifier is used to synchronize the value between a JComboBox and
  * a Configurable.
  *
- * @author ptliu
+ * 
  */
 class ComboBoxModifier extends Modifier {
     private JComboBox comboBox;

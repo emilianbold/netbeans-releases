@@ -63,7 +63,7 @@ import org.netbeans.modules.identity.profile.api.configurator.spi.TrustAuthority
  *
  * Created on June 9, 2006, 7:59 PM
  *
- * @author ptliu
+ * 
  */
 public class ProviderConfigImpl implements ProviderConfig {
     private static final String WSP = "WSP";    //NOI18N

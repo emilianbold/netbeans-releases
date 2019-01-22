@@ -52,7 +52,7 @@ import java.util.Map;
 
 /**
  *
- * @author Peter Liu
+ * 
  */
 public class GetQuote {
 

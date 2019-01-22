@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  * This class manages classloaders for each instance of the AM client 
  * sdk. This is used to support local and remote AM server instances.
  * 
- * @author ptliu
+ * 
  */
 class ClassLoaderManager {
     

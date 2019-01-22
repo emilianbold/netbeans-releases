@@ -70,7 +70,7 @@ import org.openide.filesystems.FileUtil;
  *
  * Created on June 14, 2006, 1:05 AM
  *
- * @author ptliu
+ * 
  */
 public class ServerManager {
     private static String DIR_CONFIGURED_SERVERS = "/Identity/ConfiguredServers"; //NOI18N

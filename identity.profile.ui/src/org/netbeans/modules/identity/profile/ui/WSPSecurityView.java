@@ -52,7 +52,7 @@ import org.openide.util.HelpCtx;
  *
  * Created on April 14, 2006, 4:53 PM
  *
- * @author ptliu
+ * 
  */
 public class WSPSecurityView extends SecurityView implements HelpCtx.Provider {
     public WSPSecurityView(J2eeProjectHelper helper) {

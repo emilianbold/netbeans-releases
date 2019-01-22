@@ -52,7 +52,7 @@ import javax.servlet.http.*;
 
 /**
  *
- * @author Administrator
+ * 
  * @version
  */
 public class SOAPMessage extends HttpServlet {

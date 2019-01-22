@@ -55,7 +55,7 @@ import org.netbeans.modules.identity.profile.api.configurator.spi.ProviderConfig
  *
  * Created on August 2, 2006, 3:40 AM
  *
- * @author ptliu
+ * 
  */
 public class DiscoveryConfigImpl extends TrustAuthorityConfigImpl
         implements DiscoveryConfig{

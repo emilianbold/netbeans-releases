@@ -52,7 +52,7 @@ import javax.swing.event.DocumentListener;
  * This Modifier is used to synchronize the value between a JTextField and
  * a Configurable.
  *
- * @author ptliu
+ * 
  */
 class TextFieldModifier extends Modifier {
     private JTextField textField;

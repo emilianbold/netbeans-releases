@@ -64,7 +64,7 @@ import org.netbeans.modules.identity.server.manager.api.ServerManager;
  *
  * Created on June 26, 2006, 11:00 PM
  * 
- * @author ptliu
+ * 
  */
 public class AMDeploy extends Task {
     private static final String PROP_AM_CONFIG_FILE = "AM_CONFIG_FILE"; //NOI18N

@@ -63,7 +63,7 @@ import org.netbeans.modules.identity.profile.ui.support.WsdlData;
  *
  * Created on April 10, 2006, 5:53 PM
  *
- * @author Vidhya Narayanan
+ * 
  */
 public class SecurityWSEditor implements WSEditor {
     private J2eeProjectHelper helper;

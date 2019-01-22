@@ -55,7 +55,7 @@ package org.netbeans.modules.identity.profile.ui;
  *
  * Created on April 14, 2006, 1:48 PM
  *
- * @author  Vidhya Narayanan
+ * 
  */
 public class MessagePanel extends javax.swing.JPanel {
 

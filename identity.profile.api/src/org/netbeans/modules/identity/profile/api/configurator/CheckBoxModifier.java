@@ -52,7 +52,7 @@ import javax.swing.JCheckBox;
  * This Modifier is used to synchronize the value between a JCheckBox and
  * a Configurable.
  *
- * @author ptliu
+ * 
  */
 class CheckBoxModifier extends Modifier {
     private JCheckBox checkBox;

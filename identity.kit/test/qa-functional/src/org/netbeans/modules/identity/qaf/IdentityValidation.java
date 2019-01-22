@@ -63,7 +63,7 @@ import org.netbeans.modules.ws.qaf.WsValidation;
 
 /**
  *
- * @author jp154641
+ * 
  *
  * This test suite was created to automate most basic Identity test cases
  * such as editing of AM Profiles, securing WS and WSC in Web and EJB Module

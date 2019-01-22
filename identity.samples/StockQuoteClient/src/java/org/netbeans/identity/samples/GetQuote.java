@@ -52,7 +52,7 @@ import javax.xml.ws.WebServiceRef;
 
 /**
  *
- * @author Administrator
+ * 
  * 
  */
 public class GetQuote extends HttpServlet {

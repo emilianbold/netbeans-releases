@@ -63,7 +63,7 @@ import org.netbeans.modules.identity.profile.api.configurator.SecurityMechanism;
 
 /**
  *
- * @author Srividhya Narayanan
+ * 
  */
 public class ProviderConfigImplTest extends TestCase {
     String path = null;

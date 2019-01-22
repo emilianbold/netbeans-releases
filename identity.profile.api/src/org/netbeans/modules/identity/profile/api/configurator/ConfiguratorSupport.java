@@ -54,7 +54,7 @@ import javax.swing.table.TableModel;
  * Support class used to create instances of Modifier based on the source
  * components.
  *
- * @author ptliu
+ * 
  */
 class ConfiguratorSupport {
 

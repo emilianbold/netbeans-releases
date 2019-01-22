@@ -69,7 +69,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author PeterLiu
+ * 
  */
 public class J2ee15ProjectHelper extends J2eeProjectHelper {
     

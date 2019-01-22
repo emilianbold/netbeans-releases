@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  *
  * Created on July 26, 2006, 10:51 PM
  *
- * @author ptliu
+ * 
  */
 public abstract class EditDialogDescriptor extends DialogDescriptor
         implements ChangeListener {

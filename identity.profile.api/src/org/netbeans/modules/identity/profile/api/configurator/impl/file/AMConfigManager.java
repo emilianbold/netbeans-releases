@@ -63,7 +63,7 @@ import org.netbeans.modules.identity.profile.api.configurator.impl.file.jaxb.Obj
  *
  * Created on July 24, 2006, 2:42 PM
  *
- * @author ptliu
+ * 
  */
 class AMConfigManager {
     private static final String AMCONFIG_CACHE_PATH = "amserver";       //NOI18N

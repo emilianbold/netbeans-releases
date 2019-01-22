@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  *
  * Created on July 5, 2006, 5:39 PM
  *
- * @author ptliu
+ * 
  */
 public class ServerProperties extends Properties implements Cloneable {
     

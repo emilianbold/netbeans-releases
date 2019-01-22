@@ -68,7 +68,7 @@ import org.openide.util.Lookup;
  *
  * Created on April 10, 2006, 5:54 PM
  *
- * @author Vidhya Narayanan
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.wseditor.WSEditorProvider.class)
 public class SecurityWSEditorProvider implements WSEditorProvider {

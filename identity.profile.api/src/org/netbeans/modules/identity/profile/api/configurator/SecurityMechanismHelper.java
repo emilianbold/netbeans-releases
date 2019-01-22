@@ -55,7 +55,7 @@ import org.netbeans.modules.identity.profile.api.configurator.impl.dynamic.Secur
  *
  * Created on July 12, 2006, 11:58 AM
  *
- * @author ptliu
+ * 
  */
 public class SecurityMechanismHelper {
     

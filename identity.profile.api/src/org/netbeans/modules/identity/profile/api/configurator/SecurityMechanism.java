@@ -48,7 +48,7 @@ package org.netbeans.modules.identity.profile.api.configurator;
  * Wrapper class for the SecurityMechanism class from the AM client sdk. 
  *
  * Created on June 10, 2006, 10:48 PM
- * @author ptliu
+ * 
  */
 public interface SecurityMechanism {
 

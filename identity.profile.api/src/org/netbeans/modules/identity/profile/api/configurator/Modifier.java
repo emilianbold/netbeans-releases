@@ -47,7 +47,7 @@ package org.netbeans.modules.identity.profile.api.configurator;
 /**
  * Super class for all the various modifiers.
  *
- * @author ptliu
+ * 
  */
 abstract class Modifier {
     private Enum configurable;

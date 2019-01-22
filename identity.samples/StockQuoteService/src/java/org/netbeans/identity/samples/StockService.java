@@ -53,7 +53,7 @@ import javax.jws.WebService;
 
 /**
  *
- * @author Peter Liu
+ * 
  */
 @WebService(serviceName = "StockService", portName = "StockQuotePortTypePort", endpointInterface = "com.sun.stockquote.StockQuotePortType", targetNamespace = "http://sun.com/stockquote.wsdl", wsdlLocation = "WEB-INF/wsdl/StockService/StockService.wsdl")
 @HandlerChain(file = "StockService_handler.xml")

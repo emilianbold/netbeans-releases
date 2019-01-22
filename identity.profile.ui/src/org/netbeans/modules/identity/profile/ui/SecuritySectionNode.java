@@ -53,7 +53,7 @@ import org.openide.nodes.Children;
  *
  * Created on April 14, 2006, 4:58 PM
  *
- * @author ptliu
+ * 
  */
 public class SecuritySectionNode extends SectionNode {
 

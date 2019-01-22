@@ -49,7 +49,7 @@ package org.netbeans.modules.identity.profile.api.configurator;
  *
  * Created on July 28, 2006, 10:55 PM
  *
- * @author ptliu
+ * 
  */
 public class ConfiguratorException extends RuntimeException {
     

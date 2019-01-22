@@ -59,7 +59,7 @@ import org.xml.sax.SAXException;
 /**
  * Copied from DDCatalog
  *
- * @author ads
+ * 
  */
 public class AMCatalog implements CatalogReader, CatalogDescriptor2,
     EntityResolver  

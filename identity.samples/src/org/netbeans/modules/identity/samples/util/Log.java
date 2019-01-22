@@ -45,7 +45,7 @@
 package org.netbeans.modules.identity.samples.util;
 
 /**
- * @author Vitaly Bychkov
+ * 
  * @version 13 October 2005
  */
 public abstract class Log {

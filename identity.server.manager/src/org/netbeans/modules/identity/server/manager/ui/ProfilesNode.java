@@ -68,7 +68,7 @@ import org.openide.util.Utilities;
  *
  * Created on July 10, 2006, 6:10 PM
  *
- * @author ptliu
+ * 
  */
 public class ProfilesNode extends AbstractNode {
     

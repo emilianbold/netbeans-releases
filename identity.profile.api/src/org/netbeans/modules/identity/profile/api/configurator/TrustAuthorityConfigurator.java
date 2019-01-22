@@ -51,7 +51,7 @@ import org.netbeans.modules.identity.profile.api.configurator.spi.TrustAuthority
  *
  * Created on August 2, 2006, 3:19 AM
  *
- * @author ptliu
+ * 
  */
 public class TrustAuthorityConfigurator extends Configurator {
     

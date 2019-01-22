@@ -54,7 +54,7 @@ import org.openide.nodes.Node;
  *
  * Created on April 18, 2006, 1:27 PM
  *
- * @author ptliu
+ * 
  */
 public abstract class SecurityView extends SectionNodeView {
     

@@ -49,7 +49,7 @@ package org.netbeans.modules.identity.profile.ui.support;
  *
  * Created on April 18, 2006, 1:29 PM
  *
- * @author Srividhya Narayanan
+ * 
  */
 
 import java.io.BufferedReader;

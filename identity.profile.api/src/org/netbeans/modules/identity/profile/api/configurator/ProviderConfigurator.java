@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
 /**
  * Configurator used to configure ProviderConfig.
  *
- * @author ptliu
+ * 
  */
 public class ProviderConfigurator extends Configurator {
     

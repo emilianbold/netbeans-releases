@@ -49,7 +49,7 @@ package org.netbeans.modules.identity.profile.ui.support;
  *
  * Created on July 19, 2006, 5:07 PM
  *
- * @author ptliu
+ * 
  */
 public class WsdlData {
     

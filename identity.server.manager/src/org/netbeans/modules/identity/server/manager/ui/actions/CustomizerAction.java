@@ -61,7 +61,7 @@ import org.openide.util.actions.NodeAction;
  *
  * Created on June 14, 2006, 7:01 PM
  *
- * @author ptliu
+ * 
  */
 public class CustomizerAction extends NodeAction {
     

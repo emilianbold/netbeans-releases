@@ -56,7 +56,7 @@ import org.netbeans.modules.identity.profile.api.configurator.spi.TrustAuthority
  *
  * Created on August 2, 2006, 3:35 AM
  *
- * @author ptliu
+ * 
  */
 public class TrustAuthorityConfigImpl implements TrustAuthorityConfig {
     private static final String AM_TRUST_AUTHORITY_CONFIG_CLASS = "com.sun.identity.wss.provider.TrustAuthorityConfig"; //NOI18N

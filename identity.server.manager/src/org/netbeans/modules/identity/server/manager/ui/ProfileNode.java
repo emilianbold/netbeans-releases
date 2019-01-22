@@ -59,7 +59,7 @@ import org.openide.util.actions.SystemAction;
  *
  * Created on July 11, 2006, 12:22 AM
  *
- * @author ptliu
+ * 
  */
 public class ProfileNode extends AbstractNode {
     

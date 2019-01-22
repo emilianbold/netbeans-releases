@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
  *
  * Created on July 17, 2006, 12:05 AM
  *
- * @author  ptliu
+ * 
  */
 public class UserNamePasswordEditorPanel extends javax.swing.JPanel
         implements EditDialogDescriptor.Panel {

@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  *
  * Created on April 18, 2006, 1:39 PM
  *
- * @author ptliu
+ * 
  */
 public class WSCSectionNode extends SecuritySectionNode {
     private static String WSP = "wsp";  //NOI18N

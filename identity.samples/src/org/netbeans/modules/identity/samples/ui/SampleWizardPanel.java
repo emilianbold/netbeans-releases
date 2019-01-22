@@ -55,7 +55,7 @@ import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 
 /**
- * @author Vitaly Bychkov
+ * 
  * @version 22 January 2006
  */
 public class SampleWizardPanel implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {

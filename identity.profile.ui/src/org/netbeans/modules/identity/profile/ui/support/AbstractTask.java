@@ -44,7 +44,7 @@ import org.netbeans.api.java.source.CancellableTask;
 
 /**
  *
- * @author PeterLiu
+ * 
  */
 public abstract class AbstractTask<P> implements CancellableTask<P> {
 

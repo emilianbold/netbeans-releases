@@ -51,7 +51,7 @@ import javax.swing.table.DefaultTableModel;
  *
  * Created on July 14, 2006, 4:18 PM
  *
- * @author ptliu
+ * 
  */
 class MultiSelectTableModel extends DefaultTableModel {
     

@@ -53,7 +53,7 @@ import org.openide.util.HelpCtx;
  * 
  * Created on April 18, 2006, 1:38 PM
  *
- * @author ptliu
+ * 
  */
 public class WSCSecurityView extends SecurityView implements HelpCtx.Provider {
 

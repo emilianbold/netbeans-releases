@@ -51,7 +51,7 @@ import java.util.EventListener;
  *
  * Created on June 14, 2006, 2:38 PM
  *
- * @author ptliu
+ * 
  */
 public interface ServerInstanceListener extends EventListener {
     

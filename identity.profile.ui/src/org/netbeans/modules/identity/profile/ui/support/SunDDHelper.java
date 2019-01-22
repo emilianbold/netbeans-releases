@@ -79,7 +79,7 @@ import org.xml.sax.SAXException;
  *
  * Created on August 7, 2006, 12:11 PM
  *
- * @author ptliu
+ * 
  */
 public class SunDDHelper {
     private static final String SUN_WEB_APP_TAG = "sun-web-app"; //NOI18N

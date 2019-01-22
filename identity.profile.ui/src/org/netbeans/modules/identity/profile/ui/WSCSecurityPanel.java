@@ -70,8 +70,8 @@ import org.openide.util.NbBundle;
  *
  * Created on April 14, 2006, 3:03 PM
  *
- * @author  ptliu
- * @author Srividhya Narayanan
+ * 
+ * 
  */
 public class WSCSecurityPanel extends SectionNodeInnerPanel {
 

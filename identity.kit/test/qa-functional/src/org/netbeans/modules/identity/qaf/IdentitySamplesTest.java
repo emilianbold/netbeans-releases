@@ -50,7 +50,7 @@ import org.netbeans.modules.ws.qaf.WebServiceSamplesTest;
 
 /**
  *
- * @author jp154641
+ * 
  */
 public class IdentitySamplesTest extends WebServiceSamplesTest {
     

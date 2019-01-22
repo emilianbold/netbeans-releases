@@ -107,8 +107,8 @@ import org.openide.loaders.DataFolder;
  *
  * Created on July 18, 2006, 11:36 PM
  *
- * @author ptliu
- * @author Srividhya Narayanan
+ * 
+ * 
  */
 public class J2eeProjectHelper {
     

@@ -51,7 +51,7 @@ package org.netbeans.modules.identity.profile.api.configurator.spi;
  *
  * Created on August 2, 2006, 3:32 AM
  *
- * @author ptliu
+ * 
  */
 public interface DiscoveryConfig extends TrustAuthorityConfig {
     

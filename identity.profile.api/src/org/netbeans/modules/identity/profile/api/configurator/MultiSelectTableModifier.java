@@ -61,7 +61,7 @@ import javax.swing.table.TableModel;
  *
  * Created on July 14, 2006, 4:19 PM
  * 
- * @author ptliu
+ * 
  */
 class MultiSelectTableModifier extends Modifier {
  

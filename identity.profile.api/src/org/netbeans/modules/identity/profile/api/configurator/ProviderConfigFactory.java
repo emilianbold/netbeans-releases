@@ -53,7 +53,7 @@ import org.netbeans.modules.identity.profile.api.configurator.spi.ProviderConfig
  *
  * Created on June 21, 2006, 7:29 PM
  *
- * @author ptliu
+ * 
  */
 class ProviderConfigFactory {
     

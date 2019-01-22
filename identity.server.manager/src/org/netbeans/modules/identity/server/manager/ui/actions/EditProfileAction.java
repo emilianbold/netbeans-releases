@@ -63,7 +63,7 @@ import org.openide.util.actions.NodeAction;
  *
  * Created on July 12, 2006, 8:55 PM
  *
- * @author ptliu
+ * 
  */
 public class EditProfileAction extends NodeAction {
     

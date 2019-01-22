@@ -55,8 +55,8 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vitaly Bychkov
- * @author Srividhya Narayanan
+ * 
+ * 
  * @version 22 January 2006
  */
 public class StockClientSampleWizardIterator extends SampleWizardIterator {

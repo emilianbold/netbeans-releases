@@ -57,7 +57,7 @@ import org.netbeans.modules.identity.profile.api.configurator.ServerProperties;
  *
  * Created on June 14, 2006, 11:10 AM
  *
- * @author ptliu
+ * 
  */
 public class ServerInstance extends Object implements Serializable {
     

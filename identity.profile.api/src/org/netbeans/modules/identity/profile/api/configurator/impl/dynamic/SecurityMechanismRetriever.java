@@ -61,7 +61,7 @@ import org.netbeans.modules.identity.profile.api.configurator.ServerProperties;
  *
  * Created on July 12, 2006, 1:20 PM
  *
- * @author ptliu
+ * 
  */
 public class SecurityMechanismRetriever {
     

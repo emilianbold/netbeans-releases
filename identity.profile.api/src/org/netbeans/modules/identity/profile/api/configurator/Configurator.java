@@ -50,7 +50,7 @@ import java.util.Map;
 /**
  * Super class for the various configurators.
  *
- * @author ptliu
+ * 
  */
 public abstract class Configurator {
        

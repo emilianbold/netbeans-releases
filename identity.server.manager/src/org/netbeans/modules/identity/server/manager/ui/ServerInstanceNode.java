@@ -60,7 +60,7 @@ import org.openide.util.actions.SystemAction;
  *
  * Created on June 14, 2006, 12:48 AM 
  *
- * @author ptliu
+ * 
  */
 public class ServerInstanceNode extends AbstractNode {
     

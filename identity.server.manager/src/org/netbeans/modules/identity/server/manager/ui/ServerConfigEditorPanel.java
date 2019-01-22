@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
  *
  * Created on June 22, 2006, 3:40 PM
  *
- * @author  ptliu
+ * 
  */
 public class ServerConfigEditorPanel extends javax.swing.JPanel
         implements EditDialogDescriptor.Panel {

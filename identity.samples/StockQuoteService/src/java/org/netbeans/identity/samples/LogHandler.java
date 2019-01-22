@@ -60,7 +60,7 @@ import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 /**
  *
- * @author aravind
+ * 
  */
 public class LogHandler implements SOAPHandler<SOAPMessageContext> {
     

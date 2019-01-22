@@ -49,7 +49,7 @@ import org.netbeans.modules.identity.profile.api.configurator.spi.DiscoveryConfi
 /**
  * Configurator used to configure DiscoveryConfig.
  *
- * @author ptliu
+ * 
  */
 public class DiscoveryConfigurator extends TrustAuthorityConfigurator {
 

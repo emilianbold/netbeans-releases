@@ -51,7 +51,7 @@ import javax.swing.table.DefaultTableModel;
  *
  * Created on July 14, 2006, 4:19 PM
  *
- * @author ptliu
+ * 
  */
 class DataEntryTableModel extends DefaultTableModel {
     

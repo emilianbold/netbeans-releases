@@ -56,7 +56,7 @@ import javax.swing.event.TableModelListener;
  *
  * Created on July 14, 2006, 4:19 PM
  *
- * @author ptliu
+ * 
  */
 class DataEntryTableModifier extends Modifier {
     

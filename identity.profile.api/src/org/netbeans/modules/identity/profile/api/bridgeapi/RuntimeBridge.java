@@ -57,7 +57,7 @@ import org.openide.ErrorManager;
  *
  * Created on April 5, 2006, 10:50 AM
  *
- * @author Vidhya Narayanan
+ * 
  */
 public class RuntimeBridge {
     private static String amStatusCheckURL =

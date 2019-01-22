@@ -50,7 +50,7 @@ import org.netbeans.modules.identity.samples.util.SoaSampleProjectProperties;
 
 /**
  *
- * @author Vitaly Bychkov
+ * 
  * @version 2 November 2005
  */
 public class SoaSampleProjectProperties {

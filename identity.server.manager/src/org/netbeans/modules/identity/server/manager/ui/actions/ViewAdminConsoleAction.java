@@ -57,7 +57,7 @@ import org.openide.util.actions.CookieAction;
  * 
  * Created on June 14, 2006, 4:48 PM
  *
- * @author ptliu
+ * 
  */
 public class ViewAdminConsoleAction extends CookieAction {
     

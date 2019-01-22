@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
  *
  * Created on April 14, 2006, 3:03 PM
  *
- * @author  ptliu
+ * 
  */
 public class ProfileEditorPanel extends JPanel 
         implements ChangeListener, EditDialogDescriptor.Panel {
