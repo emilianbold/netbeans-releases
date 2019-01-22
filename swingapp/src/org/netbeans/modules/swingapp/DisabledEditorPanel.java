@@ -49,7 +49,6 @@ package org.netbeans.modules.swingapp;
  * is editing the action property of a component in a non-JSR 296 compliant project.
  * There is an issue filed to simply remove this action property editor. Once that
  * issue is fixed this panel will no longer be needed.
- * @author  joshua.marinacci@sun.com
  */
 public class DisabledEditorPanel extends javax.swing.JPanel {
     

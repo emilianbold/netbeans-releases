@@ -71,7 +71,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  * Utility class for working with resources (creating properties files, resource
  * maps, etc).
  * 
- * @author Tomas Pavek
+ * 
  */
 class ResourceUtils {
 

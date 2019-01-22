@@ -76,7 +76,7 @@ import org.openide.util.NbBundle;
  * resources are kept in sync (i.e. renamed, moved or copied as necessary). Also
  * takes care of renamed packages (renames the resources package as well).
  * 
- * @author Tomas Pavek
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {

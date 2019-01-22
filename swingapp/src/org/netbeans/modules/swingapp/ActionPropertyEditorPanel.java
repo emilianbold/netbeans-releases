@@ -83,7 +83,6 @@ import org.openide.util.Utilities;
  * almost any attribute on an action. The action will not be saved from this
  * dialog, however. When the user presses the Okay button (defined in the NB supplied
  * property editor dialog) the ActionEditor class will do the actual saving.
- * @author  joshua.marinacci@sun.com
  */
 public class ActionPropertyEditorPanel extends javax.swing.JPanel implements HelpCtx.Provider {
     

@@ -78,7 +78,6 @@ import org.w3c.dom.Node;
  * ActionEditor is a property editor for actions. It only works with JSR 296 support
  * and will show an empty panel with a message in it if used in non-JSR 296 projects.
  * (there is an issue filed to allow property editors to be conditionally removed completely)
- * @author joshua.marinacci@sun.com
  */
 public class ActionEditor extends PropertyEditorSupport implements FormAwareEditor,
         XMLPropertyEditor, ExPropertyEditor, VetoableChangeListener {

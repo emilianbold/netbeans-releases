@@ -60,7 +60,6 @@ import org.openide.awt.Mnemonics;
 
 /**
  * A class which represents an action but contains extra information needed for JSR 296 support.
- * @author joshua.marinacci@sun.com
  */
 public class ProxyAction implements Action, ResourceValue, Serializable {
     private String id; //this is the name of the action if the name attribute

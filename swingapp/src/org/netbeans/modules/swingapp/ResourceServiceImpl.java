@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
  * form editor when it needs to manipulate with resources. Registered in
  * META-INF.services.
  * 
- * @author Tomas Pavek
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.ResourceService.class)
 public class ResourceServiceImpl implements ResourceService {

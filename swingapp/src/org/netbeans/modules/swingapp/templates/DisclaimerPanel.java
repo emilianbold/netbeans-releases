@@ -53,7 +53,7 @@ import org.openide.util.HelpCtx;
 /**
  * Panel with a warning about dead JSR 296.
  *
- * @author Jan Stola
+ * 
  */
 public class DisclaimerPanel implements WizardDescriptor.Panel {
 

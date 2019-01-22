@@ -56,7 +56,6 @@ import org.netbeans.modules.swingapp.ActionPropertyEditorPanel;
  * accelerator key combos and turn them into strings that can be parsed by
  * the KeyStroke class.  This is used to make Accelerator editor textfields
  * 
- * @author joshua.marinacci@sun.com
  */
 public class AcceleratorKeyListener implements KeyListener {
 

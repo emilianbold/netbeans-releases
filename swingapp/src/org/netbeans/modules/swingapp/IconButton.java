@@ -58,7 +58,6 @@ import javax.swing.JButton;
 /**
  * A custom JButton which shows a selected icon or a dashed rectangle if
  * there is no icon selected.
- * @author joshua.marinacci@sun.com
  */
 public class IconButton extends JButton {
     private String iconText;

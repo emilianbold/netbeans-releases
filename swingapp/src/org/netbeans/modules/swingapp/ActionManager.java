@@ -127,7 +127,6 @@ import org.openide.text.Line.ShowVisibilityType;
  * rescaning the *entire* project.
  * 
  * 
- * @author joshua.marinacci@sun.com
  */
 public class ActionManager {
     

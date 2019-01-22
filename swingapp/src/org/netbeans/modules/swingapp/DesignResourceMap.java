@@ -74,7 +74,7 @@ import org.openide.loaders.MultiDataObject;
  * properties file even if opened and edited as documents.
  * @see ResourceUtils.createDesignResourceMap
  * 
- * @author Tomas Pavek
+ * 
  */
 final class DesignResourceMap extends ResourceMap {
 

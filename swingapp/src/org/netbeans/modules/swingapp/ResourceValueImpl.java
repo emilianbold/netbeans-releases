@@ -58,7 +58,7 @@ import org.openide.filesystems.FileObject;
  * type, level of storage (class, package, application), whether the value is
  * locale-sensitive, the source file (form) where the value is used, etc.
  * 
- * @author Tomas Pavek
+ * 
  */
 final class ResourceValueImpl implements ResourceValue {
 

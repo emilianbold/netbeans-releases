@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
  * value as a resource.
  * @see org.netbeans.modules.form.ResourceWrapperEditor
  * 
- * @author Tomas Pavek
+ * 
  */
 class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
 

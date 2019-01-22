@@ -79,7 +79,7 @@ import org.openide.xml.XMLUtil;
  * Utility class providing data and handling various operations related to the
  * Swing Application Framework.
  *
- * @author Tomas Pavek
+ * 
  */
 class AppFrameworkSupport {
 

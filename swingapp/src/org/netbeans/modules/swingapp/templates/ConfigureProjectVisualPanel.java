@@ -77,7 +77,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  tpavek
+ * 
  */
 public class ConfigureProjectVisualPanel extends javax.swing.JPanel
         implements DocumentListener, PropertyChangeListener, ExplorerManager.Provider
