@@ -59,7 +59,7 @@ import java.util.*;
 /**
  *
  *
- * @author Karol Harezlak 
+ *  
  * Based on Core Model GlobalDescriptorRegistry
  */
 

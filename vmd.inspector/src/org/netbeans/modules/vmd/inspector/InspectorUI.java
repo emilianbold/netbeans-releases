@@ -63,7 +63,7 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 final class InspectorUI extends TopComponent implements ExplorerManager.Provider, PropertyChangeListener, Presenter.Popup {

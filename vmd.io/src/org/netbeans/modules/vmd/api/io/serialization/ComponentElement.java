@@ -46,7 +46,7 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.w3c.dom.Node;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class ComponentElement {
 

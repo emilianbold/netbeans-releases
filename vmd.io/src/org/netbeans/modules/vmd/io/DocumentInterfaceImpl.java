@@ -50,7 +50,7 @@ import org.openide.awt.UndoRedo;
 import javax.swing.undo.UndoableEdit;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class DocumentInterfaceImpl implements DocumentInterface {
 

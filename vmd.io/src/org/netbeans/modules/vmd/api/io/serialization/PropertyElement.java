@@ -45,7 +45,7 @@
 import org.netbeans.modules.vmd.api.model.TypeID;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class PropertyElement {
 

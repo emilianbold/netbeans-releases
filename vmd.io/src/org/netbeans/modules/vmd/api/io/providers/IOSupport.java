@@ -80,7 +80,7 @@ import java.util.WeakHashMap;
  * <li>optionally call forceUpdateCode to force editor synchronization with design document
  * </ul>
  *
- * @author David Kaspar
+ * 
  */
 public final class IOSupport {
 

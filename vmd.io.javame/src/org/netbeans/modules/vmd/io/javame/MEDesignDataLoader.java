@@ -55,7 +55,7 @@ import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.netbeans.modules.mobility.editor.pub.J2MEDataLoader;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MEDesignDataLoader extends J2MEDataLoader {
 

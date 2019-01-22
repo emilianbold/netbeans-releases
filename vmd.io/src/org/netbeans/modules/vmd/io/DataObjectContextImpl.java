@@ -58,7 +58,7 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class DataObjectContextImpl implements DataObjectContext {
 

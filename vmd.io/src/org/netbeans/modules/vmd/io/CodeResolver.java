@@ -58,7 +58,7 @@ import javax.swing.*;
 import java.util.HashMap;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class CodeResolver implements DesignDocumentAwareness {
 

@@ -64,7 +64,7 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 /**
  * This class suits as a descriptor for the Mobility Visual Designer Navigator node.

@@ -64,7 +64,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class EditorViewElement implements MultiViewElement, Serializable {
     

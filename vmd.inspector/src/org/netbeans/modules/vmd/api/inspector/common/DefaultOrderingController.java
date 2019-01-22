@@ -58,7 +58,7 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 /**

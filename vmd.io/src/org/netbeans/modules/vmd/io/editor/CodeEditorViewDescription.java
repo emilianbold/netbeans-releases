@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class CodeEditorViewDescription extends EditorViewDescription implements SourceViewMarker {
 

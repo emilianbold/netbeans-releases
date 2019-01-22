@@ -72,7 +72,7 @@ import org.openide.util.datatransfer.PasteType;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 final class InspectorFolderNode extends AbstractNode {
 

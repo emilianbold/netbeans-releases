@@ -52,7 +52,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * @author David Kaspar
+ * 
  */
 final class DataEditorViewLookupFactoryRegistry {
     

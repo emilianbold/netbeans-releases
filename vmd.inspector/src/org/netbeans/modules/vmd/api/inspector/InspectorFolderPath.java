@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.inspector.InspectorWrapperTree;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 /**
  * This class keep tracking status of of the Mobility Visual Designer Navigator structure tree.

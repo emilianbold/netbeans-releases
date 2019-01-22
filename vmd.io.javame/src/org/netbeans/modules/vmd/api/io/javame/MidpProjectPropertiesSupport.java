@@ -52,7 +52,7 @@ import java.awt.*;
 
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MidpProjectPropertiesSupport {
 

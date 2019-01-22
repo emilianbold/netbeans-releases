@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.api.model.PresenterEvent;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 /**

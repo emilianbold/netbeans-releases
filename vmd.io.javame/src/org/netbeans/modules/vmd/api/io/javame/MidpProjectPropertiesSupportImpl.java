@@ -64,7 +64,7 @@ import java.awt.*;
 import java.util.HashMap;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class MidpProjectPropertiesSupportImpl {
 

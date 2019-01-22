@@ -44,7 +44,7 @@
 package org.netbeans.modules.vmd.api.io;
 
 /**
- * @author David Kaspar
+ * 
  */
 public interface DataEditorViewFactory {
 

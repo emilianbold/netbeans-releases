@@ -59,7 +59,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 /**
  * This class provides GUI to change DesignComponent display name and DesignComponent's 

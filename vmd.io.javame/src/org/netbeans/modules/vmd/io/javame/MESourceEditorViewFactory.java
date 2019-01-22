@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.io.DataEditorViewFactory;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 
 /**
- * @author David Kaspar
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.DataEditorViewFactory.class)
 public final class MESourceEditorViewFactory implements DataEditorViewFactory {

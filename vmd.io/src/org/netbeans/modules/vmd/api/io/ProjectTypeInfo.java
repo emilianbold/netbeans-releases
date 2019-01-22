@@ -48,7 +48,7 @@ import org.openide.util.Lookup;
 import java.util.Collection;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class ProjectTypeInfo {
 

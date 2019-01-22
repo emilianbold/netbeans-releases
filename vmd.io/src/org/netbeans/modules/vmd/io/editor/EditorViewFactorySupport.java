@@ -52,7 +52,7 @@ import java.util.*;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class EditorViewFactorySupport {
 

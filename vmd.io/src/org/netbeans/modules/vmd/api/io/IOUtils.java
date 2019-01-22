@@ -51,7 +51,7 @@ import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class IOUtils {
 

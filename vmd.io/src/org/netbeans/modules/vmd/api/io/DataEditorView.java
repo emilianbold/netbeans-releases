@@ -51,7 +51,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 /**
- * @author David Kaspar
+ * 
  */
 public interface DataEditorView extends Serializable {
 

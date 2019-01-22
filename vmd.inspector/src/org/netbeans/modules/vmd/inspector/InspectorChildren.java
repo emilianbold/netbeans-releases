@@ -51,7 +51,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 final class InspectorChildren extends Children.Keys<AbstractNode> {
 

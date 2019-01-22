@@ -48,7 +48,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 /**
- * @author David Kaspar
+ * 
  */
 public interface DataSerializer {
 

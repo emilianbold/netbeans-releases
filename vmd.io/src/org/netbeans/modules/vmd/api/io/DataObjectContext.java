@@ -49,7 +49,7 @@ import org.openide.text.CloneableEditorSupport;
 import java.io.Serializable;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - check for possible memory leaks - check whether the dataobject is really closed when its editor window is closed
 // TODO - should not it be final class?

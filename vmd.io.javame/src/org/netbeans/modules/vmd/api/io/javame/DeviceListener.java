@@ -44,7 +44,7 @@
 package org.netbeans.modules.vmd.api.io.javame;
 
 /**
- * @author David Kaspar
+ * 
  */
 public interface DeviceListener {
 

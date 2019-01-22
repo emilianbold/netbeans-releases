@@ -50,7 +50,7 @@ import java.awt.event.*;
 
 /**
  *
- * @author phrebejk
+ * 
  */
 public final class PopupUtil  {
     

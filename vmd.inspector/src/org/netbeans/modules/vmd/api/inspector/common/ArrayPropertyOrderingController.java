@@ -56,7 +56,7 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 /**
  * Implementation of InspectorOrderingController. This class sorts InspectorFolders in the Mobility Visual Designer Navigator

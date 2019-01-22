@@ -49,7 +49,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 final class DebugInspector {
 

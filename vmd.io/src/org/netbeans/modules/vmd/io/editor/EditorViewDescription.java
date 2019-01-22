@@ -57,7 +57,7 @@ import java.awt.*;
 import java.io.Serializable;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class EditorViewDescription implements MultiViewDescription, Serializable {
 

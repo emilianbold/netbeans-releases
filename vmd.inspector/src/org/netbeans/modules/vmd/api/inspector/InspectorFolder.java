@@ -51,7 +51,7 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 
 /**

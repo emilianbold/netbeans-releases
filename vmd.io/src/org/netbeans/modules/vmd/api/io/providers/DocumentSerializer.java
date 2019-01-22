@@ -61,7 +61,7 @@ import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandlerSupport;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - versioning + plugable serializers
 // TODO - memory leak - listeners has to be weak references.

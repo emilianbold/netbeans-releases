@@ -61,7 +61,7 @@ import java.util.*;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 final class InspectorFolderWrapper {
 

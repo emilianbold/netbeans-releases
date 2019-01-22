@@ -56,7 +56,7 @@ import org.openide.util.Mutex;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 final class FolderRegistry {
 

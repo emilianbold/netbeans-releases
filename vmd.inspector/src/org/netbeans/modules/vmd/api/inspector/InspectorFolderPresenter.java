@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.DynamicPresenter;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 /**

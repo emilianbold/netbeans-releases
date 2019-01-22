@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import java.util.Collection;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class DocumentSerializationController {
 

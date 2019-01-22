@@ -54,7 +54,7 @@ import java.awt.*;
 
 
 /**
- * @author David Kaspar
+ * 
  */
 public class EditorTopComponent extends TopComponent {
     

@@ -49,7 +49,7 @@ import org.openide.util.Lookup;
 /**
  * This interface is used for obtaining objects that should be added into the lookup of a TopComponent related to a particular view.
  *
- * @author David Kaspar
+ * 
  */
 public interface DataEditorViewLookupFactory {
 

@@ -49,7 +49,7 @@ import org.openide.windows.TopComponent;
 import javax.swing.text.StyledDocument;
 
 /**
- * @author David Kaspar
+ * 
  */
 public interface DataObjectInterface {
 

@@ -46,7 +46,7 @@ package org.netbeans.modules.vmd.api.io;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 
 /**
- * @author David Kaspar
+ * 
  */
 public interface CodeGenerator {
 

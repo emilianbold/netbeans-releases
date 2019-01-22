@@ -89,7 +89,7 @@ import org.openide.util.NbBundle;
 
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - save cookie is not added/removed to/from MEDesignEditorSupport based on the saveDocument, notifyModified, notifyUnmodified, notifyClosed
 public final class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCookie.Observable, OpenCookie, EditCookie, PrintCookie {

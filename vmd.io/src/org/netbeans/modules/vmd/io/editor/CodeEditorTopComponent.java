@@ -52,7 +52,7 @@ import javax.swing.*;
 import org.netbeans.modules.vmd.api.model.Debug;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class CodeEditorTopComponent extends EditorTopComponent implements CloneableEditorSupport.Pane {
 

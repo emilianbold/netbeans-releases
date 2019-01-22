@@ -59,7 +59,7 @@ import java.util.Set;
 /**
  * This class allows to register a Listener.
  *
- * @author David Kaspar
+ * 
  */
 public final class ActiveViewSupport {
 
@@ -197,7 +197,7 @@ public final class ActiveViewSupport {
      * Used for notification of an active view in the whole environment.
      * Usually used by active-view-aware components like inspector, palette, ...
      * The listener could be registered using ActiveViewSupport class.
-     * @author David Kaspar
+     * 
      */
     public interface Listener extends EventListener {
 

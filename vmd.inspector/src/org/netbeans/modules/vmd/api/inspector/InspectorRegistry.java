@@ -56,7 +56,7 @@ import org.openide.util.WeakSet;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 /**
  * This class store information about DesigneComponents to update in the Mobility Visual Designer Navigator.

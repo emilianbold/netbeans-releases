@@ -51,7 +51,7 @@ import org.openide.explorer.view.BeanTreeView;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 final class InspectorBeanTreeView extends BeanTreeView {
 

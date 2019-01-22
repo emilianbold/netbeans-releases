@@ -68,7 +68,7 @@ import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
 import org.openide.util.NbBundle;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - check for design and document version
 public class DocumentLoad {

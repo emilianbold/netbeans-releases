@@ -52,7 +52,7 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 
 final class InspectorPanel implements NavigatorPanel {

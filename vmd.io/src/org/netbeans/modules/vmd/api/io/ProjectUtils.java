@@ -68,7 +68,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class ProjectUtils {
     

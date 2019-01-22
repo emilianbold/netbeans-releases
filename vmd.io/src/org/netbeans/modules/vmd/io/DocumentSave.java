@@ -65,7 +65,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - should not we save all components including ones outside of the tree
 // TODO - use versions

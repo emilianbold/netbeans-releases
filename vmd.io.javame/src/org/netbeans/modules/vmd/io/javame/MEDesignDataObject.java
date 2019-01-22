@@ -66,7 +66,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.openide.util.UserQuestionException;
 
 /**
- * @author David Kaspar
+ * 
  */
 @MIMEResolver.ExtensionRegistration(
     mimeType="text/x-vmd",

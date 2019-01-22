@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.AddAction;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 /**

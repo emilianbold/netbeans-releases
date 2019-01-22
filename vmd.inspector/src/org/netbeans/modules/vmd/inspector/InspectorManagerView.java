@@ -66,7 +66,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 public final class InspectorManagerView implements DesignDocumentAwareness, ActiveDocumentSupport.Listener, DesignListener {
 

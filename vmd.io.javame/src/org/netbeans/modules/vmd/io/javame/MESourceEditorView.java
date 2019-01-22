@@ -58,7 +58,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MESourceEditorView implements DataEditorView {
 
