@@ -54,7 +54,7 @@ import java.util.List;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class SVGWaitScreenFailureCommandEventSourceCD extends ComponentDescriptor {
 

@@ -58,7 +58,7 @@ import java.util.List;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class SVGMenuSelectCommandCD extends ComponentDescriptor {
 

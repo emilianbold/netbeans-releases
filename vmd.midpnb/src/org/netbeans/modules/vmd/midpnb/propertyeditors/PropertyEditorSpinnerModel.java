@@ -59,7 +59,7 @@ import org.openide.awt.Mnemonics;
 
 
 /**
- * @author ads
+ * 
  *
  */
 public class PropertyEditorSpinnerModel extends PropertyEditorUserCode 

@@ -72,7 +72,7 @@ import org.netbeans.modules.vmd.midpnb.flow.FlowSVGMenuElementEventSourcePinPres
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
 

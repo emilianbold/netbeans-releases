@@ -69,7 +69,7 @@ import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class SVGFileAcceptPresenter extends FileAcceptPresenter {
 

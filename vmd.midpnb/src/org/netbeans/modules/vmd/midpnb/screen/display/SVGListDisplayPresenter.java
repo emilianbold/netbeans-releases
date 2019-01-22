@@ -56,7 +56,7 @@ import org.w3c.dom.svg.SVGRect;
 
 /**
  *
- * @author akorostelev
+ * 
  */
 public class SVGListDisplayPresenter extends UpdatableSVGComponentDisplayPresenter {
 

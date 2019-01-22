@@ -58,7 +58,7 @@ import javax.swing.text.StyledDocument;
 import java.io.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MVDEditorSupport extends J2MEDataObject.J2MEEditorSupport implements EditorCookie.Observable, OpenCookie, EditCookie, PrintCookie {
 

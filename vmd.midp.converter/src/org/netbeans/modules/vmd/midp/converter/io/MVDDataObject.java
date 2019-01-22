@@ -50,7 +50,7 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MVDDataObject extends J2MEDataObject {
 

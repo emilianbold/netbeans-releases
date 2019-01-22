@@ -72,7 +72,7 @@ import java.util.*;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class SVGImageCD extends ComponentDescriptor {
     

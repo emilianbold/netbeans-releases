@@ -58,7 +58,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class ConvertPanel extends javax.swing.JPanel implements ActionListener, Runnable, DocumentListener {
     

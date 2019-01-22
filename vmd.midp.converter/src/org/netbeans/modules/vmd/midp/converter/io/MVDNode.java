@@ -52,7 +52,7 @@ import org.openide.util.actions.SystemAction;
 import javax.swing.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MVDNode extends FilterNode {
 

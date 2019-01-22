@@ -69,7 +69,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author akorostelev
+ * 
  */
 public class SVGComponentDisplayPresenter extends ScreenDisplayPresenter {
     

@@ -67,7 +67,7 @@ import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class TableModelEditorElement extends PropertyEditorResourceElement implements TableModelListener, CleanUp {
 

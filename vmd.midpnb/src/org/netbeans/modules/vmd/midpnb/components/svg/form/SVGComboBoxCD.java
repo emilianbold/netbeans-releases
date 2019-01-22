@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author avk
+ * 
  */
 public class SVGComboBoxCD extends ComponentDescriptor{
     

@@ -47,7 +47,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author KarolHarezlak
+ * 
  */
 public final class MidpNbPropertiesCategories {
     

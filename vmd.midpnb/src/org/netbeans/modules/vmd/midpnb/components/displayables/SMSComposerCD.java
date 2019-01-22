@@ -83,7 +83,7 @@ import org.netbeans.modules.vmd.midpnb.screen.display.SMSComposerDisplayPresente
 import org.openide.util.NbBundle;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 
 public final class SMSComposerCD extends ComponentDescriptor {

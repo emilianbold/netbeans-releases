@@ -64,7 +64,7 @@ import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorResourceLaz
 
 /**
  * 
- * @author Karol Harezlak
+ * 
  */
 
 public final class WaitScreenCD extends ComponentDescriptor {

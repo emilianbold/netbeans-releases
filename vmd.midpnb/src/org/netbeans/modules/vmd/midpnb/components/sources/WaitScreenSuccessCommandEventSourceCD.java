@@ -52,7 +52,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author Karo Harezlak
+ * 
  */
 
 public final class WaitScreenSuccessCommandEventSourceCD extends ComponentDescriptor {

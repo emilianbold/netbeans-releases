@@ -49,7 +49,7 @@ import java.util.ArrayList;
 import java.util.Set;
 
 /**
- * @author David Kaspar
+ * 
 */
 class ConverterItem {
 

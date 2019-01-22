@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
 import java.util.*;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 
 public final class PIMBrowserCD extends ComponentDescriptor {

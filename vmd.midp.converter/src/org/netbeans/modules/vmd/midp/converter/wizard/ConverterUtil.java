@@ -52,7 +52,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ConverterUtil {
 

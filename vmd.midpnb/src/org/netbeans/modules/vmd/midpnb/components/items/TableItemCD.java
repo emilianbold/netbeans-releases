@@ -76,7 +76,7 @@ import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorResourceLaz
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class TableItemCD extends ComponentDescriptor {
     

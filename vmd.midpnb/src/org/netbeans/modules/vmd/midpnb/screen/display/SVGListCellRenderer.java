@@ -53,7 +53,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
 /**
  * Logic implementation is copied from
  * main/vmd.components.svg/nb_svg_midp_components/src/org.netbeans.microedition.svg.SVGListCellRenderer.java
- * @author akorostelev
+ * 
  *
  */
 class SVGListCellRenderer extends TextRenderer {

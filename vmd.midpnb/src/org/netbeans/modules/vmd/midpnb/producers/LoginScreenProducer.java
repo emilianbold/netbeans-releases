@@ -61,7 +61,7 @@ import org.netbeans.modules.vmd.midpnb.components.sources.LoginScreenLoginComman
 import org.openide.util.NbBundle;
 
  /*
- * @author Karol Harezlak
+ * 
  */
 public class LoginScreenProducer extends MidpComponentProducer {
 

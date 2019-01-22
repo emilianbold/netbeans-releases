@@ -56,8 +56,8 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Karol Harezlak
- * @author ads
+ * 
+ * 
  */
 public class SVGButtonEventSourceCD extends SVGComponentEventSourceCD {
 

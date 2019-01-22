@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class PropertyEditorSVGImage extends PropertyEditorUserCode implements PropertyEditorElement, PropertyEditorResourceElementListener {
 

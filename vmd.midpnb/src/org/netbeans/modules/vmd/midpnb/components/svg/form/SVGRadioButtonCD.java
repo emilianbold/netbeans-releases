@@ -71,8 +71,8 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author avk
- * @author ads
+ * 
+ * 
  */
 public class SVGRadioButtonCD extends ComponentDescriptor{
 

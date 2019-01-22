@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author avk
+ * 
  */
 public class SVGCheckBoxCD extends ComponentDescriptor{
 

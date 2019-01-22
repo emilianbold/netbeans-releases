@@ -51,7 +51,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.util.NbBundle;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MVDDataLoader extends J2MEDataLoader {
 

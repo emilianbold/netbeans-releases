@@ -64,7 +64,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorGoToSource;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class SimpleCancellableTaskCD extends ComponentDescriptor {
     

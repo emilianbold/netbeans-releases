@@ -52,7 +52,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author karol harezlak
+ * 
  */
 public final class MidpSVGActionsSupport {
 

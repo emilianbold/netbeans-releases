@@ -77,7 +77,7 @@ import java.util.List;
 
 
 /**
- * @author Karol Harezlak
+ * 
  */
 
 public final class FileBrowserCD extends ComponentDescriptor {

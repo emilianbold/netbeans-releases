@@ -61,7 +61,7 @@ import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import org.netbeans.modules.vmd.midp.components.elements.ElementSupport;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 public final class SVGElementSupport {
 

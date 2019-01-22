@@ -69,7 +69,7 @@ import java.util.List;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class SVGMenuCD extends ComponentDescriptor {
 

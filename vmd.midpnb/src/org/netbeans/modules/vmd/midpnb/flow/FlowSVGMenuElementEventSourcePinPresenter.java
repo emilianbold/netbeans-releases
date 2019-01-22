@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSou
 
 /**
  *
- * @author avk
+ * 
  */
 public class FlowSVGMenuElementEventSourcePinPresenter extends FlowEventSourcePinPresenter {
 

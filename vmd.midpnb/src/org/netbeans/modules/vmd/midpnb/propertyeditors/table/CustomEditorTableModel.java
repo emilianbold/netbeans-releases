@@ -48,7 +48,7 @@ import javax.swing.table.DefaultTableModel;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 class CustomEditorTableModel extends DefaultTableModel {
 

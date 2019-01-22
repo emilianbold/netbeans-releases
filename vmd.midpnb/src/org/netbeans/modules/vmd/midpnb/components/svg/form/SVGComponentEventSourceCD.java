@@ -87,7 +87,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ads
+ * 
  */
 public abstract class SVGComponentEventSourceCD extends ComponentDescriptor {
 

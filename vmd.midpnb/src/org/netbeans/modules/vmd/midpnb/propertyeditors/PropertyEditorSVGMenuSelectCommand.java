@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode implements PropertyEditorElement {
 

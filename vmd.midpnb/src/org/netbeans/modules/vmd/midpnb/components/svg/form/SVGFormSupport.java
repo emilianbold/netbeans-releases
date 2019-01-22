@@ -65,7 +65,7 @@ import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGMenuImageParser
 import org.openide.filesystems.FileObject;
 
 /**
- * @author karol harezlak
+ * 
  */
 public final class SVGFormSupport {
 

@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class SVGMenuProducer extends MidpComponentProducer {
     

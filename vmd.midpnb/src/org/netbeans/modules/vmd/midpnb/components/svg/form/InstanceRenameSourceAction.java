@@ -47,7 +47,7 @@ import org.netbeans.modules.vmd.midp.codegen.ui.InstanceRenameAction;
 
 /**
  *
- * @author ads
+ * 
  */
  public class InstanceRenameSourceAction extends InstanceRenameAction {
 

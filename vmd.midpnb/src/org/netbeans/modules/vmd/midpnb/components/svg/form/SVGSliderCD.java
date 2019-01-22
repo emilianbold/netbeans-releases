@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author avk
+ * 
  */
 public class SVGSliderCD extends ComponentDescriptor{
 

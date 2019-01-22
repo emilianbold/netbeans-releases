@@ -52,7 +52,7 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author ads
+ * 
  */
 public class SVGComboBoxEventSourceCD extends SVGComponentEventSourceCD {
 

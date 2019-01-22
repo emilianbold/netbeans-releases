@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class SVGMenuElementEventSourceProducer extends ComponentProducer {
     

@@ -76,7 +76,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class SVGPlayerCD extends ComponentDescriptor {
 

@@ -43,7 +43,7 @@ package org.netbeans.modules.vmd.midpnb.screen.display;
 
 /**
  *
- * @author akorostelev
+ * 
  */
 public class SVGSliderDisplayPresenter extends SVGComponentDisplayPresenter {
 

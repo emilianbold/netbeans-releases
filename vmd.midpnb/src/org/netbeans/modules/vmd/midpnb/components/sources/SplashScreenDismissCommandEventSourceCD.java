@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.Arrays;
 
 /**
- * @author Karo Harezlak
+ * 
  */
 
 public final class SplashScreenDismissCommandEventSourceCD extends ComponentDescriptor {

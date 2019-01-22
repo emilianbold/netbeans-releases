@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
 
 
 /**
- * @author ads
+ * 
  *
  */
 public class PropertyEditorButtonGroup extends PropertyEditorUserCode 

@@ -75,7 +75,7 @@ import java.util.List;
 import org.netbeans.modules.vmd.midpnb.screen.display.LoginScreenDisplayPresenter;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 
 public final class LoginScreenCD extends ComponentDescriptor {

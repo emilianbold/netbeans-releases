@@ -46,7 +46,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 /**
  *
- * @author akorostelev
+ * 
  */
 public class SVGCheckBoxDisplayPresenter extends UpdatableSVGComponentDisplayPresenter {
 

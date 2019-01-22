@@ -61,7 +61,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author Karol Harezlak
+ * 
  */
  
 public class AbstractCommandEventSourceCD extends ComponentDescriptor {

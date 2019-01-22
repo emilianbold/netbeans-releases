@@ -60,7 +60,7 @@ import java.util.List;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class SVGWaitScreenSuccessCommandCD extends ComponentDescriptor {
 

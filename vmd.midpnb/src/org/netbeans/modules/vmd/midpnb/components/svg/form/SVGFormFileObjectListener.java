@@ -85,7 +85,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class SVGFormFileObjectListener implements FileChangeListener, ActiveViewSupport.Listener {
 

@@ -54,7 +54,7 @@ import org.w3c.dom.svg.SVGElement;
 
 /**
  *
- * @author akorostelev
+ * 
  */
 public abstract class UpdatableSVGComponentDisplayPresenter extends SVGComponentDisplayPresenter{
 

@@ -65,7 +65,7 @@ import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class SplashScreenCD extends ComponentDescriptor {
     

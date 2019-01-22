@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue.Kind;
 import org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter;
 
 /**
- * @author ads
+ * 
  *
  */
 public class SVGListModelFooter extends CodeClassInitHeaderFooterPresenter {

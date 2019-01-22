@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 
 /**
  *
- * @author akorostelev
+ * 
  */
 public class SVGSpinnerDisplayPresenter extends SVGComponentDisplayPresenter {
 

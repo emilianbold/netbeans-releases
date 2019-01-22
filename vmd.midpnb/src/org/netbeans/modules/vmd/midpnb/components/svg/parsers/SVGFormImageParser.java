@@ -79,7 +79,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  *
- * @author avk
+ * 
  */
 public class SVGFormImageParser extends SVGComponentImageParser {
 

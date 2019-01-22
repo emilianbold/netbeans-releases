@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 import org.openide.awt.Mnemonics;
 
 /**
- * @author ads
+ * 
  *
  */
 public final class PropertyEditorListModel extends PropertyEditorUserCode

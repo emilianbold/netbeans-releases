@@ -65,7 +65,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ConverterBuilt {
 

@@ -64,7 +64,7 @@ import java.util.List;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class CancellableTaskCD extends ComponentDescriptor {
 

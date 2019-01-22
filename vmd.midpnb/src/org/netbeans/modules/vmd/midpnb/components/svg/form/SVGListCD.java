@@ -85,7 +85,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author avk
+ * 
  */
 public class SVGListCD extends ComponentDescriptor{
 

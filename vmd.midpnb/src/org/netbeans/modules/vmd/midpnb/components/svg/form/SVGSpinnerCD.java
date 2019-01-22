@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author avk
+ * 
  */
 public class SVGSpinnerCD extends ComponentDescriptor{
 

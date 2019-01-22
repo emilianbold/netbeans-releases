@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import java.util.HashMap;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ConverterElements {
 

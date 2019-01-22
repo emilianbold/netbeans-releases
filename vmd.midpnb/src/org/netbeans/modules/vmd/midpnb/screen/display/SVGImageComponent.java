@@ -49,7 +49,7 @@ import javax.microedition.m2g.ScalableGraphics;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class SVGImageComponent extends JPanel {
 

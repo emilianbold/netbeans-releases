@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 
 /**
  * describes class for svg image source parsing 
- * @author avk
+ * 
  */
 public abstract class SVGComponentImageParser {
 

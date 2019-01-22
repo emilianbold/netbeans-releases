@@ -73,7 +73,7 @@ import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonGroupCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MidpCustomCodePresenterSupport {
 

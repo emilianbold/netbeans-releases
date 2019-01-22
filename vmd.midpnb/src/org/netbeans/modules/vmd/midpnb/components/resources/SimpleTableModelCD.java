@@ -62,7 +62,7 @@ import java.util.List;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class SimpleTableModelCD extends ComponentDescriptor {
     

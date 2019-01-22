@@ -62,7 +62,7 @@ import java.util.Collection;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
 
 /**
- * @author David Kaspar
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.serialization.DocumentSerializationController.class)
 public class MidpCustomDocumentSerializationController extends DocumentSerializationController {

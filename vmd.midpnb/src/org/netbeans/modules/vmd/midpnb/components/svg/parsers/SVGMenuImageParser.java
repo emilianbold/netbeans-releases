@@ -61,7 +61,7 @@ import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public final class SVGMenuImageParser extends SVGComponentImageParser {
 

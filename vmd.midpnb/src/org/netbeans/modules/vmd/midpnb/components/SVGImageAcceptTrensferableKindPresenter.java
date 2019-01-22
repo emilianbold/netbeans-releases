@@ -66,7 +66,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class SVGImageAcceptTrensferableKindPresenter extends MidpAcceptTrensferableKindPresenter {
 

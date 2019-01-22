@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.midp.components.sources.ItemCommandEventSourceCD
 import java.util.HashMap;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ConverterActions {
 

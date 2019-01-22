@@ -56,7 +56,7 @@ import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGListElementEventSo
 
 /**
  *
- * @author den
+ * 
  */
 public class SVGListPropertyCustomEditor extends javax.swing.JPanel {
 

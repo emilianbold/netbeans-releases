@@ -53,7 +53,7 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author avk
+ * 
  */
 public class AbstractElementsContentHandler implements ContentHandler, EntityResolver {
 

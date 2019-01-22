@@ -52,7 +52,7 @@ import org.w3c.dom.svg.SVGElement;
 
 /**
  *
- * @author akorostelev
+ * 
  */
 public class SVGComboBoxDisplayPresenter extends UpdatableSVGComponentDisplayPresenter {
 

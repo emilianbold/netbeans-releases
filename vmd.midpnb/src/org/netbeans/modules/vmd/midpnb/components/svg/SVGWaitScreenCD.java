@@ -63,7 +63,7 @@ import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTas
 import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorResourceLazyInitFactory;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 
 public final class SVGWaitScreenCD extends ComponentDescriptor {

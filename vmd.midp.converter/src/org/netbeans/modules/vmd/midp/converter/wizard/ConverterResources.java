@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ConverterResources {
 

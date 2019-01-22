@@ -68,7 +68,7 @@ import org.netbeans.modules.vmd.api.model.Debug;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class SVGFormFileChangePresenter extends DynamicPresenter implements DesignDocumentAwareness {
 

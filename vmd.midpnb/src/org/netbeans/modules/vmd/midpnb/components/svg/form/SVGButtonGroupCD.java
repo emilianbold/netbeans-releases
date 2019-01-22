@@ -63,7 +63,7 @@ import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 
 
 /**
- * @author ads
+ * 
  *
  */
 public class SVGButtonGroupCD extends ComponentDescriptor {

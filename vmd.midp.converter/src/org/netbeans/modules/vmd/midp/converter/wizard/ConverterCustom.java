@@ -63,7 +63,7 @@ import org.openide.util.Utilities;
 import java.util.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ConverterCustom {
 

@@ -103,7 +103,7 @@ import org.openide.util.actions.SystemAction;
 /**
  * This class represents Component Descriptor for SVG Form component.
  *
- * @author Andrew Korostelev
+ * 
  */
 public class SVGFormCD extends ComponentDescriptor {
 

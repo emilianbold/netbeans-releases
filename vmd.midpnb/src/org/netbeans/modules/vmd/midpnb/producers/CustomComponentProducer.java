@@ -63,8 +63,8 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Karol Harezlak
- * @author Anton Chechel
+ * 
+ * 
  */
 public abstract class CustomComponentProducer extends ComponentProducer {
 

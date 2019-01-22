@@ -70,7 +70,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ConverterCode {
 

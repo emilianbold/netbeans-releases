@@ -61,7 +61,7 @@ import java.awt.*;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class ItemSupport {
     
