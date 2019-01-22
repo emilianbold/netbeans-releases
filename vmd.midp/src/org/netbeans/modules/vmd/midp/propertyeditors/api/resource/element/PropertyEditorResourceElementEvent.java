@@ -46,7 +46,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 
 /**
  *
- * @author Manowar
+ * 
  */
 public class PropertyEditorResourceElementEvent {
     private long componentID;

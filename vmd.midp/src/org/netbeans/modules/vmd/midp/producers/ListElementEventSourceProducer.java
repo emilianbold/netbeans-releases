@@ -53,7 +53,7 @@ import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.openide.util.NbBundle;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ListElementEventSourceProducer extends ComponentProducer {
 

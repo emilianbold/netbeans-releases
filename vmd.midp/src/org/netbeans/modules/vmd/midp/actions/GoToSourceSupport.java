@@ -59,7 +59,7 @@ import java.io.IOException;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class GoToSourceSupport {
 

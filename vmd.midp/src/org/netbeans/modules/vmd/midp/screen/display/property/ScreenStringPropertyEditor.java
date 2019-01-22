@@ -57,7 +57,7 @@ import java.awt.event.KeyEvent;
 import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ScreenStringPropertyEditor implements ScreenPropertyEditor {
     

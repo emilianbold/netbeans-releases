@@ -59,7 +59,7 @@ import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSuppo
 
 /**
  *
- * @author Anton Chechel
+ * 
  * @version 1.0
  */
 public class TextFieldDisplayPresenter extends ItemDisplayPresenter {

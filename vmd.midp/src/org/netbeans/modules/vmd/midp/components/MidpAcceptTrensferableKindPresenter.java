@@ -58,7 +58,7 @@ import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class MidpAcceptTrensferableKindPresenter extends AcceptPresenter {
     

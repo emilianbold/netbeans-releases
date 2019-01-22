@@ -46,7 +46,7 @@ package org.netbeans.modules.vmd.midp.components.categories;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 // TODO - should be removed and split into particular CategoryCDs
 public interface CategorySupport {

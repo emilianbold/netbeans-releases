@@ -70,7 +70,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class ComponentInstaller {
 

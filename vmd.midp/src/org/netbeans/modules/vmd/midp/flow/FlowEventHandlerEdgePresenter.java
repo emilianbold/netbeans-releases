@@ -62,7 +62,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - extract abstract methods for acquiring source and target
 // TODO - rewrite to get relationship to the EventSource just by looking at the parent component

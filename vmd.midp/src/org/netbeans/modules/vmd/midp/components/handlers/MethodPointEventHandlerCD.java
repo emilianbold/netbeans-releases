@@ -62,7 +62,7 @@ import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class MethodPointEventHandlerCD extends ComponentDescriptor {

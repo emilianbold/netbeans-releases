@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 // HINT - after making change, update MidpPrimitiveDescriptor, MidpEnumDescriptor too
 public class MidpCodeSupport {

@@ -51,7 +51,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ClassSupport {
 

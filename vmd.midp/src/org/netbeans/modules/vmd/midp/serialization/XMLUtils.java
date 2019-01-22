@@ -47,7 +47,7 @@ import org.w3c.dom.*;
 import org.netbeans.modules.vmd.api.model.Debug;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class XMLUtils {
 

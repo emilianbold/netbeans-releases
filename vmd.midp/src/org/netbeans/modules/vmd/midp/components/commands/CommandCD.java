@@ -69,7 +69,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class CommandCD extends ComponentDescriptor {

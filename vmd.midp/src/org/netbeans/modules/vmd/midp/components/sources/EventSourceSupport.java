@@ -65,7 +65,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class EventSourceSupport {
 

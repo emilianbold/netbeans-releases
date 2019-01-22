@@ -55,7 +55,7 @@ import org.openide.loaders.DataObject;
 import javax.swing.text.StyledDocument;
 
 /**
- * @author David Kaspar
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.CodeGenerator.class)
 public class MidpCodeGenerator implements CodeGenerator {

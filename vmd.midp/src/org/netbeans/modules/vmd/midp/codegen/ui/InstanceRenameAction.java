@@ -102,7 +102,7 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author ads
+ * 
  */
 public class InstanceRenameAction extends SystemAction implements ActionContext {
 

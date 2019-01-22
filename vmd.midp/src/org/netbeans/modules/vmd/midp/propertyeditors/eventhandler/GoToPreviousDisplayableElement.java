@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class GoToPreviousDisplayableElement implements PropertyEditorEventHandlerElement, CleanUp {
     private JRadioButton radioButton;

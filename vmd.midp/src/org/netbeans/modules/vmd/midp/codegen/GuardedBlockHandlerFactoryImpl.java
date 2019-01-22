@@ -60,7 +60,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author ads
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.GuardedBlockHandlerFactory.class)
 public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactory {

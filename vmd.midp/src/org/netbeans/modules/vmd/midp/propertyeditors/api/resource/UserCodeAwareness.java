@@ -44,7 +44,7 @@
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 interface UserCodeAwareness {
 

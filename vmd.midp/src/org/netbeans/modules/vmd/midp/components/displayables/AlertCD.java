@@ -71,7 +71,7 @@ import java.util.*;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResourceLazyInit;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 // TODO - ValidatorPresenter: timeout has to be -2 or positive number
 public final class AlertCD extends ComponentDescriptor {

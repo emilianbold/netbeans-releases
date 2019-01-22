@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.api.editor.guards.GuardedSection;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class SecondaryGoToSourcePresenter extends Presenter {
 

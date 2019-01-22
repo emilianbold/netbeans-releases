@@ -63,7 +63,7 @@ import java.util.Collection;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.analyzer.Analyzer.class)
 public class ResourcesAnalyzer implements Analyzer {

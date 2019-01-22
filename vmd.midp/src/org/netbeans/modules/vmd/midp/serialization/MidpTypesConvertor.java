@@ -55,7 +55,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MidpTypesConvertor {
 

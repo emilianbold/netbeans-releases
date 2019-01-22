@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class MidpPropertyEditorSupport {
 

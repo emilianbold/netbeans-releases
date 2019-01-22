@@ -50,7 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * @author breh
+ * 
  *
  */
 public class FormResourceCategoriesPresenter extends ScreenResourceCategoriesPresenter {

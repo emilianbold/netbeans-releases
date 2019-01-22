@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class ResourcePC implements InspectorPositionController {
 

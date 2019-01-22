@@ -72,8 +72,8 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
- * @author Karol Harezlak
+ * 
+ * 
  */
 public class PropertyEditorConstraints extends PropertyEditorUserCode implements PropertyEditorElement {
 

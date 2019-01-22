@@ -51,7 +51,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author ads
+ * 
  */
 public class InstaceRenameRefactoring extends AbstractRefactoring {
 

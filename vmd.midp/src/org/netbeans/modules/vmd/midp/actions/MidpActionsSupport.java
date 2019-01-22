@@ -61,7 +61,7 @@ import org.openide.actions.PropertiesAction;
 import org.openide.util.actions.SystemAction;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MidpActionsSupport {
     

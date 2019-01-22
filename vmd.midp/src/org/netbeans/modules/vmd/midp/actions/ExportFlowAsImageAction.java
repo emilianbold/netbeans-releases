@@ -71,7 +71,7 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ExportFlowAsImageAction extends SystemAction implements DesignDocumentAwareness {
 

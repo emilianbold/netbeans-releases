@@ -44,7 +44,7 @@
 package org.netbeans.modules.vmd.midp.components.displayables;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class AlertSupport {
 

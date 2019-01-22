@@ -68,7 +68,7 @@ import java.util.*;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class MidpProjectSupport {
     

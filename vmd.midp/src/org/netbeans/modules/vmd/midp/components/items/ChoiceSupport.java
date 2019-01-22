@@ -52,7 +52,7 @@ import java.util.TreeMap;
 
 /**
  *
- * @author Karol Harezlak, Anton Chechel
+ * , Anton Chechel
  */
 public final class ChoiceSupport {
 

@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public final class PropertyEditorEventHandler extends DesignPropertyEditor {
 

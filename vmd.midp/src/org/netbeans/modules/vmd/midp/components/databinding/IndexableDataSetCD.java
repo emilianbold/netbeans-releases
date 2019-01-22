@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.midp.codegen.MidpDataSetBodyCodePresenter;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class IndexableDataSetCD extends ComponentDescriptor {
 

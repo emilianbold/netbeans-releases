@@ -54,7 +54,7 @@ import java.util.Map;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class AddToPaletteWizardAction extends CallableSystemAction {
 

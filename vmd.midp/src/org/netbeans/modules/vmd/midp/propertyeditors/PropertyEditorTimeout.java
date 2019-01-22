@@ -69,8 +69,8 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Karol Harezlak
- * @author Anton Chechel
+ * 
+ * 
  */
 public final class PropertyEditorTimeout extends PropertyEditorUserCode implements PropertyEditorElement {
 

@@ -58,7 +58,7 @@ import javax.swing.text.StyledDocument;
 import java.util.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class RootCode {
 

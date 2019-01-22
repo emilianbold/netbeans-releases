@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 import java.awt.datatransfer.Transferable;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - rewrite to query target port to generate EventHandler component
 // TODO - rewrite to use InfoPresenter

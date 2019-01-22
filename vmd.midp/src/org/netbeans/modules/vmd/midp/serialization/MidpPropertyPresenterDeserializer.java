@@ -56,7 +56,7 @@ import java.util.List;
 import org.openide.util.NbBundle;
 
 /**
- * @author David Kaspar
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.PresenterDeserializer.class)
 public class MidpPropertyPresenterDeserializer extends PresenterDeserializer {

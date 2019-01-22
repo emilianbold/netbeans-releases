@@ -58,7 +58,7 @@ import java.awt.*;
 
 /**
  *
- * @author breh
+ * 
  */
 public class FormDisplayPresenter extends DisplayableDisplayPresenter {
     

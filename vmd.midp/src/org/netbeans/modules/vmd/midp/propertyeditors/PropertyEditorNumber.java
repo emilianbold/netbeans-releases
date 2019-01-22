@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class PropertyEditorNumber extends PropertyEditorUserCode implements PropertyEditorElement {
 

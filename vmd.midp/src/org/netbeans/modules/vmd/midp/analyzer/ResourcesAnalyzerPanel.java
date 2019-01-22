@@ -59,7 +59,7 @@ import java.util.List;
 
 /**
  *
- * @author  Anton Chechel
+ * 
  */
 public class ResourcesAnalyzerPanel extends javax.swing.JPanel {
     

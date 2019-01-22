@@ -62,7 +62,7 @@ import org.netbeans.modules.vmd.midp.general.AbstractEventHandlerCreatorPresente
 import java.util.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MidpDocumentSupport {
     

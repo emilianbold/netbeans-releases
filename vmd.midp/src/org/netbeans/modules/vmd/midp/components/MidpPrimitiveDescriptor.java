@@ -47,7 +47,7 @@ import org.netbeans.modules.vmd.api.model.PrimitiveDescriptor;
 import org.netbeans.modules.vmd.api.model.PrimitiveDescriptorFactory;
 
 /**
- * @author David Kaspar
+ * 
  */
 // HINT - after making change, update MidpCodeSupport too
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.PrimitiveDescriptorFactory.class)

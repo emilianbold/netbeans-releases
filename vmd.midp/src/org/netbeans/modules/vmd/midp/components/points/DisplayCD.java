@@ -60,7 +60,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 public final class DisplayCD extends ComponentDescriptor {
 

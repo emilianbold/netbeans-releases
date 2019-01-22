@@ -43,7 +43,7 @@ package org.netbeans.modules.vmd.midp.java;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class MidpValidatorWarmUp implements Runnable {
 

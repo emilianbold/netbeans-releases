@@ -53,7 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class FlowMobileDevicePinOrderPresenter extends FlowPinOrderPresenter {
 

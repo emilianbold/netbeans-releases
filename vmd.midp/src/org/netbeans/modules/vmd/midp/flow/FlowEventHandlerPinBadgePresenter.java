@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerCD;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - add dependency to a presenterChanged on eventSource component
 public class FlowEventHandlerPinBadgePresenter extends FlowPinBadgePresenter {

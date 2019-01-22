@@ -53,7 +53,7 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class AddToPaletteWizardPanel2 implements WizardDescriptor.Panel {
 

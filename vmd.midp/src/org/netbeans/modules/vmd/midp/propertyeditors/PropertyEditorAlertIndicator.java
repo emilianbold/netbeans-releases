@@ -69,8 +69,8 @@ import org.openide.explorer.propertysheet.InplaceEditor;
 
 /**
  *
- * @author Karol Harezlak
- * @author Anton Chechel
+ * 
+ * 
  */
 public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode implements PropertyEditorElement {
 

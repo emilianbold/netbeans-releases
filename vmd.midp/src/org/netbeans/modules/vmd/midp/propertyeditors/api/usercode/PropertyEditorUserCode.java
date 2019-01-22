@@ -79,7 +79,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
  *
  * <b>WARNING - while overriding init method, you have to call super.init() method too.</b>
  *
- * @author Anton Chechel
+ * 
  */
 public abstract class PropertyEditorUserCode extends DesignPropertyEditor implements PropertyEditorMessageAwareness {
 

@@ -59,7 +59,7 @@ import java.util.List;
 import org.openide.util.NbBundle;
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class CanvasCD extends ComponentDescriptor {

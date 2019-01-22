@@ -61,7 +61,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 abstract class UnusedCommandsAddActionPresenter extends AddActionPresenter {
     

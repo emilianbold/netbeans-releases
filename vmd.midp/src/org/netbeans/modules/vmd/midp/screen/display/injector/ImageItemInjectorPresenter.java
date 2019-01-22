@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 import javax.swing.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ImageItemInjectorPresenter extends ScreenButtonInjectorPresenter.Static {
 

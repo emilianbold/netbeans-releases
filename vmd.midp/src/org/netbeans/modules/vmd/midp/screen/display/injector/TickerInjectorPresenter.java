@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
 import org.openide.util.NbBundle;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class TickerInjectorPresenter extends ScreenButtonInjectorPresenter.Static {
 

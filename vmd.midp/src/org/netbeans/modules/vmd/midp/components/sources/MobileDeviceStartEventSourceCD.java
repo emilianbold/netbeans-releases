@@ -66,7 +66,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MobileDeviceStartEventSourceCD extends ComponentDescriptor {
 

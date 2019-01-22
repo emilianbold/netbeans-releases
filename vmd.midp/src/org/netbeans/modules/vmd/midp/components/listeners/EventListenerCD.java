@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.Arrays;
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class EventListenerCD extends ComponentDescriptor {

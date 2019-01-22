@@ -53,7 +53,7 @@ import org.netbeans.modules.vmd.midp.components.categories.PointsCategoryCD;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class PointPC implements InspectorPositionController {
 

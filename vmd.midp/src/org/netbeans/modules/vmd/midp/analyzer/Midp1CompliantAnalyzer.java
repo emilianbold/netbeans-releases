@@ -57,7 +57,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.analyzer.Analyzer.class)
 public class Midp1CompliantAnalyzer implements Analyzer {

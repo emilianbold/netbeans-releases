@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.java.MidpJavaSupport;
 
 /**
- * @author David Kaspar
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.ProducerDeserializer.class)
 public class MidpProducerDeserializer extends ProducerDeserializer {

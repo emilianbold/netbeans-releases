@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class DataSetAbstractCD extends ComponentDescriptor {
     

@@ -47,7 +47,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 /**
  * WARNING - it has to be assured that there is a child component twice in the children or a propertyValue used. Otherwise ID will be no longer unique.
- * @author David Kaspar
+ * 
  */
 // TODO - redesign IDs
 public final class FlowIDSupport {

@@ -54,7 +54,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.PresenterDeserializer.class)
 public class MidpAddImportPresenterDeserializer extends PresenterDeserializer {

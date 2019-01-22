@@ -63,7 +63,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class SwitchToDisplayableElement extends JPanel implements PropertyEditorEventHandlerElement, CleanUp {
 

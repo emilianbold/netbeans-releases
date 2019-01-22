@@ -65,7 +65,7 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements PropertyEditorElement {
 

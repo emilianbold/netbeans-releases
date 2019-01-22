@@ -64,7 +64,7 @@ import org.netbeans.modules.vmd.api.codegen.ModelUpdatePresenter;
 import org.netbeans.modules.vmd.midp.components.general.ClassCode.CodeClassComponentDependencyPresenter;
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class ClassCD extends ComponentDescriptor {

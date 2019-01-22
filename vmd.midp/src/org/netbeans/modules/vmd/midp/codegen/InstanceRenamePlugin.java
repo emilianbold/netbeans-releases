@@ -58,7 +58,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author ads
+ * 
  */
 public class InstanceRenamePlugin implements RefactoringPlugin{
 

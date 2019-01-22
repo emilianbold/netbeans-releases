@@ -59,7 +59,7 @@ import org.openide.ErrorManager;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public final class CodeUtils {
 

@@ -60,7 +60,7 @@ import org.netbeans.modules.vmd.midp.components.items.SpacerCD;
 
 
 /**
- * @author David Kaspar
+ * 
  */
 public class SpacerDisplayPresenter extends ScreenDisplayPresenter {
 

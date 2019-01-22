@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.Bundle;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class ItemLayouts extends Bitmask {
 

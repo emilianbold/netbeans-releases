@@ -44,7 +44,7 @@
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public interface PropertyEditorResourceElementListener {
     public void elementChanged(PropertyEditorResourceElementEvent event);

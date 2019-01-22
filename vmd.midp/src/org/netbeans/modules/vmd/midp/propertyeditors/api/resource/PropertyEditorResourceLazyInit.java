@@ -92,7 +92,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public abstract class PropertyEditorResourceLazyInit extends PropertyEditorUserCode implements PropertyEditorElement {
 

@@ -51,7 +51,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 /**
  * This class represents an UI and logical element of PropertyEditorUserCode.
  *
- * @author Anton Chechel
+ * 
  */
 public interface PropertyEditorElement {
 

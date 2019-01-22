@@ -86,7 +86,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 public class GaugeCD extends ComponentDescriptor {

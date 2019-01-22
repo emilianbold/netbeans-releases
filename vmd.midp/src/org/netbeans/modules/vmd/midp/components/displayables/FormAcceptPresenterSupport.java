@@ -62,7 +62,7 @@ import java.awt.datatransfer.Transferable;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 public final class FormAcceptPresenterSupport {

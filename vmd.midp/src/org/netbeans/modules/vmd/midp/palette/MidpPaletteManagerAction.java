@@ -52,7 +52,7 @@ import org.openide.util.actions.CallableSystemAction;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public final class MidpPaletteManagerAction extends CallableSystemAction {
 

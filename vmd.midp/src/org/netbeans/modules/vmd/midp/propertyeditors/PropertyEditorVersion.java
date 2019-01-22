@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class PropertyEditorVersion extends DesignPropertyEditor {
     

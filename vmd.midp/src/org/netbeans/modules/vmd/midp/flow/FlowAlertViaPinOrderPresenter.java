@@ -49,7 +49,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class FlowAlertViaPinOrderPresenter extends FlowPinOrderPresenter {
 

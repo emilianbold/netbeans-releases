@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.openide.util.Lookup;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class AcceptContextResolver {
 

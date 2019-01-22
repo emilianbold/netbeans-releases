@@ -77,7 +77,7 @@ import java.util.List;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResourceLazyInit;
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class ChoiceElementCD extends ComponentDescriptor {

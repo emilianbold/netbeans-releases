@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 
 /**
  * TODO - CodeClassLevelPresenter
- * @author David Kaspar
+ * 
  */
 public final class EntryStartEventSourceCD extends ComponentDescriptor {
 

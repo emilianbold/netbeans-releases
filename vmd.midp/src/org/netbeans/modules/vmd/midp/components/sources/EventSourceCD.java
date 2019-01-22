@@ -71,7 +71,7 @@ import java.util.List;
 import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class EventSourceCD extends ComponentDescriptor {

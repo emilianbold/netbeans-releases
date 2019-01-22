@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class MidpParameter implements Parameter {
 

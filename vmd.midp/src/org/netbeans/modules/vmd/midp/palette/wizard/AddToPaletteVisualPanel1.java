@@ -58,7 +58,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class AddToPaletteVisualPanel1 extends JPanel {
 

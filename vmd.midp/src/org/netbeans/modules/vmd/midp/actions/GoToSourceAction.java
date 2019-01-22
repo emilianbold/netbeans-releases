@@ -56,7 +56,7 @@ import java.util.Iterator;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class GoToSourceAction extends SystemAction {
 

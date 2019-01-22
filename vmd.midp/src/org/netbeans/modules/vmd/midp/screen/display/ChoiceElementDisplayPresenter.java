@@ -73,7 +73,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Anton Chechel
+ * 
  * @version 1.0
  */
 public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {

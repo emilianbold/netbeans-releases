@@ -66,8 +66,8 @@ import org.openide.awt.Mnemonics;
 
 /**
  *
- * @author Karol Harezlak
- * @author Anton Chechel
+ * 
+ * 
  */
 public final class PropertyEditorInstanceName extends DesignPropertyEditor {
 

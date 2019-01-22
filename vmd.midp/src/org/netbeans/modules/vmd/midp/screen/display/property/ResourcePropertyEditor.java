@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 public class ResourcePropertyEditor implements ScreenPropertyEditor {
     

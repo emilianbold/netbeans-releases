@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.model.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class AcceptTypePresenter extends AcceptPresenter {
     

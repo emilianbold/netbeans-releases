@@ -53,7 +53,7 @@ import org.netbeans.modules.vmd.api.model.Debug;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 public final class ComponentsCategoryByReferencesPC implements InspectorPositionController {

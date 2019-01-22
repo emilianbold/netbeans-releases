@@ -68,7 +68,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditor
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class ImageItemCD extends ComponentDescriptor {
     

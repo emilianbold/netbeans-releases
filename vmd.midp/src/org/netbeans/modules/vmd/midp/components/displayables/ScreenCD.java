@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class ScreenCD extends ComponentDescriptor {

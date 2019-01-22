@@ -55,7 +55,7 @@ import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class DataSetConnectorCD extends ComponentDescriptor {
 

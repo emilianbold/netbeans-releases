@@ -58,7 +58,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ListEventHandlerCD extends ComponentDescriptor {
 

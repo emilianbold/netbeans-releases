@@ -54,7 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class FlowSwitchPointPinOrderPresenter extends FlowPinOrderPresenter {
 

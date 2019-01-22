@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.midp.actions.GoToSourceSupport;
 
 /**
  *
- * @author  Karol Harezlak
+ * 
  */
 class GoToSourceCPE extends javax.swing.JPanel {
 

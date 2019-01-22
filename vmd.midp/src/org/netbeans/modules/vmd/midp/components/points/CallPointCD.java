@@ -63,7 +63,7 @@ import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class CallPointCD extends ComponentDescriptor {
 

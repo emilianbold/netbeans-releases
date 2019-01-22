@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class PropertyEditorArrayInteger extends GroupPropertyEditor implements ExPropertyEditor {
 

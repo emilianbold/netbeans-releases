@@ -80,7 +80,7 @@ import org.netbeans.modules.vmd.midp.components.general.RootCode;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResourceLazyInit;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class ListElementEventSourceCD extends ComponentDescriptor {
 

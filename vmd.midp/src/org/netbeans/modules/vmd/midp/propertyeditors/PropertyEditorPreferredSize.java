@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class PropertyEditorPreferredSize extends PropertyEditorUserCode implements PropertyEditorElement {
 

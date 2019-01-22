@@ -74,7 +74,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresenter {
 

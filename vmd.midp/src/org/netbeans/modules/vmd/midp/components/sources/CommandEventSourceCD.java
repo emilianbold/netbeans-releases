@@ -75,7 +75,7 @@ import org.openide.util.actions.SystemAction;
 
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class CommandEventSourceCD extends ComponentDescriptor {

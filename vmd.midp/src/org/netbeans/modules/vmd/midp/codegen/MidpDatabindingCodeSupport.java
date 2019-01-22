@@ -66,7 +66,7 @@ import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class MidpDatabindingCodeSupport {
 

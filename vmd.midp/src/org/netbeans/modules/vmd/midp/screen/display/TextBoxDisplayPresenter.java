@@ -58,7 +58,7 @@ import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSuppo
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class TextBoxDisplayPresenter extends DisplayableDisplayPresenter {
 

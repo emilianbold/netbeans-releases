@@ -84,7 +84,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class DatabindingElementUI extends javax.swing.JPanel implements CleanUp {
 

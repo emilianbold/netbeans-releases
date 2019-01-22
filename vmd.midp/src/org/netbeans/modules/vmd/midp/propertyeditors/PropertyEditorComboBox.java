@@ -66,8 +66,8 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
- * @author Karol Harezlak
+ * 
+ * 
  */
 public final class PropertyEditorComboBox extends PropertyEditorUserCode implements PropertyEditorElement {
 

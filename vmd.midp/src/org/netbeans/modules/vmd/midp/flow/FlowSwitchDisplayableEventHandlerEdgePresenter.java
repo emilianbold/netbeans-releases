@@ -47,7 +47,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.midp.components.handlers.SwitchDisplayableEventHandlerCD;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class FlowSwitchDisplayableEventHandlerEdgePresenter extends FlowEventHandlerEdgePresenter {
 

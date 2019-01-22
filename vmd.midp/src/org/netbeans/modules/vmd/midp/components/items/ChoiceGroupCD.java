@@ -75,7 +75,7 @@ import org.netbeans.modules.vmd.midp.components.general.RootCode;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 public class ChoiceGroupCD extends ComponentDescriptor {

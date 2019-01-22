@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 
 /**
- * @author breh
+ * 
  */
 public class CommandEventSourceSRItemPresenter extends ScreenResourceItemPresenter {
 

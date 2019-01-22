@@ -51,7 +51,7 @@ import javax.swing.JPanel;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class GaugeDisplayPresenterElement {
     

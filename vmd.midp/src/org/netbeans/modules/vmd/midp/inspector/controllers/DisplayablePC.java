@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.midp.components.categories.DisplayablesCategoryC
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class DisplayablePC implements InspectorPositionController {
 

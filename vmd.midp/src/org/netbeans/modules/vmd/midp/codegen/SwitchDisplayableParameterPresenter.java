@@ -46,7 +46,7 @@ package org.netbeans.modules.vmd.midp.codegen;
 import org.netbeans.modules.vmd.api.model.Presenter;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class SwitchDisplayableParameterPresenter extends Presenter {
 

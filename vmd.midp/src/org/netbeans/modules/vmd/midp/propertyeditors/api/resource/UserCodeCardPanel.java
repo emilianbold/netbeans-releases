@@ -44,7 +44,7 @@
 
 /**
  *
- * @author  Anton Chechel
+ * 
  */
 public class UserCodeCardPanel extends javax.swing.JPanel {
     

@@ -74,7 +74,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorPreferredSize
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 public class SpacerCD extends ComponentDescriptor {

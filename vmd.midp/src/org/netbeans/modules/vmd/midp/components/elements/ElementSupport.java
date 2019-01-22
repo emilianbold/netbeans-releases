@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class ElementSupport {
 

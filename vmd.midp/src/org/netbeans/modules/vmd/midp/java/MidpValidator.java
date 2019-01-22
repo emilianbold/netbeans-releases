@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 final class MidpValidator implements ActiveDocumentSupport.Listener {
 

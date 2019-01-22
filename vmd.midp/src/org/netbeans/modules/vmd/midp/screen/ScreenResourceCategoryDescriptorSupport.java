@@ -50,7 +50,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
- * @author breh
+ * 
  */
 public class ScreenResourceCategoryDescriptorSupport {
 

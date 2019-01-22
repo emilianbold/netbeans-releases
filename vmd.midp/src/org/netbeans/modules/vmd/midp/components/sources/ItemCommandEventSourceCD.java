@@ -71,7 +71,7 @@ import java.util.List;
 import org.netbeans.modules.vmd.midp.components.general.RootCode;
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class ItemCommandEventSourceCD extends ComponentDescriptor {

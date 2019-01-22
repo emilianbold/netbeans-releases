@@ -53,7 +53,7 @@ import java.util.Map;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class MidpAcceptProducerKindPresenter extends AcceptPresenter {
     private Map<TypeID, String> typesMap;

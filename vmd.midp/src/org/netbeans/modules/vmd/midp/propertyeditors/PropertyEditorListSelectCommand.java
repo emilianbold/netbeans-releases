@@ -77,8 +77,8 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
- * @author Karol Harezlak
+ * 
+ * 
  */
 public final class PropertyEditorListSelectCommand extends PropertyEditorUserCode implements PropertyEditorElement, CleanUp {
 

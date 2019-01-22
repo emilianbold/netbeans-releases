@@ -53,7 +53,7 @@ import org.netbeans.modules.vmd.midp.components.items.GaugeCD;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class GaugePC implements InspectorPositionController {
 

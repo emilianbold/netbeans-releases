@@ -70,7 +70,7 @@ import java.util.Collections;
  * inherit from this presenter (e.g. TextBoxDisplayPresenter,
  * FormDisplayPresenter, ...)
  *
- * @author breh
+ * 
  */
 public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     

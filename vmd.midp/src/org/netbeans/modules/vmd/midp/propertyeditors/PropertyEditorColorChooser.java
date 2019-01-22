@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class PropertyEditorColorChooser extends PropertyEditorUserCode implements PropertyEditorElement {
 

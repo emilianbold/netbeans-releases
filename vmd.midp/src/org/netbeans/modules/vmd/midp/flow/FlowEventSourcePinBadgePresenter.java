@@ -53,7 +53,7 @@ import org.netbeans.modules.vmd.api.model.DesignEventFilter;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - add dependency to a presenterChanged on eventSource component
 public abstract class FlowEventSourcePinBadgePresenter extends FlowPinBadgePresenter {

@@ -60,7 +60,7 @@ import org.openide.explorer.propertysheet.PropertyModel;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class BooleanInplaceEditor implements InplaceEditor {
     

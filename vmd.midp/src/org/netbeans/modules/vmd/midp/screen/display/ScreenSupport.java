@@ -74,7 +74,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 
 /**
  *
- * @author Anton Chechel
+ * 
  * @version 1.0
  */
 public final class ScreenSupport {

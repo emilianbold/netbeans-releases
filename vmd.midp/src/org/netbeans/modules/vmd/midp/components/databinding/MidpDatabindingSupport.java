@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 
 /**
  *
- * @author karolharezlak
+ * 
  */
 public final class MidpDatabindingSupport {
 

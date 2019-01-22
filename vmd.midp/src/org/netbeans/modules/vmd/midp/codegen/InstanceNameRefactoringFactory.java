@@ -50,7 +50,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 
 /**
  *
- * @author ads
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class InstanceNameRefactoringFactory implements RefactoringPluginFactory{

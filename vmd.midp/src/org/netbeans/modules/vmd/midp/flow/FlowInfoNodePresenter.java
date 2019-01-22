@@ -67,7 +67,7 @@ import java.awt.datatransfer.Transferable;
 import java.util.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class FlowInfoNodePresenter extends FlowNodePresenter {
 

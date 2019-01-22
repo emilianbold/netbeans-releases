@@ -70,7 +70,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class IfPointCD extends ComponentDescriptor {
 

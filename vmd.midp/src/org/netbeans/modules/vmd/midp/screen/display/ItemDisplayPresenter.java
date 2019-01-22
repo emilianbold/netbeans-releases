@@ -67,7 +67,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ItemDisplayPresenter extends ScreenDisplayPresenter {
 

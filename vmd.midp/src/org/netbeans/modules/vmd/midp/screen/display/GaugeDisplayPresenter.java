@@ -59,7 +59,7 @@ import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEdi
 
 /**
  *
- * @author Anton Chechel
+ * 
  * @version 1.0
  */
 public class GaugeDisplayPresenter extends ItemDisplayPresenter {

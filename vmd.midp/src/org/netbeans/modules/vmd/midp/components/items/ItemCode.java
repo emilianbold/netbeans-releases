@@ -57,7 +57,7 @@ import org.netbeans.modules.vmd.midp.components.sources.ItemCommandEventSourceCD
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ItemCode {
 

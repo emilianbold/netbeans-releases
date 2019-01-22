@@ -46,7 +46,7 @@ package org.netbeans.modules.vmd.midp.propertyeditors.element;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public interface PropertyEditorElementFactory {
 

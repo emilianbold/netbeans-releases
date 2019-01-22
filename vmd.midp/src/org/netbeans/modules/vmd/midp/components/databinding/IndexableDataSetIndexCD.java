@@ -63,7 +63,7 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 
 /**
  *
- * @author karolharezlak
+ * 
  */
 public class IndexableDataSetIndexCD extends ComponentDescriptor {
 public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#Index"); //NOI18N

@@ -51,7 +51,7 @@ import java.util.ResourceBundle;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class Bundle {
 

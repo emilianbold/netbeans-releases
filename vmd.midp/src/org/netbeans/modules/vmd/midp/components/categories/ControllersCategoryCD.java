@@ -56,7 +56,7 @@ import java.util.List;
 import org.openide.util.NbBundle;
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class ControllersCategoryCD extends ComponentDescriptor {

@@ -55,7 +55,7 @@ import java.util.Collection;
 
 /**
  *
- * @author Anton Chechel
+ * 
  * @version 1.0
  */
 public class ChoiceGroupDisplayPresenter extends ItemDisplayPresenter {

@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import java.util.ArrayList;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class MidpArraySupport {
 

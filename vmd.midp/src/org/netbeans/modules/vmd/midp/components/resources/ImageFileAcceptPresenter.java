@@ -57,7 +57,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class ImageFileAcceptPresenter extends FileAcceptPresenter {
     

@@ -65,7 +65,7 @@ import org.openide.util.ImageUtilities;
  * should be moved either to the MIDP module or to a completely
  * separate module defining L&F of the view
  *
- * @author breh
+ * 
  *
  */
 public class MidpScreenDeviceInfo extends ScreenDeviceInfo {
@@ -172,8 +172,8 @@ public class MidpScreenDeviceInfo extends ScreenDeviceInfo {
      *
      * TODO this should be redesigned so it is not MIDP2 specific here !!!
      *
-     * @author breh
-     * @author Anton Chechel
+     * 
+     * 
      */
     public static class MidpDeviceTheme extends DeviceTheme  {
         

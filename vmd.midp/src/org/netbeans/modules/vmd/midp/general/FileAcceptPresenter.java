@@ -64,7 +64,7 @@ import java.util.Map;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public abstract class FileAcceptPresenter extends AcceptPresenter {
     

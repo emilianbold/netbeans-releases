@@ -59,7 +59,7 @@ import java.util.Collections;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class PropertyEditorTimeZone extends PropertyEditorUserCode {
 

@@ -48,7 +48,7 @@ import org.openide.util.Utilities;
 import javax.swing.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class DisplayableDisplayPanel extends javax.swing.JPanel {
 

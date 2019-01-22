@@ -68,7 +68,7 @@ import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 public class DateFieldCD extends ComponentDescriptor {

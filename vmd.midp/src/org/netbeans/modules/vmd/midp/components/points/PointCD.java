@@ -53,7 +53,7 @@ import java.util.List;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class PointCD extends ComponentDescriptor {

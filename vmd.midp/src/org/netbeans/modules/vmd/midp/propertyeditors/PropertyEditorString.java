@@ -76,8 +76,8 @@ import org.openide.util.NbBundle;
  * text, etc. This is also an example how to use PropertyEditorUserCode API
  * with one PropertyEditorElement.
  *
- * @author Karol Harezlak
- * @author Anton Chechel
+ * 
+ * 
  */
 public class PropertyEditorString extends PropertyEditorUserCode implements PropertyEditorElement {
 

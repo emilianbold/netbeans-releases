@@ -62,7 +62,7 @@ import org.openide.filesystems.FileRenameEvent;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class ScreenFileObjectListener implements FileChangeListener {
     

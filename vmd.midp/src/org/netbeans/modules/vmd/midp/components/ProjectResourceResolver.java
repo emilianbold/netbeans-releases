@@ -49,7 +49,7 @@ import org.netbeans.api.project.Project;
 import java.util.Collection;
 
 /**
- * @author David Kaspar
+ * 
  */
 public interface ProjectResourceResolver {
 

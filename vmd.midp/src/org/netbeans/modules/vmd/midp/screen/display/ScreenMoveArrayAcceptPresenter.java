@@ -58,7 +58,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class ScreenMoveArrayAcceptPresenter extends AcceptPresenter {
     

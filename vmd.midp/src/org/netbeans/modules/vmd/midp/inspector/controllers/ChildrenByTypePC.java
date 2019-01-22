@@ -53,7 +53,7 @@ import org.netbeans.modules.vmd.api.model.Debug;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class ChildrenByTypePC implements InspectorPositionController {
 

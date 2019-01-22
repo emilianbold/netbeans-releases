@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditor
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public abstract class PropertyEditorResourceElement extends JPanel {
 

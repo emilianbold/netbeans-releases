@@ -52,7 +52,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - file reference property
 public final class CommandListenerCD extends ComponentDescriptor {

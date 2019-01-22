@@ -61,7 +61,7 @@ import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSuppo
 
 /**
  *
- * @author David Kaspar
+ * 
  */
 public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
 

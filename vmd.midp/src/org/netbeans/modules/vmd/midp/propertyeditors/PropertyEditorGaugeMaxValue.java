@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode implements PropertyEditorElement {
 

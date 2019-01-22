@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditor
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public interface PropertyEditorEventHandlerElement extends PropertyEditorElement {
     

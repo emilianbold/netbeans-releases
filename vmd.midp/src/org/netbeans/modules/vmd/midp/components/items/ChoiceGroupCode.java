@@ -59,7 +59,7 @@ import java.util.List;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ChoiceGroupCode {
 

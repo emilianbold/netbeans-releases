@@ -56,7 +56,7 @@ import java.util.List;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class CustomItemCD extends ComponentDescriptor {
     

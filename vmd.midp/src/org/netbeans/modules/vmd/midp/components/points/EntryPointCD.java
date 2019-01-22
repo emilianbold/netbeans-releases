@@ -64,7 +64,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class EntryPointCD extends ComponentDescriptor {
 

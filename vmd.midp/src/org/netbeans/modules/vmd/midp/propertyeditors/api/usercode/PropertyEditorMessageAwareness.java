@@ -46,7 +46,7 @@ package org.netbeans.modules.vmd.midp.propertyeditors.api.usercode;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public interface PropertyEditorMessageAwareness {
 

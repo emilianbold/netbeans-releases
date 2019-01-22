@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class CallElement extends JPanel implements PropertyEditorEventHandlerElement, CleanUp {
 

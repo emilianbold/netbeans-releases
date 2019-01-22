@@ -57,7 +57,7 @@ import org.netbeans.modules.vmd.midp.components.databinding.DataSetAbstractCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.CategoryPC;
 import org.openide.util.NbBundle;
 /**
- * @author Karol Harezlak
+ * 
  */
 
 public final class DatabindingCategoryCD extends ComponentDescriptor {

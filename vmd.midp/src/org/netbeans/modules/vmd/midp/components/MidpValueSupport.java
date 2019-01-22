@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.openide.util.NbBundle;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MidpValueSupport {
 

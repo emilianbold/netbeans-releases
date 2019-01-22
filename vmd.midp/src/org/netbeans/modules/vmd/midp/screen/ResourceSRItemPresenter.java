@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescri
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceItemPresenter;
 
 /**
- * @author breh
+ * 
  */
 public class ResourceSRItemPresenter extends ScreenResourceItemPresenter {
 

@@ -52,7 +52,7 @@ import javax.swing.*;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 class TimeZoneComboboxModel extends DefaultComboBoxModel {
     

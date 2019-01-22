@@ -59,7 +59,7 @@ import java.util.StringTokenizer;
 import java.util.ArrayList;
 
 /**
- * @author David Kaspar
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.PresenterDeserializer.class)
 public class MidpSetterPresenterDeserializer extends PresenterDeserializer {

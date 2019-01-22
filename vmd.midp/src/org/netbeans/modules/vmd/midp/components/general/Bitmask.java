@@ -48,7 +48,7 @@ import java.util.List;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public abstract class Bitmask {
 
@@ -127,7 +127,7 @@ public abstract class Bitmask {
     
     /**
      * Individual bit mask item
-     * @author breh
+     * 
      * @version
      */
     public final  static class BitmaskItem {

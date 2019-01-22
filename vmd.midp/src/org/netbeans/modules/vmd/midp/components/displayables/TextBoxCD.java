@@ -65,7 +65,7 @@ import java.util.List;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class TextBoxCD extends ComponentDescriptor {
 

@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class DisplayableCode {
 

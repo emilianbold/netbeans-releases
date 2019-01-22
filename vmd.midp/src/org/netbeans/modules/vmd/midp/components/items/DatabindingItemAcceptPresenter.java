@@ -57,7 +57,7 @@ import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSuppo
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public abstract class DatabindingItemAcceptPresenter extends AcceptPresenter {
 

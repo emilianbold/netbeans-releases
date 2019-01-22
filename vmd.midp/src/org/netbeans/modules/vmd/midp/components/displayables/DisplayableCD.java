@@ -81,7 +81,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditor
 
 /**
  * 
- * @author David Kaspar
+ * 
  */
 public final class DisplayableCD extends ComponentDescriptor {
 

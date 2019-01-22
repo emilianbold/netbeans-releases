@@ -50,7 +50,7 @@ import java.util.List;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class AddToPaletteVisualPanel2 extends JPanel {
 

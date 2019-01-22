@@ -50,7 +50,7 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class MidpVersionDescriptor implements VersionDescriptor {
 

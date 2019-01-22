@@ -54,7 +54,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ScreenBooleanInjectorPresenter extends ScreenInjectorPresenter {
 

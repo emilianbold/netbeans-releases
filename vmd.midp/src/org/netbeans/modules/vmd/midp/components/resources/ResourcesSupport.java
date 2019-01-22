@@ -58,7 +58,7 @@ import java.awt.*;
 
 
 /**
- * @author Karol Harezlak
+ * 
  */
 public final class ResourcesSupport {
     

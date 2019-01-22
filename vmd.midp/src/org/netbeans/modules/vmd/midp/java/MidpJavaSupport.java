@@ -80,7 +80,7 @@ import org.openide.util.WeakListeners;
 /**
  * Utility class for checking whether given typeID is in classpath of current project
  *
- * @author Anton Chechel
+ * 
  */
 public final class MidpJavaSupport implements Runnable, PropertyChangeListener {
 

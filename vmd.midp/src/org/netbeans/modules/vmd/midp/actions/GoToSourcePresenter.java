@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class GoToSourcePresenter extends Presenter {
 

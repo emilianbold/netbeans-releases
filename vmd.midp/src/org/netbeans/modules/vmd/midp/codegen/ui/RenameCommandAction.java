@@ -47,7 +47,7 @@ import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 
 /**
  *
- * @author ads
+ * 
  */
  public class RenameCommandAction extends InstanceRenameAction {
 

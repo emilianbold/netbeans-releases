@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public abstract class MidpComponentProducer extends ComponentProducer {
 

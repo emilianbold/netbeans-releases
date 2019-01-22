@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  * @version 1.0
  */
 public class ListActionElement implements PropertyEditorEventHandlerElement, CleanUp {

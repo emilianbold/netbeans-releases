@@ -52,7 +52,7 @@ import javax.swing.*;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 abstract class CategoryFolder extends InspectorFolder {
 

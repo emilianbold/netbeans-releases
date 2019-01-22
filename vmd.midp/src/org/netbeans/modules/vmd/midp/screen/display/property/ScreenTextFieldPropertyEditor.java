@@ -56,7 +56,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ScreenTextFieldPropertyEditor implements ScreenPropertyEditor {
     

@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class PropertyEditorGoToSource extends DesignPropertyEditor {
     

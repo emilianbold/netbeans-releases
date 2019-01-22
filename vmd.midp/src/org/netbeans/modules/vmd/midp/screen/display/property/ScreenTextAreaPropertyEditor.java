@@ -55,7 +55,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ScreenTextAreaPropertyEditor implements ScreenPropertyEditor {
 

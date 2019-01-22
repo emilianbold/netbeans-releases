@@ -73,8 +73,8 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Karol Harezlak
- * @author Anton Chechel
+ * 
+ * 
  */
 public final class PropertyEditorLayout extends PropertyEditorUserCode implements PropertyEditorElement {
 

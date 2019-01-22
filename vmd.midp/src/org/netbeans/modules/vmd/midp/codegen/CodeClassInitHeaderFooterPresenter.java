@@ -47,7 +47,7 @@ import org.netbeans.modules.vmd.api.codegen.CodePresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class CodeClassInitHeaderFooterPresenter extends CodePresenter {
     

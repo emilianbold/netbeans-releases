@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class ListCellRenderer extends DefaultListCellRenderer {
     

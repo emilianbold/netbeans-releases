@@ -60,7 +60,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 public class MidpCodePresenterSupport {
 

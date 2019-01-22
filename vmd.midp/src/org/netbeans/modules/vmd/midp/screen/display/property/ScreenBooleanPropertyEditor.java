@@ -54,7 +54,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ScreenBooleanPropertyEditor implements ScreenPropertyEditor {
 

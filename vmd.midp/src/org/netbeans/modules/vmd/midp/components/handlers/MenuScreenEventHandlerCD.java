@@ -55,7 +55,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class MenuScreenEventHandlerCD extends ComponentDescriptor {
 

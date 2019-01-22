@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class IndexableDataAbstractSetCD extends ComponentDescriptor {
 

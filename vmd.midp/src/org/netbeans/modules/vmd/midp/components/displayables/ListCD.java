@@ -78,7 +78,7 @@ import org.netbeans.modules.vmd.midp.screen.display.ListDisplayPresenter;
 import org.openide.util.NbBundle;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 
 public final class ListCD extends ComponentDescriptor {

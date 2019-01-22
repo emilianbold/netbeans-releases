@@ -63,7 +63,7 @@ import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class FontEditorElement extends PropertyEditorResourceElement implements CleanUp {
 

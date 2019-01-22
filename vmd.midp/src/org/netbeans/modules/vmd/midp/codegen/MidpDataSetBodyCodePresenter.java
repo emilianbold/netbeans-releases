@@ -57,7 +57,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class MidpDataSetBodyCodePresenter {
 

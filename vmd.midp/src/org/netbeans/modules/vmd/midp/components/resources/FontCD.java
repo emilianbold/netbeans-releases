@@ -59,7 +59,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBoxNoUse
 import org.openide.util.NbBundle;
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class FontCD extends ComponentDescriptor {

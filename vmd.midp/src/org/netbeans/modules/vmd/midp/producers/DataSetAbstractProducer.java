@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public abstract class DataSetAbstractProducer extends ComponentProducer {
 

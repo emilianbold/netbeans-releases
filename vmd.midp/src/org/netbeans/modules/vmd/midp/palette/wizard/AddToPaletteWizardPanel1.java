@@ -55,7 +55,7 @@ import java.util.Set;
 import org.openide.util.NbBundle;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class AddToPaletteWizardPanel1 implements WizardDescriptor.Panel {
 

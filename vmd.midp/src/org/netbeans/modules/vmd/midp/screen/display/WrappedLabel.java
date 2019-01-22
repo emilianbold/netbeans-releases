@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 
 
 /**
- * @author ads
+ * 
  *
  */
 abstract class WrappedLabel extends JPanel {

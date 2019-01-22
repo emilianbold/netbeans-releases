@@ -47,7 +47,7 @@ import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.general.RootCD;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MidpVersionable {
 

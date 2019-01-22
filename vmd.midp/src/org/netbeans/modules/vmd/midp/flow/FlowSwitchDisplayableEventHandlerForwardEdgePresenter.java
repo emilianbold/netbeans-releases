@@ -53,7 +53,7 @@ import org.netbeans.modules.vmd.midp.components.displayables.AlertCD;
 import org.netbeans.modules.vmd.midp.components.handlers.SwitchDisplayableEventHandlerCD;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class FlowSwitchDisplayableEventHandlerForwardEdgePresenter extends FlowEventHandlerEdgePresenter {
 

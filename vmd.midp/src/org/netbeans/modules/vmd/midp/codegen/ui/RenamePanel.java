@@ -55,7 +55,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 /**
  * Rename refactoring parameters panel
  *
- * @author  ads
+ * 
  */
 public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 

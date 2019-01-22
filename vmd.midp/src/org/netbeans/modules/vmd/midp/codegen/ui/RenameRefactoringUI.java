@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ads
+ * 
  */
 public class RenameRefactoringUI implements RefactoringUI{
     private String myOldName ;

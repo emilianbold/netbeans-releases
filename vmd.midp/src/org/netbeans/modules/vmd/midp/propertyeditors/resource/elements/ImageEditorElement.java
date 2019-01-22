@@ -86,7 +86,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class ImageEditorElement extends PropertyEditorResourceElement implements Runnable, CleanUp {
 

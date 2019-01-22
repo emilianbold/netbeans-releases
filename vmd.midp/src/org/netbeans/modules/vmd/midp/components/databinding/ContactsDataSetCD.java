@@ -56,7 +56,7 @@ import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class ContactsDataSetCD extends ComponentDescriptor {
 
