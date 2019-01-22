@@ -74,7 +74,7 @@ import org.openide.util.lookup.ProxyLookup;
  * addPropertyChangeListener("activatedNodes", cpl);
  * </pre>
  *
- * @author Nathan Fiedler
+ * 
  */
 public class SourceCookieProxyLookup extends ProxyLookup
         implements PropertyChangeListener {

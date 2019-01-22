@@ -49,7 +49,7 @@ import org.netbeans.modules.websvc.rest.wadl.model.ParamStyle;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class ParamModel {
 

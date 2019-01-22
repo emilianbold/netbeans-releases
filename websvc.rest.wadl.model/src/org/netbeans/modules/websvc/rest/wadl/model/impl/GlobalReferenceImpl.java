@@ -51,7 +51,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class GlobalReferenceImpl<T extends ReferenceableWadlComponent> 
         extends AbstractNamedComponentReference<T> implements NamedComponentReference<T> {

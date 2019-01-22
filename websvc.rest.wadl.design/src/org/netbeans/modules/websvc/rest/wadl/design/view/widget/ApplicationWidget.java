@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class ApplicationWidget extends WadlComponentWidget {
     

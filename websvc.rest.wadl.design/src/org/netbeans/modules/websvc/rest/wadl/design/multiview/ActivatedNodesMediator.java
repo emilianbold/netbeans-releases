@@ -67,7 +67,7 @@ import org.openide.util.lookup.InstanceContent;
  *   http://www.netbeans.org/issues/show_bug.cgi?id=67257
  * </pre>
  *
- * @author Nathan Fiedler
+ * 
  */
 public class ActivatedNodesMediator
         implements Lookup.Provider, PropertyChangeListener {

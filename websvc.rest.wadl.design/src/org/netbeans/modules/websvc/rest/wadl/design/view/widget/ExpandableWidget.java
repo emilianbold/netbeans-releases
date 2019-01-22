@@ -50,8 +50,8 @@ package org.netbeans.modules.websvc.rest.wadl.design.view.widget;
  * the actual size change itself, when either of the collapse/expand
  * methods are invoked.
  *
- * @author Ayub Khan
- * @author  Nathan Fiedler
+ * 
+ * 
  */
 public interface ExpandableWidget {
 

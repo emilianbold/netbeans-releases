@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class ResourceWidget extends WadlComponentWidget implements PropertyChangeListener {
     

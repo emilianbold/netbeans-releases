@@ -86,8 +86,7 @@ import org.openide.windows.TopComponent;
 /**
  * The source editor for schema documents.
  *
- * @author Ayub Khan
- * @author changed bt ads
+ * 
  */
 @MultiViewElement.Registration(
         displayName ="#LBL_sourceView_name",// NOI18N

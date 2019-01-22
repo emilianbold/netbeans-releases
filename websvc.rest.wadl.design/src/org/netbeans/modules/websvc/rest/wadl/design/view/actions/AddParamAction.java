@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class AddParamAction<T extends WadlComponent> extends AbstractAction implements Node.Cookie {
     public static final String ADD_PARAM = "ADD_PARAM";

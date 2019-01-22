@@ -72,7 +72,7 @@ import org.w3c.dom.Node;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class WadlModelImpl extends WadlModel {
 

@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 /**
  * Supports validation of BPEL/Wadl documents.
  *
- * @author  Ayub Khan
+ * 
  */
 public class ValidateSupport  {
 

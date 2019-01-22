@@ -52,9 +52,8 @@ import org.openide.nodes.Node;
  * editor as necessary, and switching to the desired view, then
  * scrolling to or otherwise showing the component.
  *
- * @author Ajit Bhate
- * @author Todd Fast, todd.fast@sun.com
- * @author Nathan Fiedler
+ * 
+ * 
  */
 public interface ViewComponentCookie extends Node.Cookie {
 

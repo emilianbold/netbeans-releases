@@ -65,8 +65,8 @@ import org.netbeans.api.visual.widget.Widget;
 
 /**
  *
- * @author Ayub Khan
- * @author anjeleevich
+ * 
+ * 
  */
 public class ImageLabelWidget extends Widget {
     

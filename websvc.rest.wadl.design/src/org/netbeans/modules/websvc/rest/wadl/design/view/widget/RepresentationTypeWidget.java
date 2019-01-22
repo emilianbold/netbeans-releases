@@ -65,7 +65,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * @author Ayub Khan
+ * 
  */
 public abstract class RepresentationTypeWidget extends WadlComponentWidget {
 

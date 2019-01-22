@@ -51,7 +51,7 @@ import org.openide.nodes.Node;
 /**
  * Provides access to a XAM model instance.
  *
- * @author  Nathan Fiedler
+ * 
  */
 public interface ModelCookie<T extends Model> extends Node.Cookie {
 

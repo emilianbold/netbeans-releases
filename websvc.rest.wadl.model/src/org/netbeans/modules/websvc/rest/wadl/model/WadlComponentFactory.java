@@ -49,7 +49,7 @@ import org.netbeans.modules.xml.xam.dom.ComponentFactory;
 
 /**
  *
- * @author Ayub Khan
+ * 
  * Factory for providing concrete implementations of WSDLComponents
  */
 

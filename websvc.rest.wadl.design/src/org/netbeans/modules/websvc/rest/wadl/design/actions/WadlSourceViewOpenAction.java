@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
 /**
  * Open the Source editor for the selected DataObject.
  *
- * @author Ayub Khan
+ * 
  */
 public class WadlSourceViewOpenAction extends OpenAction {
     /** silence compiler warnings */

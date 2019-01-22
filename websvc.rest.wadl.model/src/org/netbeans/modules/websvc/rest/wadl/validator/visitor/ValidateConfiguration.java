@@ -49,7 +49,7 @@ import java.util.Properties;
 /**
  * Provides configuration for the validate visitor of BPEL and WSDL documents.
  *
- * @author  Ayub Khan
+ * 
  */
 public class ValidateConfiguration extends Properties {
     

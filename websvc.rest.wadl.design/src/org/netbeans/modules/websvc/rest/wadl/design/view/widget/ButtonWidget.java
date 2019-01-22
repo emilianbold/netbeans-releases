@@ -74,7 +74,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
- * @author Ayub Khan
+ * 
  */
 public class ButtonWidget extends ImageLabelWidget implements PropertyChangeListener{
     

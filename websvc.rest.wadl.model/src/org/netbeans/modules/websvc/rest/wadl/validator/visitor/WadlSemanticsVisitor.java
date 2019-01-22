@@ -62,7 +62,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 /**
  * Visits the model nodes and validates them.
  *
- * @author  Ayub Khan
+ * 
  */
 public class WadlSemanticsVisitor implements WadlVisitor {
     

@@ -58,7 +58,7 @@ import org.netbeans.modules.websvc.rest.wadl.model.*;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public interface WadlVisitor {
     void visit(Application app);

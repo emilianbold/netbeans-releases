@@ -54,7 +54,7 @@ import org.netbeans.modules.xml.xam.ComponentUpdater;
 /**
  * Interface for wadl extensibility elements
  *
- * @author Ayub Khan
+ * 
  */
 public interface ExtensibilityElement extends WadlComponent {
 	public static final String CONTENT_FRAGMENT_PROPERTY = "content";

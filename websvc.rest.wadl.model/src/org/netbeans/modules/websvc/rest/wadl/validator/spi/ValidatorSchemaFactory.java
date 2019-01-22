@@ -55,7 +55,7 @@ import org.w3c.dom.ls.LSResourceResolver;
  * extensibility element schema validation. 
  * 
  *
- * @author Ayub Khan
+ * 
  * 
  */
 public abstract class ValidatorSchemaFactory {

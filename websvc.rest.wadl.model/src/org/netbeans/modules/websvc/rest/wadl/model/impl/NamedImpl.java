@@ -51,7 +51,7 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public abstract class NamedImpl extends WadlComponentBase implements Nameable<WadlComponent> {
     

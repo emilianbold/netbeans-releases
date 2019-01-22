@@ -48,7 +48,7 @@ import org.netbeans.modules.websvc.rest.wadl.model.*;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class FindReferencedVisitor<T extends ReferenceableWadlComponent> extends DefaultVisitor {
     private Class<T> type;

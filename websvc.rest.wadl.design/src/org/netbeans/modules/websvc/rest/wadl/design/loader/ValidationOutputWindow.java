@@ -66,7 +66,7 @@ import org.openide.windows.OutputListener;
 
 /**
  * Class to manage displaying validation information in the Output window.
- * @author Praveen Savur
+ * 
  */
 public class ValidationOutputWindow {
     

@@ -59,7 +59,7 @@ import javax.xml.namespace.QName;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public enum WadlQNames {
     DOC(createWSDLQName("doc")),

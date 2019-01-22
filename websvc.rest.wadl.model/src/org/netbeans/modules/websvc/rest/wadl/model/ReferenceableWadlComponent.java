@@ -49,7 +49,7 @@ import org.netbeans.modules.xml.xam.Nameable;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public interface ReferenceableWadlComponent extends NamedReferenceable<WadlComponent>, Nameable<WadlComponent>, WadlComponent {
 }

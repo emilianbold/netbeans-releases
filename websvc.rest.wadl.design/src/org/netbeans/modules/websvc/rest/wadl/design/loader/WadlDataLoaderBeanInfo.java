@@ -57,7 +57,7 @@ import org.openide.util.ImageUtilities;
 
 /** Description of {@link WadlDataLoader}.
  *
- * @author Ayub Khan
+ * 
  */
 public class WadlDataLoaderBeanInfo extends SimpleBeanInfo {
 

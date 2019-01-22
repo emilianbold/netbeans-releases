@@ -53,7 +53,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class DesignViewPopupProvider implements PopupMenuProvider{
     

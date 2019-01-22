@@ -71,7 +71,7 @@ import org.openide.util.Utilities;
 /**
  * Manages the zoom level for a particular Scene instance.
  *
- * @author Nathan Fiedler
+ * 
  */
 public class ZoomManager {
     /** The default zoom percent value. */

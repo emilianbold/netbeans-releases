@@ -58,7 +58,7 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class WadlSchemaImpl extends GenericExtensibilityElement implements WadlSchema {
     public static final QName XSD_QNAME = new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "schema", "xsd");

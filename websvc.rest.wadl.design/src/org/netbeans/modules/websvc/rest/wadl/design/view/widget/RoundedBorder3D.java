@@ -56,7 +56,7 @@ import java.awt.geom.RoundRectangle2D;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class RoundedBorder3D implements Border {
     

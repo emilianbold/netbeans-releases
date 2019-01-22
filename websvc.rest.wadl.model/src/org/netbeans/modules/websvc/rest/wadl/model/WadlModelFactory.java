@@ -52,7 +52,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class WadlModelFactory extends AbstractModelFactory<WadlModel> {
     

@@ -58,7 +58,7 @@ import org.netbeans.modules.websvc.rest.wadl.model.ExtensibilityElement;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public interface WadlSchema extends ExtensibilityElement.EmbeddedModel {
     SchemaModel getSchemaModel();

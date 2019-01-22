@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
- * @author Ayub Khan
+ * 
  */
 public class ResponseWidget extends WadlComponentWidget implements TabWidget {
 

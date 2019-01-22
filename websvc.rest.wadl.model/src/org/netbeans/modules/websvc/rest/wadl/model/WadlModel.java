@@ -53,7 +53,7 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 
 /**
  *
- * @author Ayub Khan
+ * 
  *  This interface represents an instance of a wsdl model. A wsdl model is
  * bound to a single file.
  */

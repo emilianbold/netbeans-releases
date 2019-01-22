@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class ParametersTableModel implements TableModel<Param> {
     

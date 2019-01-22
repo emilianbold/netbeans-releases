@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.rest.wadl.model.visitor;
 import org.netbeans.modules.websvc.rest.wadl.model.WadlModel;
 
 /**
- * @author Ayub Khan
+ * 
  */
 public interface WadlModelVisitor {
 

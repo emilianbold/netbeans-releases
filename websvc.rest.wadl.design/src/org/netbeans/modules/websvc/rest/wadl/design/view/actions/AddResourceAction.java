@@ -66,7 +66,7 @@ import org.openide.util.Task;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class AddResourceAction extends AbstractAction implements Node.Cookie {
     public static final String ADD_RESOURCE = "ADD_RESOURCE";

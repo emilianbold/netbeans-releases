@@ -79,7 +79,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author  Ayub Khan
+ * 
  */
 final class WadlPanel implements WizardDescriptor.FinishablePanel {
     

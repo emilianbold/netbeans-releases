@@ -55,7 +55,7 @@ import org.openide.awt.UndoRedo;
  * A proxy for another UndoRedo.Manager instance. Unless otherwise noted,
  * all methods delegate to the original manager.
  *
- * @author  Nathan Fiedler
+ * 
  */
 public class FilterUndoManager extends UndoRedo.Manager {
     /** silence compiler warnings */

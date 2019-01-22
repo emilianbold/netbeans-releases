@@ -51,7 +51,7 @@ import org.netbeans.modules.websvc.rest.wadl.model.WadlModel;
 /**
  * Provides access to a Wadl model instance.
  *
- * @author  Nathan Fiedler
+ * 
  */
 public interface WadlModelCookie extends ModelCookie<WadlModel> {
 }

@@ -73,7 +73,7 @@ import org.openide.util.Task;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class RemoveParamAction<T extends WadlComponent> extends AbstractAction{
     public static final String REMOVE_PARAMS = "REMOVE_PARAMS";

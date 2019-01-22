@@ -50,7 +50,7 @@ import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
- * @author Ayub Khan
+ * 
  * Determines the focus traversal policy or the web service designer.
  * Works on depth first search algorithm.
  * 

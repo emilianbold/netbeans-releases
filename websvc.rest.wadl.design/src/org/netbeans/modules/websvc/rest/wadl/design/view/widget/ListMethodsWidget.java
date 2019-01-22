@@ -64,7 +64,7 @@ import org.openide.util.Exceptions;
 /**
  * WebService Designer
  *
- * @author Ayub Khan
+ * 
  */
 public class ListMethodsWidget extends Widget implements PropertyChangeListener {
     public static final Object messageLayerKey = new Object();

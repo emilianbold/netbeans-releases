@@ -65,7 +65,7 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class MethodWidget extends WadlComponentWidget {
 

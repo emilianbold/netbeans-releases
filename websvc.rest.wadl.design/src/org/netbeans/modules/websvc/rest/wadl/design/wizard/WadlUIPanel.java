@@ -48,7 +48,7 @@ import org.openide.util.NbBundle;
 
 /** WadlUIPanel.java - bottom panel for WSDL wizard
  *
- * @author  mkuchtiak
+ * 
  */
 public class WadlUIPanel extends javax.swing.JPanel {
 

@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.rest.wadl.design.view.widget;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public interface TableModel<T> {
 

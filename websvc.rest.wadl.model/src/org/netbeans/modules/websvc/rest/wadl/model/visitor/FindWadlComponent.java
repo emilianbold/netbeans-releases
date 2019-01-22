@@ -60,7 +60,7 @@ import org.w3c.dom.Node;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class FindWadlComponent extends ChildVisitor {
     

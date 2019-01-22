@@ -70,7 +70,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
- * @author Ayub Khan
+ * 
  */
 public class ParametersWidget<T extends WadlComponent> extends AbstractTitledWidget implements PropertyChangeListener {
 

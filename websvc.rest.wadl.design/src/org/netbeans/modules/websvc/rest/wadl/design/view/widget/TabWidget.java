@@ -49,7 +49,7 @@ import org.netbeans.api.visual.widget.Widget;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public interface TabWidget {
     

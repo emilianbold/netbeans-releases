@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Milan Kuchtiak
+ * 
  */
 public final class ParametersPanel extends javax.swing.JPanel {
     

@@ -50,7 +50,7 @@ import org.netbeans.modules.xml.xam.Model;
 
 /**
  * Default implementation of ValidateXmlCookie.
- * @author Praveen Savur
+ * 
  */
 public abstract class ValidateXMLCookieImpl implements ValidateXMLCookie {
 

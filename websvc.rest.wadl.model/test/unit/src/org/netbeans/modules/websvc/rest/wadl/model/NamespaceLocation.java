@@ -53,7 +53,6 @@ import org.openide.loaders.DataObject;
 
 /**
  *
- * @author nn136682
  */
 public enum NamespaceLocation {
     NEWS_SEARCH("http://api.yahoo.com/newsSearch/", "resources/NewsSearch.wadl");

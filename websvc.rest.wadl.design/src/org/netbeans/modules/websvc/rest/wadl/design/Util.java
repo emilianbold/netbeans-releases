@@ -53,7 +53,7 @@ import org.netbeans.modules.websvc.rest.wadl.model.*;
 /**
  * Util
  *
- * @author Ayub Khan
+ * 
  */
 public class Util {
 

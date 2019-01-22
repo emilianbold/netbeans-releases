@@ -67,7 +67,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 
 /**
- * @author Ayub Khan
+ * 
  */
 public class BodyWidget<T extends WadlComponent> extends AbstractTitledWidget implements PropertyChangeListener {
 

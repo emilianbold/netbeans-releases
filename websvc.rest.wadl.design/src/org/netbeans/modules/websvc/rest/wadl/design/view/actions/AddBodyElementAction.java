@@ -65,7 +65,7 @@ import org.openide.util.Task;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class AddBodyElementAction<T extends WadlComponent> extends AbstractAction implements Node.Cookie {
 

@@ -70,7 +70,7 @@ import org.openide.util.Task;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class RemoveBodyElementAction<T extends WadlComponent> extends AbstractAction {
 

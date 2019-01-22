@@ -72,7 +72,7 @@ import org.openide.awt.UndoRedo;
  * possible since the document will not have been initialized yet. It will
  * have to happen at a later time.</p>
  *
- * @author  Nathan Fiedler
+ * 
  */
 public class QuietUndoManager extends CompoundUndoManager {
     /** silence compiler warnings */

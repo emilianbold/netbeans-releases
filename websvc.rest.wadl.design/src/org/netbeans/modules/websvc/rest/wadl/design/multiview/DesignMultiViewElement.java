@@ -83,8 +83,8 @@ import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
- * @author Ayub Khan
- * @author changed by ads
+ * 
+ *  ads
  */
 @MultiViewElement.Registration(
     displayName ="#LBL_designView_name",// NOI18N

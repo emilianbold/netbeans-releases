@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 /** 
  * Recognizes .wadl files as a single DataObject.
  *
- * @author Ayub Khan
+ * 
  */
 public class WadlDataLoader extends UniFileLoader {
         

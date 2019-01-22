@@ -54,7 +54,7 @@ import org.w3c.dom.Element;
  * Factory for creating a Wadl component. This factory must be provided by 
  * ElementFactoryProvider to be able to plugin to the Wadl model.
  *
- * @author Ayub Khan
+ * 
  * 
  */
 public abstract class ElementFactory {

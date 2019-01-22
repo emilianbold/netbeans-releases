@@ -67,7 +67,6 @@ import org.openide.filesystems.FileLock;
 
 /**
  *
- * @author nn136682
  */
 public class Util {
     public static final String EMPTY_XSD = "resources/Empty.wsdl";

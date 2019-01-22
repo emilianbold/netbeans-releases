@@ -83,7 +83,7 @@ import org.openide.util.Lookup;
 
 /**
  * Class for creating the Multiview
- * @author Ayub Khan
+ * 
  */
 public class MultiViewSupport implements OpenCookie, EditCookie {
 

@@ -53,7 +53,7 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public enum WadlAttribute implements Attribute {
         ELEMENT("element"),

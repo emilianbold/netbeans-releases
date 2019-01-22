@@ -45,7 +45,7 @@ package org.netbeans.modules.websvc.rest.wadl.design.multiview;
 
 /**
  * Cookie to open the editor for the file containing the Component.
- * @author Ayub Khan
+ * 
  * 
  */
 public interface ShowComponentCookie {

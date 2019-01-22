@@ -69,7 +69,7 @@ import org.xml.sax.InputSource;
 /**
  * Represents a Wadl file.
  *
- * @author  Ayub Khan
+ * 
  */
 public class WadlDataObject extends MultiDataObject {
     

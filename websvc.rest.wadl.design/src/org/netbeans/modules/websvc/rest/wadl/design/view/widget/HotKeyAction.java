@@ -49,7 +49,7 @@ import org.netbeans.api.visual.widget.Widget;
 import java.awt.event.KeyEvent;
 
 /**
- * @author Ayub Khan
+ * 
  */
 public class HotKeyAction extends WidgetAction.Adapter {
 

@@ -53,7 +53,7 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 
 /**
  * Visitor to add or remove a child of a Wadl component.
- * @author Ayub Khan
+ * 
  */
 public class ChildComponentUpdateVisitor<T extends WadlComponent> implements WadlVisitor, ComponentUpdater<T> {
     

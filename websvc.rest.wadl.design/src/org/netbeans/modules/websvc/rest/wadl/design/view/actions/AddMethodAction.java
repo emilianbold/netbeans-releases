@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class AddMethodAction extends AbstractAction implements Node.Cookie {
     public static final String ADD_METHOD = "ADD_METHOD";

@@ -106,7 +106,7 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class WadlEditorSupport extends DataEditorSupport
         implements WadlModelCookie, OpenCookie, EditCookie,

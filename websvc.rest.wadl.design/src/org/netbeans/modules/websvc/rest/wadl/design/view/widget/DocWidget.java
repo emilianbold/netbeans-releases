@@ -63,7 +63,7 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class DocWidget<T extends WadlComponent> extends AbstractTitledWidget {
     

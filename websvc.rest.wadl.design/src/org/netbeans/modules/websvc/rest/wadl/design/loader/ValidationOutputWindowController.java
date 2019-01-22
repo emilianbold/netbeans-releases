@@ -53,7 +53,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
 /**
  *
- * @author Praveen Savur
+ * 
  */
 public class ValidationOutputWindowController {
     

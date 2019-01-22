@@ -58,7 +58,7 @@ import org.openide.awt.UndoRedo;
  * source editor to treat document edits individually, but the model
  * editor can treat all of the document edits as a single change.
  *
- * @author  Nathan Fiedler
+ * 
  */
 public class CompoundUndoManager extends FilterUndoManager {
     /** silence compiler warnings */

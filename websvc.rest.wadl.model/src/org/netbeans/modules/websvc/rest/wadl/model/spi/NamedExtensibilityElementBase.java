@@ -50,7 +50,7 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public abstract class NamedExtensibilityElementBase extends GenericExtensibilityElement implements Nameable<WadlComponent>{
     

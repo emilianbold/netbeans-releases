@@ -51,7 +51,7 @@ import org.openide.ErrorManager;
 /**
  * Implements the ValidateXMLCookie cookie for schema models.
  *
- * @author  Nathan Fiedler
+ * 
  */
 public class WadlValidateXMLCookie extends ValidateXMLCookieImpl {
     private WadlDataObject dataObject;

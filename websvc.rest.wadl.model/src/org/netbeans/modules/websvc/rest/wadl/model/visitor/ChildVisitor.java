@@ -50,7 +50,7 @@ import org.netbeans.modules.websvc.rest.wadl.model.WadlComponent;
 /**
  * Recursive visitor.
  *
- * @author Ayub Khan
+ * 
  */
 public class ChildVisitor extends DefaultVisitor {
     

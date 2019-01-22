@@ -55,7 +55,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class SchemaReferenceImpl<T extends ReferenceableSchemaComponent> 
         extends AbstractNamedComponentReference<T> implements NamedComponentReference<T> {

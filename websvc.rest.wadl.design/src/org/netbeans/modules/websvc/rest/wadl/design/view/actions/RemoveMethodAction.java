@@ -73,7 +73,7 @@ import org.openide.util.Task;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class RemoveMethodAction extends AbstractAction{
     public static final String REMOVE_METHODS = "REMOVE_METHODS";

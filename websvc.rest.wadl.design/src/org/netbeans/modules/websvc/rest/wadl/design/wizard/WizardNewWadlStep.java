@@ -53,7 +53,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author radval
+ * 
  */
 public class WizardNewWadlStep implements WizardDescriptor.FinishablePanel {
     static String TEMP_WADLFILE;

@@ -56,7 +56,7 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class GenericExtensibilityElement extends WadlComponentBase implements ExtensibilityElement.ParentSelector {
     

@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class RemoveResourceAction extends AbstractAction{
     public static final String REMOVE_RESOURCES = "REMOVE_RESOURCES";

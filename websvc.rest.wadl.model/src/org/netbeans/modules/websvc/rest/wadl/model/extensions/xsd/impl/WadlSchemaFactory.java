@@ -54,7 +54,7 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.rest.wadl.model.spi.ElementFactory.class)
 public class WadlSchemaFactory extends ElementFactory {

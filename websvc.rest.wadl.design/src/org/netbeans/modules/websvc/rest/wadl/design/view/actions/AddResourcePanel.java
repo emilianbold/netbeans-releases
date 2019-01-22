@@ -52,7 +52,7 @@ import org.netbeans.modules.websvc.rest.wadl.model.Resource;
 
 /**
  *
- * @author  Ayub Khan
+ * 
  */
 public class AddResourcePanel extends javax.swing.JPanel {
     

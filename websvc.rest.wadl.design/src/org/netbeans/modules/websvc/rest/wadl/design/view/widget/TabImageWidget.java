@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class TabImageWidget extends ImageLabelWidget.PaintableImageWidget {
 

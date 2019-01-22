@@ -54,7 +54,7 @@ import org.netbeans.modules.websvc.rest.wadl.model.*;
 
 /**
  *
- * @author  Ayub Khan
+ * 
  */
 public class AddMethodPanel extends javax.swing.JPanel {
 

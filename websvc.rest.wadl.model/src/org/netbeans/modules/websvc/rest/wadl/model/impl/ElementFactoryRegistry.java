@@ -60,7 +60,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Ayub Khan
+ * 
  *
  * Registry for factories of Wadl elements. In order to register an ElementFactory,
  * a QName must be provided of an element for which the factory will create a

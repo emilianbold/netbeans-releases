@@ -65,7 +65,7 @@ import org.netbeans.api.visual.widget.Widget;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class TextFieldWidget extends Widget {
     

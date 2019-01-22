@@ -53,7 +53,7 @@ import org.netbeans.api.visual.widget.Scene;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class CheckBoxWidget extends ButtonWidget {
     

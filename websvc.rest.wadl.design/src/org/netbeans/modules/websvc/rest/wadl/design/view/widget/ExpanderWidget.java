@@ -63,7 +63,7 @@ import org.netbeans.api.visual.widget.Scene;
  * size of the widget is altered. This class provides one or more methods
  * for altering the widget size.
  *
- * @author Ayub Khan
+ * 
  */
 public class ExpanderWidget extends ButtonWidget {
 

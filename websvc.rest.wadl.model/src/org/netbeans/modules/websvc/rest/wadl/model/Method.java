@@ -49,7 +49,7 @@ import org.netbeans.modules.xml.xam.Nameable;
 
 /**
  *
- * @author Ayub Khan
+ * 
  * Represents a Wadl method
  */
 public interface Method extends Nameable<WadlComponent>, ReferenceableWadlComponent, WadlComponent {

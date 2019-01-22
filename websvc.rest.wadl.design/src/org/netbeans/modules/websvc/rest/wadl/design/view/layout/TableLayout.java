@@ -51,7 +51,7 @@ import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
- * @author Ayub Khan
+ * 
  */
 public class TableLayout implements Layout {
     

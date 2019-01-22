@@ -60,7 +60,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
- * @author Ayub Khan
+ * 
  */
 public abstract class WadlComponentBase extends AbstractDocumentComponent<WadlComponent> implements WadlComponent {
 

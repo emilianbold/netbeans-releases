@@ -70,7 +70,7 @@ import org.netbeans.modules.websvc.rest.wadl.design.view.layout.TableLayout;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class TableWidget extends Widget{
     

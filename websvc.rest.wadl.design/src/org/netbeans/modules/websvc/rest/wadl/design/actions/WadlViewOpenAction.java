@@ -51,7 +51,7 @@ import org.openide.util.actions.NodeAction;
 /**
  * Opens the WSDLDataObject in the WSDL editor tree view.
  *
- * @author Ayub Khan
+ * 
  */
 public class WadlViewOpenAction extends NodeAction{
     /** silence compiler warnings */

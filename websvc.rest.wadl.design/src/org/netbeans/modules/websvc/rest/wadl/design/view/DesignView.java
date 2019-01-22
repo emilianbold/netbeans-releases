@@ -87,7 +87,7 @@ import org.openide.util.Task;
 /**
  * WebService Designer
  *
- * @author Ayub Khan
+ * 
  */
 public class DesignView extends JPanel {
 

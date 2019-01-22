@@ -54,7 +54,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Ayub Khan
+ * 
  */
 public class WadlComponentWidget<T extends WadlComponent> extends AbstractTitledWidget {
     private WadlModel model;

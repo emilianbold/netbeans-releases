@@ -53,7 +53,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
  *
- * @author Ayub Khan
+ * 
  * Base interface of all Wadl components
  */
 public interface WadlComponent extends DocumentComponent<WadlComponent>, ValidParam {

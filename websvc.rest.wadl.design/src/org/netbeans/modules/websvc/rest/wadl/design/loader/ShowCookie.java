@@ -51,7 +51,7 @@ import org.openide.nodes.Node;
 /**
  * Cookie to open the editor for the file containing the Component.
  *
- * @author Praveen Savur
+ * 
  */
 public interface ShowCookie extends Node.Cookie  {
     

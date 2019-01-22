@@ -63,7 +63,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 
 /**
- * @author Ayub Khan
+ * 
  */
 public abstract class AbstractTitledWidget extends Widget implements ExpandableWidget {
     

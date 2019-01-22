@@ -52,7 +52,7 @@ import org.netbeans.modules.websvc.rest.wadl.model.*;
 
 /**
  *
- * @author  Ayub Khan
+ * 
  */
 public class AddBodyElementPanel<T extends WadlComponent> extends javax.swing.JPanel {
 
