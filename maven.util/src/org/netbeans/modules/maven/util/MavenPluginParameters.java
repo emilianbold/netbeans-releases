@@ -57,7 +57,6 @@ import org.openide.util.Lookup;
 /**
  * Convenience methods to retrieve and set plugin parameters in Maven POM.
  * 
- * @author S. Aubrecht
  */
 public final class MavenPluginParameters {
 

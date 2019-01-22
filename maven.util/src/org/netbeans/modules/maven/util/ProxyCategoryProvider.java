@@ -55,7 +55,6 @@ import org.openide.util.lookup.ProxyLookup;
  * Category provider that delegates to a different category provider - if the Maven
  * project POM contains the desired plugin.
  *
- * @author  S. Aubrecht
  */
 final class ProxyCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
 

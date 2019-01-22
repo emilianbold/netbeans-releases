@@ -51,7 +51,6 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
  * Allows to register project customizer panels for Maven projects that have
  * specific Maven plugins in their POM.
  * 
- * @author S. Aubrecht
  */
 public abstract class MavenCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
