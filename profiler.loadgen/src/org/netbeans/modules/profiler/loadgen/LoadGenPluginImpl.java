@@ -68,7 +68,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Jaroslav Bachorik
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.LoadGenPlugin.class)
 public class LoadGenPluginImpl implements LoadGenPlugin {

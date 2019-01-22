@@ -75,7 +75,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
     "LoadGenConfig_dialogCaption=Configure Load Generator",

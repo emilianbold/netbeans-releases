@@ -70,7 +70,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Jiri Sedlacek
  */
 // NOTE: cannot use mnemonics in popup menu, conflicts with textfields
 @NbBundle.Messages({

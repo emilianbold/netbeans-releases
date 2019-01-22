@@ -69,7 +69,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
     "LoadGenerator_name=Load Generator",
