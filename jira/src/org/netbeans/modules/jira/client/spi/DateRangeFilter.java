@@ -46,7 +46,7 @@ import java.util.Date;
 
 /**
  *
- * @author tomas
+ * 
  */
 public interface DateRangeFilter extends DateFilter {
 

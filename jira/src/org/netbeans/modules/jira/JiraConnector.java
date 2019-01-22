@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 @BugtrackingConnector.Registration (
         id=JiraConnector.ID,

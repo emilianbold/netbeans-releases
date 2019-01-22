@@ -53,7 +53,7 @@ import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class KenaiConfiguration extends JiraConfiguration {
 

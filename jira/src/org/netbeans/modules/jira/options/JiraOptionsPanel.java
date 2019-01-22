@@ -47,7 +47,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 @OptionsPanelController.Keywords(keywords={"jira", "#KW_IssueTracking"}, location="Team", tabTitle="#LBL_IssueTracking")
 public class JiraOptionsPanel extends javax.swing.JPanel {

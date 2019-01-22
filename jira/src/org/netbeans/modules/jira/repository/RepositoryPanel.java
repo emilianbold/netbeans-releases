@@ -54,7 +54,7 @@ import java.awt.event.ActionListener;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class RepositoryPanel extends javax.swing.JPanel implements ActionListener {
     private JiraRepositoryController controller;

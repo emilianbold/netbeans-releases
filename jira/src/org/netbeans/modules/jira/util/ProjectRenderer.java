@@ -49,7 +49,7 @@ import org.netbeans.modules.jira.client.spi.Project;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ProjectRenderer extends DefaultListCellRenderer {
     @Override

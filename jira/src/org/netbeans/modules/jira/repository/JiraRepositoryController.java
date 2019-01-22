@@ -71,7 +71,7 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class JiraRepositoryController implements RepositoryController, DocumentListener, ActionListener {
     private JiraRepository repository;

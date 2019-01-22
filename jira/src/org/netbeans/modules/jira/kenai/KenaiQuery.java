@@ -53,7 +53,7 @@ import org.netbeans.modules.team.commons.LogUtils;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class KenaiQuery extends JiraQuery {
     private boolean predefinedQuery = false;

@@ -165,7 +165,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Jan Stola
+ * 
  */
 public class IssuePanel extends javax.swing.JPanel {
     private static final RequestProcessor RP = new RequestProcessor("JIRA Issue Panel", 5, false); // NOI18N

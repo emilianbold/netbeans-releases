@@ -53,7 +53,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public abstract class JiraConnectorProvider {
 

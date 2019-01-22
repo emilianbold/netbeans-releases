@@ -121,7 +121,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka, Jan Stola
+ * 
  */
 public class NbJiraIssue extends AbstractNbTaskWrapper {
     private JiraRepository repository;

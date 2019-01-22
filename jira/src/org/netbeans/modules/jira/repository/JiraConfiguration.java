@@ -69,7 +69,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Tomas Stupka, Jan Stola
+ * 
  */
 public class JiraConfiguration {
 

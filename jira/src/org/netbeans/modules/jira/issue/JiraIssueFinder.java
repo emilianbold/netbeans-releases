@@ -47,7 +47,7 @@ import org.openide.ErrorManager;
 
 /**
  *
- * @author Marian Petras
+ * 
  */
 public class JiraIssueFinder implements IssueFinder {
 

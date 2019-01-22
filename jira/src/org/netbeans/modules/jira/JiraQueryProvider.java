@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class JiraQueryProvider implements QueryProvider<JiraQuery, NbJiraIssue> {
 

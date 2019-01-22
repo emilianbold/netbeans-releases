@@ -54,7 +54,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public final class JiraConnectorSupport {
     

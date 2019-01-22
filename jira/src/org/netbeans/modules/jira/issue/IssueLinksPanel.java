@@ -74,7 +74,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Panel showing information about issue links.
  *
- * @author Jan Stola
+ * 
  */
 public class IssueLinksPanel extends JPanel {
     /** IssueProvider whose links should be shown. */

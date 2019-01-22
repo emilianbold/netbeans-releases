@@ -46,7 +46,7 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 
 /**
  * Notifies changes on a query
- * @author Tomas Stupka
+ * 
  */
 public interface QueryNotifyListener {
 

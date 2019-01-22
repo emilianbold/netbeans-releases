@@ -48,7 +48,7 @@ import org.netbeans.modules.jira.client.spi.Priority;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class PriorityComparator implements Comparator<Priority>{
     @Override

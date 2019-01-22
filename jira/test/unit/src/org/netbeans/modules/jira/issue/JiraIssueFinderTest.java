@@ -48,7 +48,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author Marian Petras
+ * 
  */
 public class JiraIssueFinderTest {
 

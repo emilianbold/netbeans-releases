@@ -97,7 +97,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Jan Stola
+ * 
  */
 public class AttachmentsPanel extends JPanel {
     private static final String NAME_FIELD_CP = "ATTACHMENT_NAME_FIELD"; // NOI18N

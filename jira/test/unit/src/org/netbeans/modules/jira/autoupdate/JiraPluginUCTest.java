@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class JiraPluginUCTest extends AutoupdatePluginUCTestCase {
 

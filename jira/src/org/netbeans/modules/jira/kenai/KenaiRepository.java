@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka, Jan Stola
+ * 
  */
 public class KenaiRepository extends JiraRepository implements PropertyChangeListener {
 

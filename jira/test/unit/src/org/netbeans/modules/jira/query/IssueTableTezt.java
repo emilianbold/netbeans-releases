@@ -57,7 +57,7 @@ import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class IssueTableTezt extends IssuetableTestFactory {
 

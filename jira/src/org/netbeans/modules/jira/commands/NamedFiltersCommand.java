@@ -52,7 +52,7 @@ import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class NamedFiltersCommand extends BugtrackingCommand {
     private NamedFilter[] namedFilters;

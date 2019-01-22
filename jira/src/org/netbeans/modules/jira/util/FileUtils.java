@@ -49,7 +49,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author pkuzel
+ * 
  */
 public class FileUtils {
 

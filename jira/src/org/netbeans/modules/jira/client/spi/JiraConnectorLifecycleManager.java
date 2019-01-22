@@ -76,7 +76,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  *
- * @author tomas
+ * 
  */
 public abstract class JiraConnectorLifecycleManager extends ModuleInstall implements ErrorHandler, EntityResolver {
 

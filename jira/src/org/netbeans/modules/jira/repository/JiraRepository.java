@@ -100,7 +100,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Tomas Stupka, Jan Stola
+ * 
  */
 public class JiraRepository {
 

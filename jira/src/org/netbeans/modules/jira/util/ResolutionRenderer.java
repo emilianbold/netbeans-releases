@@ -49,7 +49,7 @@ import org.netbeans.modules.jira.client.spi.Resolution;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ResolutionRenderer extends DefaultListCellRenderer {
     @Override

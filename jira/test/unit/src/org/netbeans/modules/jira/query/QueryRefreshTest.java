@@ -65,7 +65,7 @@ import org.netbeans.modules.jira.util.JiraUtils;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class QueryRefreshTest extends NbTestCase {
 

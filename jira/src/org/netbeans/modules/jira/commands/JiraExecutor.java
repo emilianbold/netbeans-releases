@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
 /**
  * Executes commands against one jira Repository and handles errors
  * 
- * @author Tomas Stupka
+ * 
  */
 public class JiraExecutor {
 

@@ -68,7 +68,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class RepositoryTest extends NbTestCase {
 

@@ -49,7 +49,7 @@ import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class JiraRepositoryProvider implements RepositoryProvider<JiraRepository, JiraQuery, NbJiraIssue> {
 

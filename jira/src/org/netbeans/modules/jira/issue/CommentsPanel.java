@@ -90,7 +90,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Jan Stola
+ * 
  */
 public class CommentsPanel extends JPanel {
     private static final RequestProcessor RP = new RequestProcessor("Jira Comments Panel", 5, false); // NOI18N

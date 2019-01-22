@@ -48,7 +48,7 @@ import org.netbeans.modules.jira.client.spi.Version;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class VersionComparator implements Comparator<Version>{
     @Override

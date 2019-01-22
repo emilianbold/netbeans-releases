@@ -44,7 +44,7 @@ package org.netbeans.modules.jira.client.spi;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public interface Priority {
     public static final String BLOCKER_ID = "1";

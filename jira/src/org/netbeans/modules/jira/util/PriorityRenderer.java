@@ -54,8 +54,8 @@ import org.netbeans.modules.jira.client.spi.Priority;
 
 /**
  *
- * @author Tomas Stupka
- * @author Jan Stola
+ * 
+ * 
  */
 public class PriorityRenderer extends DefaultListCellRenderer implements TableCellRenderer {
 

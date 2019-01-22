@@ -47,7 +47,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 
 /**
  *
- * @author tomas
+ * 
  */
 public interface JiraWorkLog {
 

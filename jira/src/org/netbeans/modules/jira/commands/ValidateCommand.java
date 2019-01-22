@@ -53,7 +53,7 @@ import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ValidateCommand extends BugtrackingCommand {
 

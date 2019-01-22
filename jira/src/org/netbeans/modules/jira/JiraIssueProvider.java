@@ -47,7 +47,7 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class JiraIssueProvider implements IssueProvider<NbJiraIssue> {
 

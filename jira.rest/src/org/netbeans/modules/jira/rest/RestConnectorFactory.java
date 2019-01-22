@@ -48,7 +48,7 @@ import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author tomas
+ * 
  */
 @ServiceProviders({@ServiceProvider(service = JiraConnectorProvider.JiraConnectorFactory.class)})
 public class RestConnectorFactory implements JiraConnectorProvider.JiraConnectorFactory {

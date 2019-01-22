@@ -44,7 +44,7 @@ package org.netbeans.modules.jira.client.spi;
 
 /**
  *
- * @author tomas
+ * 
  */
 public interface IssueType {
 

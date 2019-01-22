@@ -58,7 +58,7 @@ import org.netbeans.modules.jira.client.spi.UserInGroupFilter;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 class UserSearch implements ItemListener {
     private String savedText;

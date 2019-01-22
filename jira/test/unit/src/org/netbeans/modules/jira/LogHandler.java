@@ -47,7 +47,7 @@ import java.util.logging.LogRecord;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class LogHandler extends Handler {
     private long TIMEOUT = 30 * 1000;

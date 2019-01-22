@@ -53,7 +53,7 @@ import org.openide.modules.ModuleInstall;
  *
  * <p>It's registered and instantiated from module manifest.
  *
- * @author Tomas Stupka, Ondra Vrabec
+ * 
  */
 public final class ModuleLifecycleManager extends ModuleInstall  {
     

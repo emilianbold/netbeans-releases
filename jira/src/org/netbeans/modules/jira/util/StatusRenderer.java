@@ -52,8 +52,8 @@ import org.netbeans.modules.jira.client.spi.JiraStatus;
 
 /**
  *
- * @author Tomas Stupka
- * @author Jan Stola
+ * 
+ * 
  */
 public class StatusRenderer extends DefaultListCellRenderer implements TableCellRenderer {
 

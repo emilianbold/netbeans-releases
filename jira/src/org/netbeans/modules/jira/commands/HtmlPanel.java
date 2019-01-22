@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class HtmlPanel extends javax.swing.JPanel {
 

@@ -47,7 +47,7 @@ import org.netbeans.modules.jira.client.spi.Component;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ComponentComparator implements Comparator<Component>{
     @Override

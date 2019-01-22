@@ -50,7 +50,7 @@ import org.netbeans.modules.jira.client.spi.JiraVersion;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class JiraNotSupportedTest extends NbTestCase {
 

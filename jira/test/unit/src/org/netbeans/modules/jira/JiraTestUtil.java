@@ -94,7 +94,7 @@ import org.netbeans.modules.jira.util.JiraUtils;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class JiraTestUtil {
 

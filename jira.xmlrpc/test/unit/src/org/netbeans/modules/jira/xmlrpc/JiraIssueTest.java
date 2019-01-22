@@ -46,7 +46,7 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class JiraIssueTest extends NbTestCase {
 

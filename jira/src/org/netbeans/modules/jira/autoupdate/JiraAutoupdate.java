@@ -79,7 +79,7 @@ import org.openide.util.WeakSet;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class JiraAutoupdate {
 

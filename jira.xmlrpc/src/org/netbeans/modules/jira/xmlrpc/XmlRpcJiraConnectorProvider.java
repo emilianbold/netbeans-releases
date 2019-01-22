@@ -105,7 +105,7 @@ import org.netbeans.modules.mylyn.util.MylynSupport;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
 

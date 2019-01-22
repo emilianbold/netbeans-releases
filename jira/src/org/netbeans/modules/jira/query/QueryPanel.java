@@ -72,7 +72,7 @@ import org.netbeans.modules.jira.util.TypeRenderer;
 
 /**
  *
- * @author Tomas Stupka, Jan Stola
+ * 
  */
 public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 

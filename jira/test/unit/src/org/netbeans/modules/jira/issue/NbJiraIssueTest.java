@@ -77,7 +77,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Ondra Vrabec
+ * 
  */
 public class NbJiraIssueTest extends NbTestCase {
 

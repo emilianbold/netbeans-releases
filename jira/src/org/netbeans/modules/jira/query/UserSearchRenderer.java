@@ -49,7 +49,7 @@ import org.netbeans.modules.jira.query.UserSearch.UserSearchItem;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class UserSearchRenderer extends DefaultListCellRenderer {
     @Override

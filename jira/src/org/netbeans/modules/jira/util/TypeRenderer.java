@@ -52,8 +52,8 @@ import org.netbeans.modules.jira.client.spi.IssueType;
 
 /**
  *
- * @author Tomas Stupka
- * @author Jan Stola
+ * 
+ * 
  */
 public class TypeRenderer extends DefaultListCellRenderer implements TableCellRenderer {
 

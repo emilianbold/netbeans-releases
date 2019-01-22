@@ -47,7 +47,7 @@ import org.netbeans.modules.jira.util.ResolutionRenderer;
 
 /**
  *
- * @author Jan Stola
+ * 
  */
 public class ResolveIssuePanel extends javax.swing.JPanel {
 

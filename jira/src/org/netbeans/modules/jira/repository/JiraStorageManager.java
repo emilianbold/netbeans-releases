@@ -96,7 +96,7 @@ import org.openide.modules.Places;
 
 /**
  *
- * @author Ondra Vrabec
+ * 
  */
 public class JiraStorageManager {
     private static JiraStorageManager instance;

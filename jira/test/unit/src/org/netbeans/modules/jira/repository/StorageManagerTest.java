@@ -77,7 +77,7 @@ import org.netbeans.modules.jira.client.spi.VersionFilter;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class StorageManagerTest extends NbTestCase {
 

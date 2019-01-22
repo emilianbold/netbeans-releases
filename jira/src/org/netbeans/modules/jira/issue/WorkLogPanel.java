@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Stola
+ * 
  */
 public class WorkLogPanel extends javax.swing.JPanel {
     private NbJiraIssue issue;

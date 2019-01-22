@@ -62,7 +62,7 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class JiraQueryTest extends NbTestCase {
 

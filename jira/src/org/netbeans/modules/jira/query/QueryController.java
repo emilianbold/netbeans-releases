@@ -126,7 +126,7 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class QueryController implements org.netbeans.modules.bugtracking.spi.QueryController, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, DocumentListener {
     private QueryPanel panel;
