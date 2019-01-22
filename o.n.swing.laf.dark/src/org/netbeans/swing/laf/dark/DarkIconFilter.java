@@ -48,7 +48,6 @@ import java.awt.image.RGBImageFilter;
  * For dark LaFs it inverts icon brightness (=inverts icon image to obtain dark icon,
  * then inverts its hue to restore original colors).
  * 
- * @author P. Somol
  */
 public class DarkIconFilter extends RGBImageFilter {
 

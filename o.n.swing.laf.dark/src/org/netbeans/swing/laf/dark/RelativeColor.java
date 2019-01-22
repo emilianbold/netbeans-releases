@@ -110,7 +110,6 @@ import java.util.logging.Logger;
  * references between RelativeColor instances (for example, a RelativeColor
  * that has its own key as one of the keys it should fetch).  Don't do that.
  *
- * @author Tim Boudreau
  */
 public class RelativeColor implements UIDefaults.LazyValue {
     private Color value = null;

@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 /**
  * Dark-themed Nimbus l&f
  * 
- * @author S. Aubrecht
  */
 public class DarkNimbusLookAndFeel extends NimbusLookAndFeel {
 

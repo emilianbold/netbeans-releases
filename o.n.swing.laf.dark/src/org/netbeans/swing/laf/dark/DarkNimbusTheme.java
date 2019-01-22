@@ -52,7 +52,6 @@ import javax.swing.text.html.StyleSheet;
 
 /**
  *
- * @author S. Aubrecht
  */
 public class DarkNimbusTheme {
 

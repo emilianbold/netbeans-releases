@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 /**
  * Dark-themed Metal look and feel.
  * 
- * @author S. Aubrecht
  */
 public class DarkMetalLookAndFeel extends MetalLookAndFeel {
 

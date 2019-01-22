@@ -54,7 +54,6 @@ import org.openide.windows.WindowManager;
 
 /**
  * 
- * @author S. Aubrecht
  */
 public class Installer extends ModuleInstall {
 

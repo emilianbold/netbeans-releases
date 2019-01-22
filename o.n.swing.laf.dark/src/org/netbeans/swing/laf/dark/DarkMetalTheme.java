@@ -55,7 +55,6 @@ import javax.swing.text.html.StyleSheet;
 
 /**
  *
- * @author S. Aubrecht, P. Somol
  */
 public class DarkMetalTheme extends MetalTheme {
 
