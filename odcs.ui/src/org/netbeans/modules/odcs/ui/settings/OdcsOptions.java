@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author jpeska
+ * 
  */
 public class OdcsOptions extends javax.swing.JPanel implements DocumentListener {
 

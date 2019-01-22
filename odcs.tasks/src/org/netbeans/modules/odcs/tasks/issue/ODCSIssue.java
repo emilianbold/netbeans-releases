@@ -96,7 +96,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ODCSIssue extends AbstractNbTaskWrapper implements Comparable<ODCSIssue> {
 

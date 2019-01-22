@@ -67,7 +67,7 @@ import org.netbeans.modules.bugtracking.commons.UIUtils;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 

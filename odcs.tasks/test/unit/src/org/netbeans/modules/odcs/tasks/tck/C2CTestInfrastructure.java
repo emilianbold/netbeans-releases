@@ -43,7 +43,6 @@ package org.netbeans.modules.odcs.tasks.tck;
 
 /** Methods to support test execution on own or proprietary connector.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public abstract class C2CTestInfrastructure {
     /** @return the URL for the repository that is initialized for the test */

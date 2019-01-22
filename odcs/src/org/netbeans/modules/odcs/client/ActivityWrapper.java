@@ -46,7 +46,7 @@ import com.tasktop.c2c.server.profile.domain.activity.ScmActivity;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class ActivityWrapper {
     public ProjectActivity[] projectActivityList;

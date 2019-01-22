@@ -48,7 +48,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 
 /**
- * @author Jan Becicka
+ * 
  */
 @ActionID(id = "org.netbeans.modules.team.server.ui.ShareMenuAction", category = "Team")
 @ActionRegistration(displayName = "#Actions/Team/org-netbeans-modules-team-server-ui-ShareMenuAction.instance")

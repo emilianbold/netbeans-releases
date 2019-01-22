@@ -45,7 +45,7 @@ import com.tasktop.c2c.server.scm.domain.ScmRepository;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class RepositoryWrapper {
     public ScmRepository[] scmRepositoryList;

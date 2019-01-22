@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author jpeska
+ * 
  */
 public abstract class ActivityDisplayer {
 

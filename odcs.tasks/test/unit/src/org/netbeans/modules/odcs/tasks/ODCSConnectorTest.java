@@ -49,7 +49,7 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class ODCSConnectorTest extends NbTestCase {
 

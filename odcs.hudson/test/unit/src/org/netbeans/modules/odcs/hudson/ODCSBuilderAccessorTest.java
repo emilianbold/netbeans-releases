@@ -99,7 +99,7 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 /**
  * Tests for ODCSSBuilderAccessor.
  *
- * @author jhavlin
+ * 
  */
 public class ODCSBuilderAccessorTest {
 

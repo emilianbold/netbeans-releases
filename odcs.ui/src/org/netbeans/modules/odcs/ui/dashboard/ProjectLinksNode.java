@@ -56,9 +56,8 @@ import org.netbeans.modules.team.commons.treelist.TreeListNode;
 /**
  * Node showing links to project's wiki, downloads and messages.
  *
- * @author S. Aubrecht
- * @author Jan Becicka
- * @author Tomas Stupka
+ * 
+ * 
  * 
  */
 public class ProjectLinksNode extends AsynchronousNode<MessagingHandle> {

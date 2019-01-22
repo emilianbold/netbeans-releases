@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Milan Kubec
+ * 
  */
 public class ODCSServiceCellRenderer extends JPanel implements ListCellRenderer {
 

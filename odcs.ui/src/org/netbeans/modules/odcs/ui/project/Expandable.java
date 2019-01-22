@@ -43,7 +43,7 @@ package org.netbeans.modules.odcs.ui.project;
 
 /**
  *
- * @author jpeska
+ * 
  */
 interface Expandable {
 

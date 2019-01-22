@@ -62,7 +62,7 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Connection Authenticator for ODCSS Hudson Instances.
  *
- * @author jhavlin
+ * 
  */
 @ServiceProvider(service = ConnectionAuthenticator.class, position = 9999)
 public class ODCSPasswordAuthorizer implements ConnectionAuthenticator {

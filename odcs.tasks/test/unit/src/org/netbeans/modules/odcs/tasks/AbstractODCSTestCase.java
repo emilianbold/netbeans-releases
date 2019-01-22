@@ -76,7 +76,7 @@ import org.netbeans.modules.odcs.client.api.ODCSException;
 
 /**
  *
- * @author tomas
+ * 
  */
 public abstract class AbstractODCSTestCase extends NbTestCase  {
 

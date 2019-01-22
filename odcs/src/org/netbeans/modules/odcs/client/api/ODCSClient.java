@@ -51,7 +51,7 @@ import java.util.List;
 
 /**
  *
- * @author jpeska
+ * 
  */
 public interface ODCSClient {
 

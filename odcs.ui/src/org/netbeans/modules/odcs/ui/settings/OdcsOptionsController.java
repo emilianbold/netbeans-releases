@@ -50,7 +50,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author jpeska
+ * 
  */
 @OptionsPanelController.SubRegistration(
     id = OdcsOptionsController.OPTIONS_PATH,

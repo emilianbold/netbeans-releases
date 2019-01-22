@@ -69,7 +69,7 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 @ServiceProviders({
     @ServiceProvider(service=ODCSServerProviderImpl.class),

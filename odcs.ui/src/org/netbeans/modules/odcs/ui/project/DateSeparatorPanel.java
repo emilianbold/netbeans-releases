@@ -52,7 +52,7 @@ import org.netbeans.modules.team.commons.ColorManager;
 
 /**
  *
- * @author jpeska
+ * 
  */
 public class DateSeparatorPanel extends javax.swing.JPanel implements Expandable{
 

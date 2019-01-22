@@ -45,7 +45,7 @@ import com.tasktop.c2c.server.profile.domain.project.Project;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class ProjectWrapper {
     public Project project;

@@ -45,7 +45,7 @@ import com.tasktop.c2c.server.profile.domain.project.Profile;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class ProfileWrapper {
     public Profile profile;

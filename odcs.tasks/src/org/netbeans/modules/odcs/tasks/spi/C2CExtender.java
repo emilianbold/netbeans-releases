@@ -69,7 +69,6 @@ import org.openide.util.Lookup;
 /** Provides access to extended methods not available on {@link AbstractRepositoryConnector}
  * but needed for connecting to C2C instance.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public abstract class C2CExtender<Data> {
     

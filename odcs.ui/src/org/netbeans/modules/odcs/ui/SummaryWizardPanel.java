@@ -50,7 +50,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Maros Sandor
+ * 
  */
 public class SummaryWizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
 

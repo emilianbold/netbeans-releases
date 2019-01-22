@@ -62,9 +62,8 @@ import org.openide.util.NbBundle;
 /**
  * Panel showing links to project's wiki, downloads and messages.
  *
- * @author S. Aubrecht
- * @author Jan Becicka
- * @author Tomas Stupka
+ * 
+ * 
  * 
  */
 public class ProjectLinksPanel extends JPanel {

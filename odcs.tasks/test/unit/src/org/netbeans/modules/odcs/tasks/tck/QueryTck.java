@@ -56,7 +56,6 @@ import org.netbeans.modules.odcs.tasks.spi.C2CExtender;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class QueryTck extends C2CTestBase {
     public QueryTck(String n) {

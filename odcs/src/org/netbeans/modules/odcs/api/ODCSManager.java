@@ -55,7 +55,6 @@ import org.openide.util.NbPreferences;
 
 /**
  * Manager of ODCS instances
- * @author Jan Becicka, Ondra Vrabec
  */
 public final class ODCSManager {
 

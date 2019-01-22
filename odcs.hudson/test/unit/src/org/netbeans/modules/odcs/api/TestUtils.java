@@ -47,7 +47,7 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 
 /**
  *
- * @author jhavlin
+ * 
  */
 public class TestUtils {
 

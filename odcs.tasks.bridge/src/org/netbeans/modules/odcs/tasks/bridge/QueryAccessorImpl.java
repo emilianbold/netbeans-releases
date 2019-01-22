@@ -62,7 +62,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka, Ondrej Vrabec
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.team.server.ui.spi.QueryAccessor.class)
 public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {

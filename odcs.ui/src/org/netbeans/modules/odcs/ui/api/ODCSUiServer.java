@@ -82,7 +82,7 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class ODCSUiServer implements TeamServer {
 

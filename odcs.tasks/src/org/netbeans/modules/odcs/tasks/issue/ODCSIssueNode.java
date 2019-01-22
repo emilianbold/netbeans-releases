@@ -54,7 +54,7 @@ import org.openide.nodes.Node.Property;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ODCSIssueNode extends IssueNode<ODCSIssue> {
     private static final AbstractReferenceValue DUMMY_ODCS_VALUE;

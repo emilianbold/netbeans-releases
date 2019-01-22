@@ -82,7 +82,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class ODCS {
     

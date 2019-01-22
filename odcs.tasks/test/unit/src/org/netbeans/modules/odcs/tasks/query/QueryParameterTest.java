@@ -84,7 +84,7 @@ import org.netbeans.modules.odcs.tasks.query.QueryParameters.TextFieldParameter;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class QueryParameterTest extends NbTestCase {
 

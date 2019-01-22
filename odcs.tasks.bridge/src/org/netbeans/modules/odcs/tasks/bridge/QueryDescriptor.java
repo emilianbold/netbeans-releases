@@ -46,7 +46,7 @@ import org.netbeans.modules.bugtracking.api.Query;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 interface QueryDescriptor {
     public boolean isPredefined();

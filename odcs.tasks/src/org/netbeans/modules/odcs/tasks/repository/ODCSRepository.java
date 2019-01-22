@@ -104,7 +104,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ODCSRepository implements PropertyChangeListener {
 

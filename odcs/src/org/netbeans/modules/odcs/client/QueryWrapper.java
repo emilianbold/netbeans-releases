@@ -45,7 +45,7 @@ import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class QueryWrapper {
     public SavedTaskQuery savedTaskQuery;

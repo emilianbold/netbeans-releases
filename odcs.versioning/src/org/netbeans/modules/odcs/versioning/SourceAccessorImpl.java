@@ -77,7 +77,6 @@ import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author Milan Kubec, Jan Becicka, Tomas Stupka
  */
 
 @ServiceProviders( { @ServiceProvider(service=SourceAccessor.class),

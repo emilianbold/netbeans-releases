@@ -58,7 +58,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Maros Sandor
+ * 
  */
 public class SummaryWizardPanelGUI extends javax.swing.JPanel {
 

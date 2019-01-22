@@ -47,7 +47,7 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ODCSConfig {
 

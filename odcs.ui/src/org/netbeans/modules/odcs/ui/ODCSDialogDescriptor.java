@@ -51,7 +51,7 @@ import org.openide.DialogDescriptor;
  * DialogDescriptor used for Kenai search window to allow to enable/disable OK
  * button
  *
- * @author Milan Kubec
+ * 
  */
 public class ODCSDialogDescriptor extends DialogDescriptor implements PropertyChangeListener {
 

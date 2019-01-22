@@ -45,7 +45,7 @@ import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class RepositoryConfigurationWrapper {
     

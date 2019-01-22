@@ -68,7 +68,7 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 
 /**
  *
- * @author jpeska
+ * 
  */
 public class ActivityPanel extends javax.swing.JPanel implements Expandable, ActivityTypes {
 

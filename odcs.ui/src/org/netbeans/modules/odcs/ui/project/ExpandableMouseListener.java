@@ -47,7 +47,7 @@ import javax.swing.JComponent;
 
 /**
  *
- * @author jpeska
+ * 
  */
 class ExpandableMouseListener implements MouseListener {
     private Expandable expandable;

@@ -52,7 +52,7 @@ import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class ODCSUtilTest extends NbTestCase {
 

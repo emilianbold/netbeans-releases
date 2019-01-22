@@ -48,7 +48,7 @@ import javax.swing.JTextField;
 
 /**
  *
- * @author jpeska
+ * 
  */
 public class RepositoryPanel extends javax.swing.JPanel {
 

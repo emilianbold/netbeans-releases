@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 /**
  * Node for a single project's source repository.
  *
- * @author S. Aubrecht
+ * . Aubrecht
  */
 public class SourceNode<ODCSProject> extends LeafNode {
 

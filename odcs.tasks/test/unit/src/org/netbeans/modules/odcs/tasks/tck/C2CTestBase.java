@@ -56,7 +56,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class C2CTestBase extends NbTestCase {
     protected final AbstractRepositoryConnector rc;

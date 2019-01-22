@@ -49,7 +49,7 @@ import javax.swing.JPanel;
 
 /**
  *
- * @author jpeska
+ * 
  */
 public class TitlePanel extends JPanel {
 

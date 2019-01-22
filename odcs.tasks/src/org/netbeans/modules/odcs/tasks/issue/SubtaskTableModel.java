@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Stola
+ * 
  */
 public class SubtaskTableModel extends DefaultTableModel {
 

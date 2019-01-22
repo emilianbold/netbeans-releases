@@ -53,7 +53,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 class Support {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.odcs.tasks.bridge"); // NOI18N

@@ -58,7 +58,7 @@ import org.netbeans.modules.odcs.client.api.ODCSException;
 /**
  * Represents a cloud project
  * 
- * @author Tomas Stupka
+ * 
  */
 public final class ODCSProject {
    

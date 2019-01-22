@@ -78,7 +78,7 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 @ServiceProvider(service=RemoteMachineAccessor.class)
 public class RemoteMachineAccessorImpl extends RemoteMachineAccessor<ODCSProject>{

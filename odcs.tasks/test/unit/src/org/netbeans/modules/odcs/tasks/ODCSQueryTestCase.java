@@ -72,7 +72,7 @@ import static org.netbeans.modules.odcs.client.TestUtils.TEST_PRODUCT;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class ODCSQueryTestCase extends AbstractODCSTestCase {
 

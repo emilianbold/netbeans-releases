@@ -73,7 +73,7 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public final class ODCSServer {
 

@@ -49,7 +49,7 @@ import java.util.Objects;
  * Hack. On combos containing users we can't just setSelectedItem(null) because
  * TaskUserProfile.equals doesn't check for a null parameter and therefore throws NPE.
  * 
- * @author tomas
+ * 
  */
 public class NoUserProfile extends TaskUserProfile {
     private final String display = "---";

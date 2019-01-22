@@ -82,7 +82,7 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author jpeska
+ * 
  */
 public class RecentActivitiesPanel extends javax.swing.JPanel implements ActivityTypes {
 

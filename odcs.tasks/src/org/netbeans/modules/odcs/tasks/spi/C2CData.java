@@ -61,7 +61,6 @@ import org.netbeans.modules.odcs.tasks.issue.IssueField;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class C2CData {
     public static final String CRITERIA_QUERY = "findTasksWithCriteria";

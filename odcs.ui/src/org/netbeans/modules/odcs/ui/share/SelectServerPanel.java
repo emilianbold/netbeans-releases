@@ -48,7 +48,7 @@ import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class SelectServerPanel extends javax.swing.JPanel {
 

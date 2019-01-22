@@ -66,7 +66,6 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Jan Becicka, Ondra Vrabec
  */
 @ServiceProvider(service=ProjectIconAnnotator.class)
 public class NBProjectAnnotator implements ProjectIconAnnotator, PropertyChangeListener {

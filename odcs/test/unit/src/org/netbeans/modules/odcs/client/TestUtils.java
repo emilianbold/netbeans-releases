@@ -71,7 +71,7 @@ import org.netbeans.modules.odcs.client.api.ODCSFactory;
 
 /**
  *
- * @author tomas
+ * 
  */
 public final class TestUtils {
     public static String TEST_PRODUCT = "Unit Test Product";

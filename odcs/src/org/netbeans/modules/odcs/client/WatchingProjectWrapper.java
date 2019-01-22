@@ -43,7 +43,7 @@ package org.netbeans.modules.odcs.client;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class WatchingProjectWrapper {
     

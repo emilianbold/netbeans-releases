@@ -45,7 +45,7 @@ import java.io.IOException;
 
 /**
  *
- * @author ondra
+ * 
  */
 public class ODCSException extends IOException {
     

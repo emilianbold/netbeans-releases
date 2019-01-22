@@ -47,7 +47,7 @@ import java.net.PasswordAuthentication;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public interface VCSProvider {
 

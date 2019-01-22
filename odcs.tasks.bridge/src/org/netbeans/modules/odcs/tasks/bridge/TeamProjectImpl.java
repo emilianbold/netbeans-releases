@@ -55,7 +55,7 @@ import org.netbeans.modules.team.server.ui.spi.QueryHandle;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 class TeamProjectImpl extends org.netbeans.modules.team.spi.TeamProject {
 

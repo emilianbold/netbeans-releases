@@ -46,7 +46,7 @@ import org.netbeans.modules.odcs.versioning.spi.VCSProvider;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public final class Utils {
 

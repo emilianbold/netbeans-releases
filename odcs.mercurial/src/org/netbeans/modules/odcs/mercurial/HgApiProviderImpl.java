@@ -53,7 +53,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 @ServiceProvider(service=VCSProvider.class)
 public class HgApiProviderImpl implements VCSProvider {

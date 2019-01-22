@@ -61,7 +61,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author jpeska
+ * 
  */
 public abstract class LinkLabel extends JLabel implements MouseListener {
 

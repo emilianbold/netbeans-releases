@@ -70,8 +70,8 @@ import org.openide.util.NbBundle;
 /**
  * Renderer for list item to show found ODCS project
  *
- * @author Milan Kubec
- * @author jpeska
+ * 
+ * 
  */
 public class ODCSProjectsListRenderer extends javax.swing.JPanel {
 

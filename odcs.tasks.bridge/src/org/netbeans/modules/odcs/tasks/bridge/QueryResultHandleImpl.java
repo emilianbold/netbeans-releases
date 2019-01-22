@@ -55,7 +55,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 class QueryResultHandleImpl extends QueryResultHandle implements ActionListener {
 

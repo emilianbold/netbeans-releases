@@ -56,7 +56,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class LoginPanelSupportImpl implements LoginPanelSupport {
     private final ODCSServer server;

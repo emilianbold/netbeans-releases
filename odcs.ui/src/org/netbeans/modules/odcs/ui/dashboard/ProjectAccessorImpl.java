@@ -72,7 +72,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 // XXX not properly implemented yet
 public class ProjectAccessorImpl extends ProjectAccessor<ODCSProject> {

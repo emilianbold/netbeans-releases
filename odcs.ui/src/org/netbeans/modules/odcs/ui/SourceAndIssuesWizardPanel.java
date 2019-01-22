@@ -53,7 +53,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Milan Kubec
+ * 
  */
 public class SourceAndIssuesWizardPanel implements WizardDescriptor.Panel,
         WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {

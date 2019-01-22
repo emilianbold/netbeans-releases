@@ -66,7 +66,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 @Messages({"CONTACTING_ISSUE_TRACKER=Contacting Issue Tracker ...",
             "ERROR_ISSUETRACKER=<html>This project does not have an issue tracker.</html>",

@@ -98,7 +98,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Milan Kubec
+ * 
  */
 public class NameWizardPanelGUI extends JPanel {
 

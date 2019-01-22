@@ -54,7 +54,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class DetailsAction {
 

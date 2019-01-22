@@ -79,7 +79,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Milan Kubec
+ * 
  */
 public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 

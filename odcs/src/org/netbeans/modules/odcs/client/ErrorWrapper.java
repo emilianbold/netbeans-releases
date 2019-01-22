@@ -59,7 +59,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class ErrorWrapper {
     Error error;

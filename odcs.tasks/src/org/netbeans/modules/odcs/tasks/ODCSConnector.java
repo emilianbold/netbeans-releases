@@ -52,7 +52,7 @@ import org.netbeans.modules.team.spi.TeamAccessorUtils;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 @BugtrackingConnector.Registration (
         id=ODCSConnector.ID,

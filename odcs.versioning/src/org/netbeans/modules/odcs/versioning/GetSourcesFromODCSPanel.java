@@ -98,7 +98,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Milan Kubec, Tomas Stupka
  */
 public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
 

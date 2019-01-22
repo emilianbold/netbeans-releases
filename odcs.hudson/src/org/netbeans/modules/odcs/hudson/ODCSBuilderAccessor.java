@@ -92,7 +92,7 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Build Accessor that uses Hudson Builders.
  *
- * @author jhavlin
+ * 
  */
 @ServiceProvider(service = BuilderAccessor.class)
 public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {

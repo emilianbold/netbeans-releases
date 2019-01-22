@@ -71,7 +71,7 @@ import org.openide.util.RequestProcessor;
 /**
  * My Project's root node
  *
- * @author Jan Becicka
+ * 
  */
 public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
 

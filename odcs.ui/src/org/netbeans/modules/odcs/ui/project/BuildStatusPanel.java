@@ -65,7 +65,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author jpeska
+ * 
  */
 public class BuildStatusPanel extends javax.swing.JPanel {
 

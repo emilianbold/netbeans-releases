@@ -67,7 +67,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  * Icon showing online status on lower right corner
- * @author Ondra Vrabec
+ * 
  */
 
 public class PresenceIndicator {

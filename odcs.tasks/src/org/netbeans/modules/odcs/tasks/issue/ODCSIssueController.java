@@ -50,7 +50,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Tomas Stupka, Jan Stola
  */
 public class ODCSIssueController implements IssueController {
     private final IssuePanel panel;

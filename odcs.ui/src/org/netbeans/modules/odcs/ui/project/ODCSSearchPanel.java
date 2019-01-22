@@ -74,8 +74,8 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Milan Kubec
- * @author jpeska
+ * 
+ * 
  */
 public class ODCSSearchPanel extends JPanel {
 

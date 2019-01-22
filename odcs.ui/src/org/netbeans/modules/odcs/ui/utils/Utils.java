@@ -67,7 +67,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author jpeska
+ * 
  */
 public class Utils {
 

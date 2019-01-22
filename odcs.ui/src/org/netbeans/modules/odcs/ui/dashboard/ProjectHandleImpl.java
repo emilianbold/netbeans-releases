@@ -47,7 +47,7 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ProjectHandleImpl extends ProjectHandle<ODCSProject> {
     private final ODCSProject project;

@@ -51,7 +51,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 class LoginPanelDetails extends javax.swing.JPanel {
     private final ODCSServer server;

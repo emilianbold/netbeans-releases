@@ -78,7 +78,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class ODCSTaskTestCase extends NbTestSuite {
 

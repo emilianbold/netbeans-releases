@@ -57,7 +57,7 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 
 /**
  *
- * @author jhavlin
+ * 
  */
 public final class ODCSHudsonUtils {
 

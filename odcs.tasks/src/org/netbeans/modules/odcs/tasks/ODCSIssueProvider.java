@@ -51,7 +51,7 @@ import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ODCSIssueProvider implements IssueProvider<ODCSIssue> {
 

@@ -86,7 +86,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Milan Kubec
+ * 
  */
 public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 

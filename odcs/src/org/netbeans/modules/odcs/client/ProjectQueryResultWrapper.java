@@ -46,7 +46,7 @@ import com.tasktop.c2c.server.profile.domain.project.Project;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class ProjectQueryResultWrapper {
     public QueryResult<Project> queryResult;

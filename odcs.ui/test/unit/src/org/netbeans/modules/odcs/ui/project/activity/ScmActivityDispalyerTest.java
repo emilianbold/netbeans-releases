@@ -45,7 +45,7 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class ScmActivityDispalyerTest extends NbTestCase {
     

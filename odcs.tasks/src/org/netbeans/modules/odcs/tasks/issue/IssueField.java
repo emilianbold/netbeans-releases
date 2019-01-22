@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 /**
  * Information about an issue field.
  *
- * @author Tomas Stupka
+ * 
  */
 public class IssueField {
     

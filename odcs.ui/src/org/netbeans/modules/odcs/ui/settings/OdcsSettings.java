@@ -49,7 +49,7 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author jpeska
+ * 
  */
 public class OdcsSettings {
 

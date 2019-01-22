@@ -53,7 +53,7 @@ import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ODCSRepositoryProvider implements RepositoryProvider<ODCSRepository, ODCSQuery, ODCSIssue> {
 

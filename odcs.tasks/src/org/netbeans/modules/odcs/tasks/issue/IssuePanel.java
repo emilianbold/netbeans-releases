@@ -156,7 +156,7 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author tomas
+ * 
  */
 @NbBundle.Messages({
     "LBL_Duplicate.fieldName=Duplicate of"

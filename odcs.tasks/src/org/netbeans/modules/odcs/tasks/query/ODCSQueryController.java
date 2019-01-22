@@ -112,7 +112,7 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ODCSQueryController implements QueryController, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, ChangeListener {
 

@@ -53,7 +53,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public abstract class VCSAccessor extends SourceAccessor<ODCSProject> {
     

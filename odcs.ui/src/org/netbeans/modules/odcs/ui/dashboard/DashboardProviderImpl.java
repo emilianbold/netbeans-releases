@@ -66,7 +66,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class DashboardProviderImpl extends DashboardProvider<ODCSProject> {
 

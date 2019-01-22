@@ -54,7 +54,6 @@ import java.awt.event.ActionListener;
 
 /**
  *
- * @author Tomas Stupka, Jan Stola
  */
 public class RepositoryPanel extends javax.swing.JPanel implements ActionListener {
     private ODCSRepositoryController controller;

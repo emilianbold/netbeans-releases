@@ -49,7 +49,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author ondra
+ * 
  */
 public abstract class ODCSFactory {
 

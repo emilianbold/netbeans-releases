@@ -87,7 +87,7 @@ import org.openide.modules.Places;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class SynchronizationTestCase extends AbstractODCSTestCase {
 

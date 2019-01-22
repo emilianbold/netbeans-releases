@@ -70,7 +70,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class ODCSHandler {
 

@@ -60,7 +60,7 @@ import org.netbeans.modules.odcs.tasks.spi.C2CExtender;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class C2CDataTck extends NbTestSuite {
     public C2CDataTck() {

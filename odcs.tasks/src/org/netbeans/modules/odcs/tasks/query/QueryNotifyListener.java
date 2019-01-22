@@ -46,7 +46,7 @@ import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 
 /**
  * Notifies changes on a query
- * @author Tomas Stupka
+ * 
  */
 public interface QueryNotifyListener {
 
