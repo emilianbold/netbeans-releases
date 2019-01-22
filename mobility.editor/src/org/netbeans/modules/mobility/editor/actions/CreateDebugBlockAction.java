@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public class CreateDebugBlockAction extends PreprocessorEditorContextAction {
     

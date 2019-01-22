@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionListener, ChangeListener {
     

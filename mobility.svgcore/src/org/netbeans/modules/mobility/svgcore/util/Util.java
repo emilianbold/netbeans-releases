@@ -86,7 +86,7 @@ import org.w3c.dom.svg.SVGSVGElement;
 
 /**
  * Utility class for derived SVG support components. It provides external editor lunching facility and SVG image loading
- * @author suchys
+ * 
  */
 public class Util {
     //public static final String UNIQUE_NODE_ID = "unid";

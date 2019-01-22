@@ -103,7 +103,7 @@ import static javax.lang.model.element.Modifier.STATIC;
 /**
  * This is a J2MEUnit test generator used by the JUnit plugin API
  *
- * @author bohemius
+ * 
  */
 
 public class TestCreator {

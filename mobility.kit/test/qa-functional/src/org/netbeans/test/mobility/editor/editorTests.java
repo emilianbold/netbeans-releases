@@ -60,7 +60,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 
 /**
  *
- * @author joshis
+ * 
  */
 public class editorTests extends JellyTestCase {
     public static final String ELIF_BLOCK = "//#elif CLDC";

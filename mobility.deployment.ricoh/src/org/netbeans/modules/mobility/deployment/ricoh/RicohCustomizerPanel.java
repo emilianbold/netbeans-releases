@@ -63,7 +63,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 /**
  * Customizes the deployment configuration GUI for 
  *
- * @author  esanchez
+ * 
  */
 public class RicohCustomizerPanel extends javax.swing.JPanel implements CustomizerPanel
 {    

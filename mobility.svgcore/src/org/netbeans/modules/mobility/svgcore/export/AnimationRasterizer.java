@@ -85,7 +85,7 @@ import org.w3c.dom.svg.SVGSVGElement;
 /**
  * Helper for rasterizing SVG images/animations into bitmap images
  * 
- * @author breh
+ * 
  */
 public class AnimationRasterizer {
     private static final int   PATTERN_SIZE     = 10;

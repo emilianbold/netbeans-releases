@@ -60,7 +60,7 @@ import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
  * patterns used in snippet:  %%FRAME_COMPONENT_ID%%, %%COORDINATE_X%%, %%COORDINATE_Y%%, 
  * %%COMPONENT_ID_1%%, %%COMPONENT_ID_2%%
  * 
- * @author akorostelev
+ * 
  */
 public class RadioButton extends SVGFormElement{
 

@@ -50,7 +50,7 @@ import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author akorostelev
+ * 
  */
 public abstract class AbstractSaveAction extends CookieAction{
 

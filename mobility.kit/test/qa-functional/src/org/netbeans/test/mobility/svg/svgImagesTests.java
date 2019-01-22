@@ -53,7 +53,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  *
- * @author joshis
+ * 
  */
 public class svgImagesTests extends JellyTestCase {
     public static final String DIALOG_EXPORT = "Exporting as image";

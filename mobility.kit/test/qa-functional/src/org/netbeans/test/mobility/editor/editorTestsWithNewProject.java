@@ -66,7 +66,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author joshis
+ * 
  */
 public class editorTestsWithNewProject extends JellyTestCase {
     public static final String ELIF_BLOCK = "//#elif CLDC";

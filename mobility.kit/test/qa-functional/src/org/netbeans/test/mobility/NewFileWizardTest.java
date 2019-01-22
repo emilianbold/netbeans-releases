@@ -62,7 +62,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author tester
+ * 
  */
 public class NewFileWizardTest extends JellyTestCase {
     

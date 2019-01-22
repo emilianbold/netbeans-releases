@@ -51,7 +51,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author suchys
+ * 
  * This interface provides isolation between Mobility Project and high level features like Editor, Java etc.
  */
 public interface J2MEProjectUtilitiesProvider {

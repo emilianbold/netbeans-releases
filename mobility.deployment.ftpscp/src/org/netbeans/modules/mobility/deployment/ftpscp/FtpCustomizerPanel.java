@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam
+ * 
  */
 public class FtpCustomizerPanel extends javax.swing.JPanel {
     

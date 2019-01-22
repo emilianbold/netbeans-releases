@@ -65,7 +65,7 @@ import org.openide.WizardDescriptor;
 
 /**
  *
- * @author Lukas Waldmann
+ * 
  */
 public class J2MEUnitFileIterator implements WizardDescriptor.InstantiatingIterator
 {

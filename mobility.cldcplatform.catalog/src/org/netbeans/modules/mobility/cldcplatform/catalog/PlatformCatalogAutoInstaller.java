@@ -71,7 +71,7 @@ import org.openide.windows.InputOutput;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListener, LookupListener {
 

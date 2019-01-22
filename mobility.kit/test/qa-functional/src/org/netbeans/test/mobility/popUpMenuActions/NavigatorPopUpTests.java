@@ -65,7 +65,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author tester
+ * 
  */
 public class NavigatorPopUpTests extends JellyTestCase {
     public static final String ACTION_DELETE = "Delete";

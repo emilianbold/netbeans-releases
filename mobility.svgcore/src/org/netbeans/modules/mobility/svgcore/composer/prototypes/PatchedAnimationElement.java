@@ -45,7 +45,7 @@ package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 
 /**
  *
- * @author Pavel
+ * 
  */
 public interface PatchedAnimationElement extends PatchedElement {
 }

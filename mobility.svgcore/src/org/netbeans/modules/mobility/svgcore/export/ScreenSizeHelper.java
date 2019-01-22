@@ -69,7 +69,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author suchys
+ * 
  */
 public class ScreenSizeHelper {
     

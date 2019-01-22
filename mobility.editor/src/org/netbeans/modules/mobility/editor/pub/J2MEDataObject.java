@@ -135,7 +135,7 @@ import org.openide.xml.XMLUtil;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public class J2MEDataObject extends MultiDataObject {
     static final long serialVersionUID = 8090017233591568305L;

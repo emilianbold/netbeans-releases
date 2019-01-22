@@ -58,7 +58,7 @@ import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class PPDocumentSource implements CommentingPreProcessor.Source {
     

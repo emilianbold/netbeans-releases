@@ -48,7 +48,7 @@ package org.netbeans.modules.mobility.svgcore.items;
  * <p>
  * patterns used in snippet:  %%COORDINATE_X%%, %%COORDINATE_Y%%
  *
- * @author akorostelev
+ * 
  */
 public class RoundRectangle extends SVGBasicShape {
 

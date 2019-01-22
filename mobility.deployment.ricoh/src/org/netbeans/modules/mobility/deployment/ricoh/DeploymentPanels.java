@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Lukas Waldmann
+ * 
  */
 public class DeploymentPanels extends javax.swing.JPanel
 {

@@ -67,7 +67,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author bohemius
+ * 
  */
 
 public class J2MEUnitPlugin extends JUnitPlugin {

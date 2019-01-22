@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public class CreateIfElseBlockAction extends PreprocessorEditorContextAction {
     

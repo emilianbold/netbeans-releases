@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
- * @author akorostelev
+ * 
  */
 public abstract class SVGFormElement extends SVGComponentDrop{
 

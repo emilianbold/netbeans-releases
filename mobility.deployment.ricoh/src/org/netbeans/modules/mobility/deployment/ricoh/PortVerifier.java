@@ -51,7 +51,7 @@ import java.awt.*;
 
 /**
  *
- * @author esanchez
+ * 
  */
 public class PortVerifier extends InputVerifier
 {

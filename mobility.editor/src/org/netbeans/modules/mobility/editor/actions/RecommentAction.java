@@ -76,7 +76,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public class RecommentAction extends PreprocessorEditorContextAction {
     

@@ -49,7 +49,7 @@ import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 
 /**
- * @author akorostelev
+ * 
  */
 public abstract class SVGBasicShape extends SVGComponentDrop{
 

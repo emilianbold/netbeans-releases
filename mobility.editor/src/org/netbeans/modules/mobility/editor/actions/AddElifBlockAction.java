@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public class AddElifBlockAction extends PreprocessorEditorContextAction {
     

@@ -59,7 +59,7 @@ import org.openide.util.WeakListeners;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class J2MENode extends FilterNode implements MIDletsCacheListener {
     

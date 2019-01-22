@@ -77,7 +77,7 @@ import java.util.*;
 
 
 /**
- * @author bohemius
+ * 
  */
 public final class PPCompletionProvider implements CompletionProvider {
     

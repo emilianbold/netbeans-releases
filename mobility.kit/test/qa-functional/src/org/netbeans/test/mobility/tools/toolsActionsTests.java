@@ -52,7 +52,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  *
- * @author joshis
+ * 
  */
 public class toolsActionsTests extends JellyTestCase {
     

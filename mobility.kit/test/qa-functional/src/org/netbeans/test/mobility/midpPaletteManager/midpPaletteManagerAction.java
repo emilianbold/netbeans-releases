@@ -58,7 +58,7 @@ import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 
 /**
  *
- * @author tester
+ * 
  */
 public class midpPaletteManagerAction extends JellyTestCase {
     public static final String BUTTON_NEW_CATEGORY = "New Category";

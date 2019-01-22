@@ -48,7 +48,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class ScpProjectCustomizerPanel extends javax.swing.JPanel {
     

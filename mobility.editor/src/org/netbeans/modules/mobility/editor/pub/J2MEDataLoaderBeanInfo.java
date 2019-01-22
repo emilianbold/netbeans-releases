@@ -56,7 +56,7 @@ import java.beans.SimpleBeanInfo;
 
 /** BeanInfo for java source loader.
  *
- * @author Petr Suchomel
+ * 
  */
 public final class J2MEDataLoaderBeanInfo extends SimpleBeanInfo {
     

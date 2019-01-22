@@ -52,7 +52,7 @@ import java.util.Map;
 
 /**
  *
- * @author Lukas Waldmann
+ * 
  */
 public class RicohDeploymentProperties
 {    

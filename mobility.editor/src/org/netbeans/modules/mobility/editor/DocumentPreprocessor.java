@@ -88,7 +88,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author suchys
+ * 
  */
 public class DocumentPreprocessor implements PropertyChangeListener {
 

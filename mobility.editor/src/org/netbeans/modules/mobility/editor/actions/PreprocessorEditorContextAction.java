@@ -66,7 +66,7 @@ import org.openide.text.NbDocument;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public abstract class PreprocessorEditorContextAction extends BaseAction {
     

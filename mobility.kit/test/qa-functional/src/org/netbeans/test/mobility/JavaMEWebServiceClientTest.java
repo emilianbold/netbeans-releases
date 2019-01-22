@@ -61,7 +61,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author tester
+ * 
  */
 public class JavaMEWebServiceClientTest extends JellyTestCase {
     

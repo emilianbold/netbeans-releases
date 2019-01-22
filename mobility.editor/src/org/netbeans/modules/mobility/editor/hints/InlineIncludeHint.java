@@ -78,7 +78,7 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Adam Sotona
+ * 
  */
 public class InlineIncludeHint implements Fix {
     

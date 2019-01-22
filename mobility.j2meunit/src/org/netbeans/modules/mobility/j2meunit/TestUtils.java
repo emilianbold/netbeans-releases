@@ -88,7 +88,7 @@ import org.openide.filesystems.FileUtil;
 /**
  * This is a utilities class used by the J2MEUnit test generator
  *
- * @author bohemius
+ * 
  */
 public class TestUtils {
 

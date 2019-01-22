@@ -44,7 +44,7 @@ package org.netbeans.modules.mobility.svgcore.items;
 
 /**
  *
- * @author akorostelev
+ * 
  */
 public class Circle extends SVGBasicShape {
 

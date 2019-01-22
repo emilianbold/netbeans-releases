@@ -57,7 +57,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author bohemius
+ * 
  */
 public class UnitTestForSourceQueryImpl implements MultipleRootsUnitTestForSourceQueryImplementation {
     

@@ -56,7 +56,7 @@ import org.openide.text.ActiveEditorDrop;
 
 /**
  *
- * @author akorostelev
+ * 
  */
 public abstract class SVGComponentDrop implements  ActiveEditorDrop{
 

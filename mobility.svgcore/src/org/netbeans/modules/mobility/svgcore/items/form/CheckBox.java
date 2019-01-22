@@ -50,7 +50,7 @@ import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
  * <p>
  * patterns used in snippet:  %%COORDINATE_X%%, %%COORDINATE_Y%%, %%COMPONENT_ID%%
  * 
- * @author akorostelev
+ * 
  */
 public class CheckBox extends SVGFormElement{
 

@@ -60,7 +60,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  Adam Sotona
+ * 
  */
 public class SonyEricssonCustomizerPanel extends javax.swing.JPanel {
     
