@@ -49,7 +49,7 @@ import org.netbeans.modules.web.livehtml.StackTrace;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public class FilterUtilities {
     

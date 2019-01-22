@@ -48,7 +48,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 @NbBundle.Messages({
     "CTL_DataToolTipProvider_DisplayName=Request data"

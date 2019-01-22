@@ -47,7 +47,7 @@ import org.openide.nodes.Children;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public class ChangesToolTipLeafNode extends AbstractNode {
 

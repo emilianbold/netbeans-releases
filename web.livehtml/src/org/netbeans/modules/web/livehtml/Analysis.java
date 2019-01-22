@@ -70,7 +70,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public class Analysis implements Comparable<Analysis> {
     

@@ -55,7 +55,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public class Utilities {
     

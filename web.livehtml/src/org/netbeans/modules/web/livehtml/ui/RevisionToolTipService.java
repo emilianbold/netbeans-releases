@@ -45,7 +45,7 @@ import org.netbeans.modules.web.livehtml.Revision;
 
 /**
  * 
- * @author petr-podzimek
+ * 
  */
 public abstract class RevisionToolTipService extends javax.swing.JPanel {
     

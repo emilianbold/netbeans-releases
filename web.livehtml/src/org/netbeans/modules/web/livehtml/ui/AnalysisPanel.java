@@ -91,7 +91,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public class AnalysisPanel extends javax.swing.JPanel {
     

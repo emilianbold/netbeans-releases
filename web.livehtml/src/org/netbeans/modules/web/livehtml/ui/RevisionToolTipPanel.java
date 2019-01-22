@@ -55,7 +55,7 @@ import org.netbeans.modules.web.livehtml.ui.stacktrace.StackTraceToolTipProvider
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public class RevisionToolTipPanel extends javax.swing.JPanel {
     

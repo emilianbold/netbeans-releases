@@ -55,7 +55,7 @@ import org.netbeans.modules.web.livehtml.StackTrace;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public class RevisionFilterPanel extends javax.swing.JPanel {
     

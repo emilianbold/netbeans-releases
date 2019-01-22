@@ -60,7 +60,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public class ReformatSupport {
     public static final String SCRIPT_TAG = "script";

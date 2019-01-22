@@ -49,7 +49,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public class ChangesToolTipNodeContainer extends Children.Keys<List<Change>> {
     

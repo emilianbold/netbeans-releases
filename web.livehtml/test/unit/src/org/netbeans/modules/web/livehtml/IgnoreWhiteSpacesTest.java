@@ -56,7 +56,7 @@ import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public class IgnoreWhiteSpacesTest extends NbTestCase {
 

@@ -49,7 +49,7 @@ import java.io.IOException;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public class TestUtilities {
     

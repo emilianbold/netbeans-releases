@@ -53,7 +53,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public class AnalysisStorage {
     

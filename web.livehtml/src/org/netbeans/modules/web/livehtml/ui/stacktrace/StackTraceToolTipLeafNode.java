@@ -55,7 +55,7 @@ import org.openide.nodes.Children;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public class StackTraceToolTipLeafNode extends AbstractNode {
     

@@ -43,7 +43,7 @@ package org.netbeans.modules.web.livehtml;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public interface AnalysisStorageListener {
     

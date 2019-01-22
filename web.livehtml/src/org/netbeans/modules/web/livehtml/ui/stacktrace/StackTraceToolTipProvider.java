@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 @NbBundle.Messages({
     "CTL_StackTraceToolTipProvider_DisplayName=Call stack"

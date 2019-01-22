@@ -47,7 +47,7 @@ import org.openide.nodes.AbstractNode;
 
 /**
  *
- * @author petr-podzimek
+ * 
  */
 public class StackTraceToolTipRootNode extends AbstractNode {
 
