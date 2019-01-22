@@ -59,7 +59,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Jirka Rechtacek
+ * 
  */
 public class ModulesActivator {
 

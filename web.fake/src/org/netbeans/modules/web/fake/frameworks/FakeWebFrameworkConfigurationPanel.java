@@ -73,7 +73,7 @@ import org.openide.util.TaskListener;
 /**
  * Provider for fake web module extenders. Able to download and enable the proper module
  * as well as delegate to the proper configuration panel.
- * @author Tomas Mysik
+ * 
  */
 public class FakeWebFrameworkConfigurationPanel extends JPanel {
     private static final long serialVersionUID = 27938464212508L;

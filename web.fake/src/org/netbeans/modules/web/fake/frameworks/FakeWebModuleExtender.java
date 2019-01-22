@@ -57,7 +57,7 @@ import org.openide.util.HelpCtx;
 
 /**
  * Provider for fake web module extenders.
- * @author Tomas Mysik
+ * 
  */
 public class FakeWebModuleExtender extends WebModuleExtender implements ChangeListener {
     private final FakeWebFrameworkProvider.FakeWebFrameworkProviderImpl fakeProvider;

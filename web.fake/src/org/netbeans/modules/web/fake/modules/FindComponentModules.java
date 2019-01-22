@@ -65,7 +65,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Jirka Rechtacek
+ * 
  */
 public final class FindComponentModules {
     private Collection<String> codeNames;

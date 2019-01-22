@@ -49,7 +49,7 @@ import org.netbeans.api.progress.ProgressHandle;
 /**
  * Progress monitor for downloading/validating/installing/enabling modules.
  * For empty implementation one can use {@link #DEV_NULL_PROGRESS_MONITOR}.
- * @author Tomas Mysik
+ * 
  */
 public interface ProgressMonitor {
     static final ProgressMonitor DEV_NULL_PROGRESS_MONITOR = new DevNullProgressMonitor();

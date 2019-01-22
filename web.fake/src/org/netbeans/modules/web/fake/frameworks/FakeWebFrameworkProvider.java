@@ -53,7 +53,7 @@ import org.openide.util.Lookup;
 
 /**
  * Provider for fake web frameworks.
- * @author Tomas Mysik
+ * 
  */
 public final class FakeWebFrameworkProvider {
 
