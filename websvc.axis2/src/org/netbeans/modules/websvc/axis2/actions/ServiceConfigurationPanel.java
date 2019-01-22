@@ -54,7 +54,7 @@ import org.netbeans.modules.websvc.axis2.config.model.Service;
 
 /**
  *
- * @author  mkuchtiak
+ * 
  */
 public class ServiceConfigurationPanel extends javax.swing.JPanel implements java.awt.event.ItemListener {
 

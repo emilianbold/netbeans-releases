@@ -62,7 +62,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Milan Kuchtiak
+ * 
  */
 public class AxisNodeFactory implements NodeFactory {
     

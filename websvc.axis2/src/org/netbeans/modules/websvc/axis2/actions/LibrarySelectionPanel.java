@@ -70,7 +70,7 @@ import org.netbeans.modules.websvc.axis2.config.model.LibraryRef;
 
 /**
  *
- * @author Milan Kuchtiak
+ * 
  */
 public class LibrarySelectionPanel extends javax.swing.JPanel {
 

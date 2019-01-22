@@ -48,7 +48,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class ServicesUtils {
     

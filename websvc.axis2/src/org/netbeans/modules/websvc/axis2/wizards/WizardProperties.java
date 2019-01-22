@@ -44,7 +44,7 @@ package org.netbeans.modules.websvc.axis2.wizards;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public interface WizardProperties {
     public static final String PROP_FROM_JAVA_TYPE="prop_from_java_type"; //NOI18N

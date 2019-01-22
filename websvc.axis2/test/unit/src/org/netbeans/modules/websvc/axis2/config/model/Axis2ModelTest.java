@@ -55,7 +55,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class Axis2ModelTest extends NbTestCase {
 

@@ -50,7 +50,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 @ProjectServiceProvider(service=Axis2ModelProvider.class,
     projectType="org-netbeans-modules-java-j2seproject")

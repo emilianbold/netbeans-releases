@@ -57,7 +57,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class WsFromJavaPanel1 implements  WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener, WizardProperties {
 

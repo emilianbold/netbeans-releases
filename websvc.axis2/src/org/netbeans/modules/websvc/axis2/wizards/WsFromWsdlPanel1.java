@@ -70,7 +70,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class WsFromWsdlPanel1 implements  WizardDescriptor.FinishablePanel<WizardDescriptor>, WizardProperties {
     

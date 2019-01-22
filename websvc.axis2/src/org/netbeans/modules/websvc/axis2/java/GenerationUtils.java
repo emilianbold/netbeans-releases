@@ -78,7 +78,7 @@ import org.openide.util.Parameters;
  * <code>GenerationUtils</code> is a helper class for creating classes,
  * methods, variables, annotations and types using the Java source model.
  *
- * @author Andrei Badea
+ * 
  */
 public final class GenerationUtils {
 

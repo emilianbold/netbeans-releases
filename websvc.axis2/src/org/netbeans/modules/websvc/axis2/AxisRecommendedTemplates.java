@@ -47,7 +47,7 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 @ProjectServiceProvider(service=RecommendedTemplates.class,
     projectType="org-netbeans-modules-java-j2seproject")

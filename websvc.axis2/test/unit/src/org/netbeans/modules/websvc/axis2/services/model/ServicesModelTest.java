@@ -54,7 +54,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class ServicesModelTest extends NbTestCase {
 

@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Wizard to create a new Web project.
- * @author Jesse Glick, Radko Najman
+ * 
  */
 public class WsFromJavaWizardIterator implements TemplateWizard.Iterator /*, ItemListener*/ {
     

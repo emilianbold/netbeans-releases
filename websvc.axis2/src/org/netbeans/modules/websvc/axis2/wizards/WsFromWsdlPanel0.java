@@ -57,7 +57,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class WsFromWsdlPanel0 implements WizardDescriptor.Panel<WizardDescriptor>, WizardProperties {
 

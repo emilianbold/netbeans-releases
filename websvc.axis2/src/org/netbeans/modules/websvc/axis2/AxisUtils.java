@@ -97,7 +97,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class AxisUtils {
     

@@ -68,7 +68,7 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.nodes.FilterNode;
 
 /**
- * @author  rico
+ * 
  */
 public class SelectClassPanel extends JPanel implements ExplorerManager.Provider {
     

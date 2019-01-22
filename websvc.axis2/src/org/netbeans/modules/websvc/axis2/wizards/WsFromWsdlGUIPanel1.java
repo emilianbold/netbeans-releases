@@ -58,7 +58,7 @@ import org.netbeans.modules.xml.wsdl.model.Service;
 
 /**
  *
- * @author  mkuchtiak
+ * 
  */
 public class WsFromWsdlGUIPanel1 extends javax.swing.JPanel {
     WsFromWsdlPanel1 wizardPanel;

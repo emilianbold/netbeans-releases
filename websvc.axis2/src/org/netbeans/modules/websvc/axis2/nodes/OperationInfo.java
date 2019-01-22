@@ -46,7 +46,7 @@ import java.util.List;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class OperationInfo {
     private String returnType;

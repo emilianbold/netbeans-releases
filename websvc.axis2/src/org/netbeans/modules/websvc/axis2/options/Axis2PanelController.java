@@ -57,7 +57,7 @@ import org.openide.util.NbPreferences;
 /**
  * Implementation of one panel in Options Dialog.
  *
- * @author Milan Kuchtiak
+ * 
  */
 public final class Axis2PanelController extends OptionsPanelController {
 

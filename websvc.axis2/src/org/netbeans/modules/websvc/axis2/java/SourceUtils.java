@@ -60,7 +60,7 @@ import org.openide.util.Parameters;
 /**
  * Miscellaneous utilities for working with Java sources.
  *
- * @author Andrei Badea
+ * 
  */
 public final class SourceUtils {
 

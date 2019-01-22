@@ -101,7 +101,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class WizardUtils {
     /** add service element to service group. used in "from java case"

@@ -56,7 +56,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class WSDLUtils {
     private static final String DEFAULT_PACKAGE_NAME="org.apache.ws.axis2"; //NOI18N

@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.axis2.wizards;
 
 /**
  *
- * @author  mkuchtiak
+ * 
  */
 public class WsFromJavaGUIPanel1 extends javax.swing.JPanel {
     WsFromJavaPanel1 wizardPanel;

@@ -85,7 +85,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  * Wizard to create a new Web project.
- * @author Jesse Glick, Radko Najman
+ * 
  */
 public class WsFromWsdlWizardIterator implements TemplateWizard.Iterator /*, ItemListener*/ {
     

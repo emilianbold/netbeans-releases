@@ -67,7 +67,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 @ProjectServiceProvider(service = ProjectOpenedHook.class,
 projectType = "org-netbeans-modules-java-j2seproject")

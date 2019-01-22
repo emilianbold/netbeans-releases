@@ -57,7 +57,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author  mkuchtiak
+ * 
  */
 public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListener {
     WsFromJavaPanel0 wizardPanel;

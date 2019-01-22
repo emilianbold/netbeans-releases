@@ -67,7 +67,7 @@ import org.openide.util.MutexException;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class TransformerUtils {
     public static final String AXIS2_XML_PATH = "nbproject/axis2.xml"; // NOI18N

@@ -57,7 +57,7 @@ import javax.swing.filechooser.FileFilter;
 
 /**
  *
- * @author  mkuchtiak
+ * 
  */
 public class Axis2ConfigurationPanel extends javax.swing.JPanel {
 

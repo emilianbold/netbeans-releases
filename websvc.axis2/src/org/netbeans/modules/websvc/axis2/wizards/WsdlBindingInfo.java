@@ -56,7 +56,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class WsdlBindingInfo {
     

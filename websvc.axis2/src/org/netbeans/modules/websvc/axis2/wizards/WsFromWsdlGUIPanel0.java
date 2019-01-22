@@ -53,7 +53,7 @@ import javax.swing.filechooser.FileFilter;
 
 /**
  *
- * @author  mkuchtiak
+ * 
  */
 public class WsFromWsdlGUIPanel0 extends javax.swing.JPanel {
     WsFromWsdlPanel0 wizardPanel;
