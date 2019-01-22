@@ -59,7 +59,7 @@ import org.openide.util.Utilities;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ComponentWidget extends Widget {
 

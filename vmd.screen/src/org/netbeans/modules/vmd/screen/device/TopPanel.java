@@ -83,7 +83,7 @@ import java.util.List;
 
 
 /**
- * @author David Kaspar
+ * 
  */
 public class TopPanel extends JPanel {
     

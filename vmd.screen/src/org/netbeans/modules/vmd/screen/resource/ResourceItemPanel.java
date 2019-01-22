@@ -78,7 +78,7 @@ import java.util.Collection;
 import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavorSupport;
 
 /**
- * @author breh
+ * 
  */
 public class ResourceItemPanel extends JLabel implements MouseListener {
     

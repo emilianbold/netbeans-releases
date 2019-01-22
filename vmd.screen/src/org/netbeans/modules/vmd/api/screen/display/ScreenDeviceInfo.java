@@ -54,7 +54,7 @@ import java.util.Collection;
  * should be moved either to the MIDP module or to a completely
  * separate module defining L&F of the view
  *
- * @author breh
+ * 
  *
  */
 public abstract class ScreenDeviceInfo {

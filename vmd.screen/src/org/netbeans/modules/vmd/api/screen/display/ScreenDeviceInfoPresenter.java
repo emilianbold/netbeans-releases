@@ -47,7 +47,7 @@ import org.netbeans.modules.vmd.api.model.Presenter;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 public abstract class ScreenDeviceInfoPresenter extends Presenter {

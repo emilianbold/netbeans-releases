@@ -50,7 +50,7 @@ import org.netbeans.api.visual.model.ObjectScene;
 import java.util.ArrayList;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class RegistryScene extends ObjectScene {
 

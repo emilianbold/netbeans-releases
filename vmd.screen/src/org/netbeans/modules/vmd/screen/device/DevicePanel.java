@@ -55,7 +55,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class DevicePanel extends JPanel {
 

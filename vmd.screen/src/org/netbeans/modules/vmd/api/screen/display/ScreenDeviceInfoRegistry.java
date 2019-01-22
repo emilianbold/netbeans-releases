@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
         
 public final class ScreenDeviceInfoRegistry {

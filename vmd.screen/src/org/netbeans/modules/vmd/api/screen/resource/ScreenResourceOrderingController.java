@@ -55,7 +55,7 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public abstract class ScreenResourceOrderingController {
     

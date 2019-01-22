@@ -50,7 +50,7 @@ import java.io.IOException;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class ScreenMoveTransferable implements Transferable {
 

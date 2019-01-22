@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.api.model.presenters.OrderablePresenter;
 import javax.swing.*;
 
 /**
- * @author breh
+ * 
  */
 public abstract class ScreenInjectorPresenter extends Presenter implements OrderablePresenter {
 

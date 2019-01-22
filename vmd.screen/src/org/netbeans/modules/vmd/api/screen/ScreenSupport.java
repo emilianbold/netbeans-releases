@@ -44,7 +44,7 @@
 package org.netbeans.modules.vmd.api.screen;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class ScreenSupport {
 

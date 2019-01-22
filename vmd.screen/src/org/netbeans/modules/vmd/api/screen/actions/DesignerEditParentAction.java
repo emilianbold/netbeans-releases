@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.api.screen.editor.EditedScreenSupport;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class DesignerEditParentAction extends DesignerEditAction {
     

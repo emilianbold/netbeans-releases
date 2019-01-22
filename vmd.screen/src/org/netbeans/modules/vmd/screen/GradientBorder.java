@@ -51,7 +51,7 @@ import javax.swing.border.AbstractBorder;
 /**
  * Painting algorithm copied from VMDNodeBorder
  *
- * @author Anton Chechel
+ * 
  * @version 1.0
  */
 public class GradientBorder extends AbstractBorder {

@@ -52,7 +52,7 @@ import java.util.Collection;
  * Descriptor for the categories for the resource used by the screen
  * designer
  *
- * @author breh
+ * 
  */
 public abstract class ScreenResourceCategoriesPresenter extends Presenter {
 

@@ -44,7 +44,7 @@ import java.util.Collection;
 
 /**
  * Descriptor for the category which this resource belongs to.
- * @author breh
+ * 
  *
  */
 public final class ScreenResourceCategoryDescriptor {

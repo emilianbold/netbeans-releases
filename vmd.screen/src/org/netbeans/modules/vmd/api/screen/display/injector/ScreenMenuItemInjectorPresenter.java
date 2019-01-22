@@ -51,7 +51,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class ScreenMenuItemInjectorPresenter extends ScreenInjectorPresenter {
 

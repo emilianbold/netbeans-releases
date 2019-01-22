@@ -58,7 +58,7 @@ import java.util.Collections;
 
 /**
  *
- * @author David Kaspar
+ * 
  */
 public class MainPanel extends JPanel {
 

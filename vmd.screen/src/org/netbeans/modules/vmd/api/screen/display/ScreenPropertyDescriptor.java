@@ -49,7 +49,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class ScreenPropertyDescriptor {
 

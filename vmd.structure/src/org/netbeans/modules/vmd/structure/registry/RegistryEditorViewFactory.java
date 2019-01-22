@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.structure.document.DocumentEditorViewFactory;
 
 /**
- * @author David Kaspar
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.DataEditorViewFactory.class)
 public class RegistryEditorViewFactory implements DataEditorViewFactory {

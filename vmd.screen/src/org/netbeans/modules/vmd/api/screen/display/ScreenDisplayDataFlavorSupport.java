@@ -47,7 +47,7 @@ import java.awt.datatransfer.DataFlavor;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class ScreenDisplayDataFlavorSupport {
    

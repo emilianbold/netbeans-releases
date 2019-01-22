@@ -54,7 +54,7 @@ import java.util.*;
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceOrderingController;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ResourcePanelSupport {
     

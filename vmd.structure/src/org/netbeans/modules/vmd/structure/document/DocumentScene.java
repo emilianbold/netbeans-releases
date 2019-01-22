@@ -59,7 +59,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class DocumentScene extends ObjectScene {
 

@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 
 /**
  * Screen resource presenter
- * @author breh
+ * 
  */
 public abstract class ScreenResourceItemPresenter extends Presenter {
 

@@ -53,7 +53,7 @@ import org.netbeans.api.visual.widget.*;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class RegistryWidget extends Widget {
 

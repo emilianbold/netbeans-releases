@@ -51,7 +51,7 @@ import javax.swing.*;
 import java.util.Collection;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class DocumentController implements DesignDocumentAwareness, DesignListener {
 

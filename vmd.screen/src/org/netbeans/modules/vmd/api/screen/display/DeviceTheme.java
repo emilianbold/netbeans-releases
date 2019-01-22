@@ -50,7 +50,7 @@ import java.util.EnumSet;
 /**
  * Describes basic device resource.
  *
- * @author breh
+ * 
  */
 public abstract class DeviceTheme {
     

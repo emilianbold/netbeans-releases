@@ -57,7 +57,7 @@ import org.netbeans.modules.vmd.api.screen.display.DeviceTheme;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class DummyDisplayPresenter extends ScreenDisplayPresenter {
 

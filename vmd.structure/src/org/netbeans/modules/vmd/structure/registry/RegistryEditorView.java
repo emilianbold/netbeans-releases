@@ -60,7 +60,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class RegistryEditorView implements DataEditorView, DescriptorRegistryListener {
 

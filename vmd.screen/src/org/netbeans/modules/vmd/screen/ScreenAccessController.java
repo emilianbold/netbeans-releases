@@ -64,7 +64,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfoPresenter;
 /**
  * TODO - implement refresh of only components those were claimed as dirty by their ScreenPresenters - similar to Flow
  *
- * @author David Kaspar
+ * 
  */
 public final class ScreenAccessController implements AccessController, EditedScreenSupport.Listener {
     

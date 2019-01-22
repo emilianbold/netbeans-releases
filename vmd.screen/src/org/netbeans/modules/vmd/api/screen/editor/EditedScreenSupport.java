@@ -53,7 +53,7 @@ import java.util.List;
 import java.util.WeakHashMap;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class EditedScreenSupport {
     

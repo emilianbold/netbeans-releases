@@ -57,7 +57,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - reload screen designer only when it is visible
 public class ScreenEditorView implements DataEditorView, DeviceListener {

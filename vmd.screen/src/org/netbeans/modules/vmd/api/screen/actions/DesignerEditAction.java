@@ -60,7 +60,7 @@ import java.awt.event.ActionEvent;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class DesignerEditAction extends SystemAction  {
     

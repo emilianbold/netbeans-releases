@@ -60,7 +60,7 @@ import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
  * A base presenter for the device display component. This presenter occupies the whole device display visible in the screen editor and
  * is also responsible for its painting.
  *
- * @author breh
+ * 
  */
 public abstract class ScreenDisplayPresenter extends DynamicPresenter {
 
