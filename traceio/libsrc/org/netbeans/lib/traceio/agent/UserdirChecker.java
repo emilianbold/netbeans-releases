@@ -48,7 +48,7 @@ import java.io.IOException;
 
 /**
  *
- * @author Tomas Hurka
+ * 
  */
 class UserdirChecker {
 

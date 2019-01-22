@@ -54,7 +54,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Tomas Hurka
+ * 
  */
 @ServiceProvider(service=OptionProcessor.class)
 public class TraceOptions extends OptionProcessor {

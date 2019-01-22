@@ -63,7 +63,7 @@ import java.util.jar.JarFile;
 
 /**
  *
- * @author Tomas Hurka
+ * 
  */
 public class TraceIO {
 

@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Tomas Hurka
+ * 
  */
 class Reporter {
     

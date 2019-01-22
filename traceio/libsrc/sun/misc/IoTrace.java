@@ -44,7 +44,7 @@ package sun.misc;
 
 /**
  *
- * @author Tomas Hurka
+ * 
  */
 import java.net.InetAddress;
 import org.netbeans.lib.traceio.agent.TraceIO;

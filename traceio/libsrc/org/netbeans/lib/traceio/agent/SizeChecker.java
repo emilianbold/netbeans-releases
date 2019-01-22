@@ -46,7 +46,7 @@ import java.util.Properties;
 
 /**
  *
- * @author Tomas Hurka
+ * 
  */
 class SizeChecker {
     long size;

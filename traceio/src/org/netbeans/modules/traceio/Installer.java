@@ -60,7 +60,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Tomas Hurka
+ * 
  */
 public class Installer extends ModuleInstall {
 
