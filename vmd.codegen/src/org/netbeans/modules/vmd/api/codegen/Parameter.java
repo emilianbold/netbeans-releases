@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 /**
  * Represents a parameter of a setter.
  *
- * @author David Kaspar
+ * 
  */
 public interface Parameter {
 

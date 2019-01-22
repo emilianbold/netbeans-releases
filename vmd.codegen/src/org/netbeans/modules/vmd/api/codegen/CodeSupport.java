@@ -46,7 +46,7 @@ package org.netbeans.modules.vmd.api.codegen;
 import org.openide.ErrorManager;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class CodeSupport {
 

@@ -44,7 +44,7 @@
 package org.netbeans.modules.vmd.api.analyzer;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class AnalyzerSupport {
 

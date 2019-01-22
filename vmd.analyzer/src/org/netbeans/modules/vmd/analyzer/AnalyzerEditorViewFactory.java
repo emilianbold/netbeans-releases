@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
 import org.netbeans.modules.vmd.api.analyzer.AnalyzerSupport;
 
 /**
- * @author David Kaspar
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.DataEditorViewFactory.class)
 public class AnalyzerEditorViewFactory implements DataEditorViewFactory {

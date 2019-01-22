@@ -44,7 +44,7 @@
 package org.netbeans.modules.vmd.api.codegen;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class CodePresenterFactory {
 

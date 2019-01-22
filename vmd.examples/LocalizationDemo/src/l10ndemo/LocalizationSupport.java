@@ -44,7 +44,7 @@ import java.util.Hashtable;
  * This class contains a localization support for MIDP applications
  * Feel free to modify.
  *
- * @author  breh
+ * 
  * @version 1.0
  */
 public class LocalizationSupport  {

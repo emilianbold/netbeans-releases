@@ -46,7 +46,7 @@ package org.netbeans.modules.vmd.api.codegen;
 import javax.swing.text.StyledDocument;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class CodeGlobalLevelPresenter extends CodePresenter {
 

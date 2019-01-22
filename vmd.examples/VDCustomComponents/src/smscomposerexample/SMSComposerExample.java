@@ -40,7 +40,7 @@ import org.netbeans.microedition.lcdui.wma.SMSComposer;
 import org.netbeans.microedition.util.SimpleCancellableTask;
 
 /**
- * @author devil
+ * 
  * http://www.netbeans.org/kb/60/mobility/smscomposer.html
  */
 public class SMSComposerExample extends MIDlet implements CommandListener {

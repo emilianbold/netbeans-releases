@@ -55,7 +55,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class CodeWriter {
 

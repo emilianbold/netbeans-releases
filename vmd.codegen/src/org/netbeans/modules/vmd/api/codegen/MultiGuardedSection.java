@@ -58,7 +58,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class MultiGuardedSection {
 

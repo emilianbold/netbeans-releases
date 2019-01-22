@@ -39,7 +39,7 @@ import org.netbeans.microedition.lcdui.SplashScreen;
 import org.netbeans.microedition.lcdui.pda.PIMBrowser;
 
 /**
- * @author devil
+ * 
  * http://www.netbeans.org/kb/60/mobility/pimbrowser.html
  */
 public class PIMBrowserExample extends MIDlet implements CommandListener {

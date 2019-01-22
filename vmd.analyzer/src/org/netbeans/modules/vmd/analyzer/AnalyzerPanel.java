@@ -50,7 +50,7 @@ import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class AnalyzerPanel extends JPanel {
 

@@ -36,7 +36,7 @@ import javax.microedition.lcdui.*;
 import javax.microedition.lcdui.game.*;
 
 /**
- * @author  Karel Herink
+ * 
  * @version 1.0
  */
 public class GameDesign {

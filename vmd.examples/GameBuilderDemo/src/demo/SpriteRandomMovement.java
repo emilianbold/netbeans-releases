@@ -40,7 +40,7 @@ import javax.microedition.lcdui.game.Sprite;
  * Animate a sprite on canvas using a simple algorithm
  * to recover from collisions.
  *
- * @author Karel Herink
+ * 
  */
 public class SpriteRandomMovement implements Runnable {
 

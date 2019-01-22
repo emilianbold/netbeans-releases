@@ -55,7 +55,7 @@ import java.util.Collections;
 import java.util.Comparator;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class CodeUtils {
 

@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.Debug;
 
 /**
  * TODO - Split to API/SPI
- * @author David Kaspar
+ * 
  */
 public abstract class CodeReferencePresenter extends CodePresenter {
 

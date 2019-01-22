@@ -46,7 +46,7 @@ package org.netbeans.modules.vmd.api.codegen;
 import org.netbeans.modules.vmd.api.model.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class CodePresenter extends Presenter {
 

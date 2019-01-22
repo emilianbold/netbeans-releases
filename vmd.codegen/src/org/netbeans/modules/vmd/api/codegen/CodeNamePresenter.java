@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Arrays;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class CodeNamePresenter extends Presenter {
 

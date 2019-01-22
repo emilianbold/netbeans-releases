@@ -66,7 +66,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwareness {
 

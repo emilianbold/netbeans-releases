@@ -48,7 +48,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class CodeSetterPresenter extends CodePresenter {
 

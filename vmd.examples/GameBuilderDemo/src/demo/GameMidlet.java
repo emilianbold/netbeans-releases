@@ -38,7 +38,7 @@ import javax.microedition.lcdui.*;
 /**
  * Demo MIDlet creates, runs and displays DemoGameCanvas.
  *
- * @author  Karel Herink
+ * 
  * @version 1.0
  */
 public class GameMidlet extends MIDlet {

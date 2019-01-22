@@ -37,7 +37,7 @@ import javax.microedition.midlet.*;
 import javax.microedition.lcdui.*;
 
 /**
- * @author tester
+ * 
  */
 public class LocalizationVisualMIDlet extends MIDlet implements CommandListener {
 

@@ -41,7 +41,7 @@ import org.netbeans.microedition.lcdui.SplashScreen;
 import org.netbeans.microedition.lcdui.pda.FileBrowser;
 
 /**
- * @author devil
+ * 
  * Find more info at http://www.netbeans.org/kb/60/mobility/filebrowser.html
  */
 public class FileBrowserExample extends MIDlet implements CommandListener {

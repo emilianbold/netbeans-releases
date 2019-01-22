@@ -41,7 +41,7 @@ import java.util.Calendar;
 
 /**
  *
- * @author  breh, lukas
+ * , lukas
  * @version
  */
 public class LocalizedMIDlet extends MIDlet implements CommandListener {

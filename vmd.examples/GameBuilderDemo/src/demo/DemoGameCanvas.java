@@ -43,7 +43,7 @@ import javax.microedition.lcdui.game.TiledLayer;
 
 /**
  *
- * @author  Karel Herink
+ * 
  * @version 1.0
  */
 public class DemoGameCanvas extends GameCanvas implements Runnable {

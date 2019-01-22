@@ -58,7 +58,7 @@ import java.util.HashMap;
 import java.util.WeakHashMap;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class JavaCodeGenerator {
 

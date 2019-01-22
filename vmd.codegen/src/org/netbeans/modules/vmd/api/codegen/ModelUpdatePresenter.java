@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.Presenter;
 
 /**
  *
- * @author ads
+ * 
  */
 public abstract class ModelUpdatePresenter extends Presenter {
 

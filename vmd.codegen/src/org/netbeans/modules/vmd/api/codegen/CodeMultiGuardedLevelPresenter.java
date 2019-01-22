@@ -47,7 +47,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 /**
  * TODO - Split to API/SPI
- * @author David Kaspar
+ * 
  */
 public abstract class CodeMultiGuardedLevelPresenter extends CodePresenter {
 

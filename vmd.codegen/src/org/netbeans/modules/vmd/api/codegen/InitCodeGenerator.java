@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import java.util.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class InitCodeGenerator {
 
