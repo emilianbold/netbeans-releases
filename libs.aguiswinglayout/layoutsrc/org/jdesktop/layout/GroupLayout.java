@@ -117,9 +117,9 @@ import java.util.*;
  * between the components and the container.
  * 
  * @version $Revision$
- * @author Tomas Pavek
- * @author Jan Stola
- * @author Scott Violet
+ * 
+ * 
+ * 
  */
 public class GroupLayout implements LayoutManager2 {
     // Used in size calculations

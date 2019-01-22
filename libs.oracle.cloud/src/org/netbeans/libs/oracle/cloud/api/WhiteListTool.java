@@ -59,7 +59,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Petr Hejl
+ * 
  */
 public class WhiteListTool {
 
