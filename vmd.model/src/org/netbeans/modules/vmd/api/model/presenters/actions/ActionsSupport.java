@@ -67,7 +67,7 @@ import org.netbeans.modules.vmd.model.actions.ActionsPresenterForwarder;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class ActionsSupport {
     

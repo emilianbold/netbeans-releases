@@ -63,7 +63,7 @@ import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.RequestProcessor;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - unique producers by their ids
 final class GlobalDescriptorRegistry {

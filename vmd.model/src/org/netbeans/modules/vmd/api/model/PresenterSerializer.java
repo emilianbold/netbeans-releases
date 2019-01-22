@@ -52,7 +52,7 @@ import java.util.List;
  * This interface is used as an input parameter for <code>ComponentSerializationSupport.serialize</code> method
  * and allows to specify serialization of custom presenters.
  *
- * @author David Kaspar
+ * 
  */
 public interface PresenterSerializer {
 

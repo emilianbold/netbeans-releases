@@ -48,7 +48,7 @@ package org.netbeans.modules.vmd.api.model;
  * <p>
  * It holds information about super type id, this type id, instantiate ability, derive ability.
  *
- * @author David Kaspar
+ * 
  */
 public final class TypeDescriptor {
 

@@ -53,7 +53,7 @@ import org.netbeans.modules.vmd.api.model.DesignEvent;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class TestAccessController implements AccessController {
 

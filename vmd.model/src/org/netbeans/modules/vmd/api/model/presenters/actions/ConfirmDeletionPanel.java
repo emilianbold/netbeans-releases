@@ -55,7 +55,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * @author David Kaspar
+ * 
  */
 class ConfirmDeletionPanel extends javax.swing.JPanel {
 

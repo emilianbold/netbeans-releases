@@ -54,7 +54,7 @@ import java.util.*;
  * This class is a default implementation of the version descriptor interface. This implementation deletes the component
  * when it is incompatible with new abilities. The class can be extended and convertion methods could be overriden.
  *
- * @author David Kaspar
+ * 
  */
 public abstract class DefaultVersionDescriptor implements VersionDescriptor {
 

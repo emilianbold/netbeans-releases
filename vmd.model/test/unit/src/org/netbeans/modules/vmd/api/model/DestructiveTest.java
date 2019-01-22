@@ -55,7 +55,7 @@ import static org.netbeans.modules.vmd.api.model.utils.TestTypes.*;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class DestructiveTest extends TestCase {
 

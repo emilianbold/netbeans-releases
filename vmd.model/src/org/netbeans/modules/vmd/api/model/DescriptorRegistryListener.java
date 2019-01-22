@@ -44,7 +44,7 @@
 package org.netbeans.modules.vmd.api.model;
 
 /**
- * @author David Kaspar
+ * 
  */
 public interface DescriptorRegistryListener {
 

@@ -52,7 +52,7 @@ import java.util.HashSet;
  * This class represents an event filter. This allows to filter some events that a listener is not interested in.
  * Basically all events are fired to a listener when they contain at least one change that is recognized by a filter.
  *
- * @author David Kaspar
+ * 
  */
 public final class DesignEventFilter {
 

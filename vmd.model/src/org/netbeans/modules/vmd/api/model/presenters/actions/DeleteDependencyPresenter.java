@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import java.util.Collection;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class DeleteDependencyPresenter extends Presenter {
 

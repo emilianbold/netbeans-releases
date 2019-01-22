@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.api.model.utils.ModelTestUtil;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class DescriptorRegistryTest extends TestCase {
 

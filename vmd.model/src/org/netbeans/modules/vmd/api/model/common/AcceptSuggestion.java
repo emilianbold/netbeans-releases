@@ -48,7 +48,7 @@ package org.netbeans.modules.vmd.api.model.common;
  * target location of where the mouse cursor is over during dragging
  * and that are passed as input parameter of methods of AcceptPresenter.
  *
- * @author David Kaspar
+ * 
  */
 public interface AcceptSuggestion {
 

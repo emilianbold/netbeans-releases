@@ -50,7 +50,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - merge with api.model.PropertValueSupport class
 public class ArraySupport {

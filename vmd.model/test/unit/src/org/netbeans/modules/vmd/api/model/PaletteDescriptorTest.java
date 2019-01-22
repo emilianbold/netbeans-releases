@@ -50,7 +50,7 @@ import junit.framework.TestSuite;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class PaletteDescriptorTest extends TestCase {
 

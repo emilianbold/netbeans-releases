@@ -50,7 +50,7 @@ import org.netbeans.modules.vmd.api.model.presenters.OrderablePresenter;
 import java.util.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class DocumentSupport {
 

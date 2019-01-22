@@ -46,7 +46,7 @@ package org.netbeans.modules.vmd.api.model;
 import java.util.ArrayList;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class PropertyValueSupport {
 

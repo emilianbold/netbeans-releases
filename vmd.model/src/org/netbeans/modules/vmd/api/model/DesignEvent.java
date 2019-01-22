@@ -61,7 +61,7 @@ import java.util.HashMap;
  * <p>
  * When a component is created, the event remembers all those components that were created during the transaction.
  *
- * @author David Kaspar
+ * 
  */
 public final class DesignEvent {
 

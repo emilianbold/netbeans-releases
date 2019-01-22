@@ -54,7 +54,7 @@ import java.util.*;
  * This user code holds the text of the user code in target language. The component is a reference to a component in case
  * of reference kind. The value holds the value of enum or a non-array value property. The array holds a value of an array.
  * <p>
- * @author David Kaspar
+ * 
  */
 public final class PropertyValue {
 

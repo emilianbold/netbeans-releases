@@ -55,7 +55,7 @@ import java.awt.event.ActionEvent;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class DeleteAction extends SystemAction {
 

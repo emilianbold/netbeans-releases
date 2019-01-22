@@ -66,7 +66,7 @@ import org.netbeans.modules.vmd.api.model.presenters.TestPresenter2;
 import static org.netbeans.modules.vmd.api.model.utils.TestTypes.*;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 public final class FirstCD extends ComponentDescriptor {
     

@@ -47,7 +47,7 @@ package org.netbeans.modules.vmd.api.model;
  * Register an implementation of this interface into global lookup (see {@link org.openide.util.lookup.ServiceProvider}).
  * Registered factories are called for creating AccessControllers for each DesignDocument.
  *
- * @author David Kaspar
+ * 
  */
 public interface AccessControllerFactory {
 

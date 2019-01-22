@@ -70,7 +70,7 @@ import java.util.HashSet;
  * <li>DesignDocument.removeComponent on all gathered and selected components
  * </ul>
  *
- * @author David Kaspar
+ * 
  */
 public final class DeleteSupport {
 

@@ -49,7 +49,7 @@ import org.openide.util.TopologicalSortException;
 import java.util.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 final class PresenterEventManager implements PresenterEvent {
 

@@ -50,7 +50,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - put producer id in transferable data - not in data flavor
 public class DefaultDataFlavor extends DataFlavor {

@@ -69,7 +69,7 @@ import java.util.*;
  * for all their components. If a component descriptor could not be resolved for some component that the component we still
  * contain all property values and presenters but they will not be accessible/modifiable.
  *
- * @author David Kaspar
+ * 
  */
 // TODO - unique producers by their ids
 public final class DescriptorRegistry {

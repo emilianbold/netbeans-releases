@@ -46,7 +46,7 @@ package org.netbeans.modules.vmd.api.model;
 /**
  * This interface defines a presenter listener.
  *
- * @author David Kaspar
+ * 
  */
 public interface PresenterListener {
 

@@ -69,7 +69,7 @@ import org.openide.util.actions.Presenter;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 public final class AddAction extends AbstractAction  implements ActionContext , Presenter.Popup  {

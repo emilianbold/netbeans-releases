@@ -51,7 +51,7 @@ package org.netbeans.modules.vmd.api.model;
  * <p>
  * If you want to have a presenter that will react on changes in document, you should use DynamicPresenter.
  *
- * @author David Kaspar
+ * 
  */
 public abstract class Presenter {
 

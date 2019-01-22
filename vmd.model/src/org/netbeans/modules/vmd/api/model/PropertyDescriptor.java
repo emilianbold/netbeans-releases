@@ -48,7 +48,7 @@ package org.netbeans.modules.vmd.api.model;
  * <p>
  * This class holds information about name, type id, default value or factory for default values, serializable and readonly ability.
  *
- * @author David Kaspar
+ * 
  */
 public final class PropertyDescriptor {
 

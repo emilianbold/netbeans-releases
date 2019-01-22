@@ -60,7 +60,7 @@ import java.util.Collection;
  * NOTE: Be aware that the creation of this class is called when a DesignDocument is creating,
  * do not perform any action which may call/use DesignDocument since the document is not initialized yet.
  *
- * @author David Kaspar
+ * 
  */
 public interface AccessController {
 

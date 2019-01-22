@@ -55,7 +55,7 @@ import org.netbeans.modules.vmd.api.model.presenters.OrderablePresenter;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public abstract class ActionsPresenter extends Presenter implements OrderablePresenter {
 

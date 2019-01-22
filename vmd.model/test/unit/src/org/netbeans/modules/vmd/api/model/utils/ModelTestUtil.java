@@ -54,7 +54,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class ModelTestUtil {
 

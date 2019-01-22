@@ -50,7 +50,7 @@ import java.awt.datatransfer.Transferable;
 import java.util.Collections;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class AcceptSupport {
     

@@ -49,7 +49,7 @@ package org.netbeans.modules.vmd.api.model;
  * <p>
  * This descriptor is used just for (de)serialization of value with TypeID.Kind == PRIMITIVE.
  *
- * @author David Kaspar
+ * 
  */
 public interface PrimitiveDescriptorFactory {
 

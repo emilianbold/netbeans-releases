@@ -57,7 +57,7 @@ import static org.netbeans.modules.vmd.api.model.utils.TestTypes.*;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class PresenterTest extends TestCase {
     

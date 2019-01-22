@@ -53,7 +53,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 /**
  * This presenters specifies delete ability.
  *
- * @author David Kaspar
+ * 
  */
 public abstract class DeletePresenter extends Presenter {
 

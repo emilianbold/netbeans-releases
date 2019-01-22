@@ -45,7 +45,7 @@
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class OrderAcceptSuggestion implements AcceptSuggestion {
 

@@ -46,7 +46,7 @@ package org.netbeans.modules.vmd.api.model;
 import org.openide.util.Lookup;
 
 /**
- * @author David Kaspar
+ * 
  */
 final class PrimitiveDescriptorFactoryRegistry {
 

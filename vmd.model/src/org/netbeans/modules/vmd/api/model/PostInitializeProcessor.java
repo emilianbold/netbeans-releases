@@ -47,7 +47,7 @@ import org.openide.util.Lookup;
 
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class PostInitializeProcessor {
 

@@ -47,7 +47,7 @@ package org.netbeans.modules.vmd.api.model;
  * This interface represents a version resolver. It is used e.g. in PropertyDescriptor to describe availability of
  * a property in a particular state of a document.
  *
- * @author David Kaspar
+ * 
  */
 public interface Versionable {
 

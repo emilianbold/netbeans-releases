@@ -62,7 +62,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 public abstract class AddActionItem extends AbstractAction {

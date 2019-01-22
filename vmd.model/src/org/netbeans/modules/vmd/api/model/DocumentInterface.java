@@ -48,7 +48,7 @@ import javax.swing.undo.UndoableEdit;
 /**
  * This interface defines the project and allows the model API to be independant on any project/loaders infrastructure.
  *
- * @author David Kaspar
+ * 
  */
 public interface DocumentInterface {
 

@@ -53,7 +53,7 @@ import java.util.Collection;
  *<p>
  * Note: Use for debugging purpose only.
  * 
- * @author David Kaspar
+ * 
  */
 public class Debug {
 

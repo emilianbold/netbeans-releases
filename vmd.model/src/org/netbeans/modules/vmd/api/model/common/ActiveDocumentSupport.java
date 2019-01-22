@@ -53,7 +53,7 @@ import java.util.Collections;
  * This class allows to register a listener on active document and components in whole environment.
  * Usually used by active-document-aware components like inspector, palette, ...
  *
- * @author David Kaspar
+ * 
  */
 public final class ActiveDocumentSupport {
 

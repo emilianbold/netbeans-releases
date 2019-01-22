@@ -50,7 +50,7 @@ import java.awt.*;
  * <p>
  * It holds information about the category id, display name, small icon, and large icon.
  *
- * @author David Kaspar
+ * 
  */
 public final class PaletteDescriptor {
 

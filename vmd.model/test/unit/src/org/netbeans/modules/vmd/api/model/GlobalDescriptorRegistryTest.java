@@ -56,7 +56,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class GlobalDescriptorRegistryTest extends TestCase {
 

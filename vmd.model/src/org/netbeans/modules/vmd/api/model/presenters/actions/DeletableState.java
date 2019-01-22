@@ -44,7 +44,7 @@
 package org.netbeans.modules.vmd.api.model.presenters.actions;
 
 /**
- * @author David Kaspar
+ * 
  */
 enum DeletableState {
 

@@ -57,7 +57,7 @@ import org.netbeans.modules.vmd.api.model.common.DefaultVersionDescriptor;
 import org.netbeans.modules.vmd.api.model.common.PaletteSupport;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 
 public final class CantDeriveCD extends ComponentDescriptor {

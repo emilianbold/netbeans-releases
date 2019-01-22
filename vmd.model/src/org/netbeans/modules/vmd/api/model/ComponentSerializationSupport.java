@@ -59,7 +59,7 @@ import java.io.OutputStream;
 /**
  * This class contains a support for a custom component serialization into a xml file which is automatically stored into the global registry.
  *
- * @author David Kaspar
+ * 
  */
 public class ComponentSerializationSupport {
 

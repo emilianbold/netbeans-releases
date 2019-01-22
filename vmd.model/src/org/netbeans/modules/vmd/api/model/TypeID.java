@@ -54,7 +54,7 @@ package org.netbeans.modules.vmd.api.model;
  * <p>
  * This class could be presented as a String too because it has unique 1-1 mapping with it.
  *
- * @author David Kaspar
+ * 
  */
 public final class TypeID {
 

@@ -54,7 +54,7 @@ import java.util.List;
  * Usually you have to implement postInitialize method to initialize main component and/or create secondary components.
  * Then you have to implement checkValidity method.
  *
- * @author David Kaspar
+ * 
  */
 public abstract class ComponentProducer {
 

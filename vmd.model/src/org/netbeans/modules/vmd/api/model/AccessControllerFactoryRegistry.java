@@ -50,7 +50,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * 
  */
 final class AccessControllerFactoryRegistry {
 

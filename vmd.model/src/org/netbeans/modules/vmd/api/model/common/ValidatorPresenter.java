@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.*;
 import java.util.*;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class ValidatorPresenter extends DynamicPresenter {
 

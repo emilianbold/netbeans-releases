@@ -46,7 +46,7 @@ package org.netbeans.modules.vmd.api.model;
 /**
  * This interface represents a presenter-changed event. It allows query for state (changed/not_changed) of a presenter.
  *
- * @author David Kaspar
+ * 
  */
 public interface PresenterEvent {
 

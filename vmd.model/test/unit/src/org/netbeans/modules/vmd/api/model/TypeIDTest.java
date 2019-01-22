@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.api.model.TypeID.Kind;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class TypeIDTest extends TestCase {
 

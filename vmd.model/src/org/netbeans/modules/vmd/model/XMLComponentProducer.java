@@ -49,7 +49,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class XMLComponentProducer extends ComponentProducer {
 

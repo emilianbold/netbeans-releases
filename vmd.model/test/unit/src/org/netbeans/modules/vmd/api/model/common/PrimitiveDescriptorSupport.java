@@ -47,7 +47,7 @@ import org.netbeans.modules.vmd.api.model.PrimitiveDescriptor;
 import org.netbeans.modules.vmd.api.model.PrimitiveDescriptorFactory;
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class PrimitiveDescriptorSupport implements PrimitiveDescriptorFactory {

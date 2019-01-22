@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.api.model.PresenterDeserializer;
 import org.openide.util.Lookup;
 
 /**
- * @author David Kaspar
+ * 
  */
 public class PresenterDeserializerSupport {
 

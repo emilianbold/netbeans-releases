@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.api.model.Presenter;
 import java.awt.datatransfer.Transferable;
 
 /**
- * @author David Kaspar
+ * 
  */
 public abstract class AcceptPresenter extends Presenter {
     

@@ -59,7 +59,7 @@ import static org.netbeans.modules.vmd.api.model.utils.TestTypes.*;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class DesignEventTest extends TestCase {
     private DesignDocument document;

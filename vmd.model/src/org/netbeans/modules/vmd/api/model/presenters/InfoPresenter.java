@@ -54,7 +54,7 @@ import java.awt.*;
  * The values are resolved by Resolver and cached by the presenter.
  * When a document/component is changed according to the specified DesignEventFilter, the cache is cleared.
  *
- * @author David Kaspar
+ * 
  */
 public final class InfoPresenter extends DynamicPresenter {
 

@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class PaletteSupport {
     public static PaletteDescriptor create() {

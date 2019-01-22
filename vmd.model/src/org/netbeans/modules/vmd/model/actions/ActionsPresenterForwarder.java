@@ -56,7 +56,7 @@ import java.util.List;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public abstract class ActionsPresenterForwarder extends ActionsPresenter {
     

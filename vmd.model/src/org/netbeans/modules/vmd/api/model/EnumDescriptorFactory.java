@@ -49,7 +49,7 @@ package org.netbeans.modules.vmd.api.model;
  * <p>
  * This descriptor is used just for values with TypeID.Kind == ENUM.
  *
- * @author David Kaspar
+ * 
  */
 public interface EnumDescriptorFactory {
 

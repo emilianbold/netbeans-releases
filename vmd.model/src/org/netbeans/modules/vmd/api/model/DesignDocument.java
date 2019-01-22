@@ -66,7 +66,7 @@ import java.util.*;
  * The document contain a tree of component. The tree is specified by a root component. The root component could be set
  * only once.
  *
- * @author David Kaspar
+ * 
  */
 public final class DesignDocument {
 

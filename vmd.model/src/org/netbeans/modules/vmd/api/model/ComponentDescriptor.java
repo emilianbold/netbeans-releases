@@ -50,7 +50,7 @@ import java.util.*;
  * for using in document. Component itself is just a data container and does not know anything about these data.
  * On the other hand a component descriptor does not contain data but describes types of these data.
  *
- * @author David Kaspar
+ * 
  */
 public abstract class ComponentDescriptor {
 

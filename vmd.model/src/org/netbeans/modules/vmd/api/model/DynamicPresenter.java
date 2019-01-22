@@ -65,7 +65,7 @@ package org.netbeans.modules.vmd.api.model;
  * (this means all dependent presenters are resolved).
  * When a presenter fires a presenter-changed event, the presenterChanged method is called automatically called too.
  *
- * @author David Kaspar
+ * 
  */
 public abstract class DynamicPresenter extends Presenter {
 

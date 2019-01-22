@@ -51,7 +51,7 @@ import java.util.Collection;
  * <p>
  * This descriptor is used just for values with TypeID.Kind == ENUM.
  *
- * @author David Kaspar
+ * 
  */
 public interface EnumDescriptor extends PrimitiveDescriptor {
 

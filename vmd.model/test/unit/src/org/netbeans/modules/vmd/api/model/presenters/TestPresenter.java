@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.api.model.DynamicPresenter;
 import org.netbeans.modules.vmd.api.model.PresenterEvent;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 public abstract  class TestPresenter extends DynamicPresenter {
     private boolean presenterChangedFlag = false;

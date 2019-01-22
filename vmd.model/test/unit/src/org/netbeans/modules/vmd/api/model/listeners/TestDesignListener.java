@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.DesignListener;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public  class TestDesignListener implements DesignListener {
 

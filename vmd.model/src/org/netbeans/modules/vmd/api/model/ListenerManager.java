@@ -59,7 +59,7 @@ import java.util.*;
  * A event filter is mutable class, so the filter could be changed during the life-time of the listener. the listener
  * manager is working with the state that the filter was at the time of write transaction is finished.
  *
- * @author David Kaspar
+ * 
  */
 public final class ListenerManager {
 

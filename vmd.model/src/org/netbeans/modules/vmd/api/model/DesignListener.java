@@ -46,7 +46,7 @@ package org.netbeans.modules.vmd.api.model;
 /**
  * This class represents a listeners used for notifying that a document is changed.
  *
- * @author David Kaspar
+ * 
  */
 public interface DesignListener {
 

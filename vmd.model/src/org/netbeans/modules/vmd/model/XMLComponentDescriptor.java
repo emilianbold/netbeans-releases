@@ -53,7 +53,7 @@ import java.util.List;
 import java.util.Collections;
 
 /**
- * @author David Kaspar
+ * 
  */
 // TODO - whole serialization and deserialization of versionDescriptor, excludePropertyDescriptorNames, required library
 public class XMLComponentDescriptor extends ComponentDescriptor {

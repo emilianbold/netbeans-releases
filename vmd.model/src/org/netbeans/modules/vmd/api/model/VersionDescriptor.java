@@ -49,7 +49,7 @@ import java.util.Set;
 /**
  * This inteface defines a version compatibility and convertions.
  *
- * @author David Kaspar
+ * 
  */
 // TODO - partial semantic clash with Versionable interface
 public interface VersionDescriptor {

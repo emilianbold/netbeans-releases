@@ -46,7 +46,7 @@
  * Used for processing custom producers defined as an xml file in component registry.
  * An implementation of this class should be registered in global lookup.
  *
- * @author David Kaspar
+ * 
  */
 public abstract class ProducerDeserializer {
 

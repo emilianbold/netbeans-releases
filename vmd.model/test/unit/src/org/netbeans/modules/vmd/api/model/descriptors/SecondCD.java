@@ -64,7 +64,7 @@ import org.netbeans.modules.vmd.api.model.presenters.TestPresenter4;
 import static org.netbeans.modules.vmd.api.model.utils.TestTypes.*;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 public final class SecondCD extends ComponentDescriptor {
     

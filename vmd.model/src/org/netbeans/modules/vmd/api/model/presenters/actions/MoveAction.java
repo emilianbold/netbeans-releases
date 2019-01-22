@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public abstract class MoveAction extends AbstractAction implements ActionContext {
 

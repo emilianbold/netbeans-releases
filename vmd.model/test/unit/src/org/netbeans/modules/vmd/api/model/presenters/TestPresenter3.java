@@ -47,7 +47,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class TestPresenter3 extends TestPresenter {
 

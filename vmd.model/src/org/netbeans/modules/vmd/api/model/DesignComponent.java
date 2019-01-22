@@ -65,7 +65,7 @@ import java.util.*;
  * A component has a set of presenter. Presenters are a little bit smarter listeners. They also can be assigned/held
  * by a component directly. Presenters are created each time a new component descriptor is assigned.
  *
- * @author David Kaspar
+ * 
  */
 public final class DesignComponent {
     

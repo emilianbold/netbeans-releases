@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.api.model.PresenterListener;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class TestPresenterListener implements PresenterListener {
 

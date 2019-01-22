@@ -51,7 +51,7 @@ import java.awt.*;
 import java.util.HashMap;
 
 /**
- * @author David Kaspar
+ * 
  */
 
 public final class TypesSupport {

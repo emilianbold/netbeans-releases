@@ -51,7 +51,7 @@ import java.util.List;
  * Used for deserialization of 3rd-party defined nodes in a component descriptor serialized as an xml file in component registry.
  * An implementation of this class should be registered in global lookup.
  *
- * @author David Kaspar
+ * 
  */
 public abstract class PresenterDeserializer {
 

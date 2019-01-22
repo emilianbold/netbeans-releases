@@ -58,7 +58,7 @@ import java.util.Collection;
  * <p>
  * When a read or a write access is granted, it automatically waits for a read access on descriptor registry.
  *
- * @author David Kaspar
+ * 
  */
 public final class TransactionManager {
 
