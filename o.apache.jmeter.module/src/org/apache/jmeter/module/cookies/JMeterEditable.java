@@ -55,7 +55,7 @@ import java.awt.Cursor;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class JMeterEditable implements Node.Cookie {
   

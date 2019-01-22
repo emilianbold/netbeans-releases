@@ -58,7 +58,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class JMeterElementChildren extends Children.Keys implements Comparator<TestElement> {
   private static Collator SORTER = Collator.getInstance();

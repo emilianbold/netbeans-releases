@@ -61,7 +61,7 @@ import org.openide.nodes.AbstractNode;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class JMeterElementNode extends AbstractNode {
   private List<TestElement> elements;

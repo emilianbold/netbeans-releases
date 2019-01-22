@@ -61,7 +61,7 @@ import org.openide.ErrorManager;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class JMeterProcess extends ProcessInstance
 

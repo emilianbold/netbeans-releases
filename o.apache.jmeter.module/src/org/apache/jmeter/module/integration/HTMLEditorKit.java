@@ -46,7 +46,7 @@ package org.apache.jmeter.module.integration;
 
 /**
  * Hack for NB + JMeter. NB hands over incorrect editor kit for text/html
- * @author Jaroslav Bachorik
+ * 
  */
 public class HTMLEditorKit extends javax.swing.text.html.HTMLEditorKit {  
 }

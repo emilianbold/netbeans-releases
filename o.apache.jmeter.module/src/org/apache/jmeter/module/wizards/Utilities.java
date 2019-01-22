@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 /**
  *
- * @author  mkuchtiak
+ * 
  */
 public class Utilities {
     /** Checks if the given file name can be created in the target folder.

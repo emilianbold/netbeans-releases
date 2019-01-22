@@ -54,7 +54,7 @@ import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class ProcessesCleanupAction extends NodeAction {
   protected void performAction(Node[] node) {

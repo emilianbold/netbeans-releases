@@ -57,7 +57,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class RuntimeNode extends AbstractNode {
   private static class RuntimeChildren extends Children.Array {

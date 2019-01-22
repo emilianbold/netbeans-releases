@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Jaroslav Bachorik
+ * 
  */
 public class TargetChooserPanelGUI extends javax.swing.JPanel implements DocumentListener {
 

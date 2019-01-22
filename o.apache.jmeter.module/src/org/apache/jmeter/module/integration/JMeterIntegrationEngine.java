@@ -96,7 +96,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class JMeterIntegrationEngine {
   private static JMeterIntegrationEngine instance;

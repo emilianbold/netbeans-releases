@@ -49,7 +49,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class JMeterVisualizerCookie implements Node.Cookie {
   private TestElement element;

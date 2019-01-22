@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class NewScriptIterator implements TemplateWizard.Iterator {
 

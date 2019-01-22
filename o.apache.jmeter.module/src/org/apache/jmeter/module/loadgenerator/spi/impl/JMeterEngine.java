@@ -54,7 +54,7 @@ import org.netbeans.modules.loadgenerator.spi.ProcessInstance;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.loadgenerator.spi.Engine.class)
 public class JMeterEngine extends Engine {

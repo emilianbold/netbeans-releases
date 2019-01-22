@@ -98,7 +98,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class JMeterGUISupport implements JMeterPlugin {
   public static final String DIRTY = "dirty";

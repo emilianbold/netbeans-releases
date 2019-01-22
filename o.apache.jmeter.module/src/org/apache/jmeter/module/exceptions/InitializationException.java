@@ -46,7 +46,7 @@ package org.apache.jmeter.module.exceptions;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class InitializationException extends Exception {
   public InitializationException() {

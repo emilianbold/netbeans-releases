@@ -51,7 +51,7 @@ import org.apache.jmeter.engine.JMeterEngineException;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class ProcessDescriptor implements Cloneable {
   public static final String RUNNING = "running";

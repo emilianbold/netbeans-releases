@@ -52,7 +52,7 @@ import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class ManageJMeterProcessAction extends CookieAction {  
   protected void performAction(Node[] node) {

@@ -53,7 +53,7 @@ import org.openide.nodes.Children;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class ProcessNode extends AbstractNode {
   

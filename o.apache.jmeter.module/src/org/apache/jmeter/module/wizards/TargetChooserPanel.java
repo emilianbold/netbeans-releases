@@ -67,7 +67,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Petr Hrebejk, mkuchtiak
  */
 final class TargetChooserPanel implements WizardDescriptor.Panel {
 

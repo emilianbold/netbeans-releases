@@ -50,7 +50,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class JMeterProcessCookie implements Node.Cookie {
   private ProcessDescriptor descriptor;

@@ -58,7 +58,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class JMeterPlan {
   final private TestPlan rootElement;
