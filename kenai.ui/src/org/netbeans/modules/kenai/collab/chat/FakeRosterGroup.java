@@ -51,7 +51,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class FakeRosterGroup implements Comparable<FakeRosterGroup> {
     private MultiUserChat muc;

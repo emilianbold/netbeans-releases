@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Milan Kubec
+ * 
  */
 public class KenaiFeatureCellRenderer extends JPanel implements ListCellRenderer {
 

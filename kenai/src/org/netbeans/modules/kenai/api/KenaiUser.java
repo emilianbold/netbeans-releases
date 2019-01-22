@@ -54,7 +54,7 @@ import org.netbeans.modules.kenai.UserData;
 
 /**
  * Class representing user on Kenai
- * @author Jan Becicka
+ * 
  */
 public final class KenaiUser {
 

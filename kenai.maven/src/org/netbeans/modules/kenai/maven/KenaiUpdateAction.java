@@ -88,7 +88,7 @@ import org.openide.util.TaskListener;
  * An action which updates portions of Maven POM according to the information
  * obtained from asociated KenaiProject.
  *
- * @author dafe
+ * 
  */
 @ActionID(id="org.netbeans.modules.kenai.maven.KenaiUpdateAction", category="XML")
 @ActionRegistration(lazy=false, displayName="#CTL_KenaiUpdateAction")

@@ -58,8 +58,8 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Maros Sandor
- * @author Jan Becicka
+ * 
+ * 
  */
 public class KenaiTestSimple extends NbTestCase {
 

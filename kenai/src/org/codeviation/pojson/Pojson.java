@@ -61,7 +61,7 @@ import java.text.SimpleDateFormat;
  *  XXX Add methods and functionality for saving to/loading from collections
  *      using an annotation
  * 
- * @author Petr Hrebejk
+ * 
  */
 public class Pojson {
 
@@ -95,7 +95,7 @@ public class Pojson {
     /** Tells Pojson that given should be stored under diferent name than the
      * name of given field.
      *
-     * @author Petr Hrebejk
+     * 
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
@@ -138,7 +138,7 @@ public class Pojson {
     
     /** Tells Pojson that given field is part of the ID.
      * 
-     * @author Petr Hrebejk
+     * 
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD )

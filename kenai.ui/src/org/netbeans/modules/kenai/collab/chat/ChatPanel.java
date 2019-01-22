@@ -111,7 +111,7 @@ import org.openide.text.NbDocument;
 
 /**
  * Panel representing single ChatRoom
- * @author Jan Becicka
+ * 
  */
 public class ChatPanel extends javax.swing.JPanel {
 

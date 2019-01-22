@@ -61,7 +61,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 class LoginPanelDetails extends javax.swing.JPanel {
     private final Kenai kenai;

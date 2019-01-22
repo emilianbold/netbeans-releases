@@ -59,7 +59,7 @@ import static org.netbeans.modules.kenai.ui.impl.Bundle.*;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public class LoginPanelSupportImpl implements LoginPanelSupport {
     private final Kenai kenai;

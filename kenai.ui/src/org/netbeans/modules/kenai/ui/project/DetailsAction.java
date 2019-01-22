@@ -56,7 +56,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author tester
+ * 
  */
 public class DetailsAction {
 

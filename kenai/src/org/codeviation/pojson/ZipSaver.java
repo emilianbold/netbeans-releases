@@ -53,7 +53,7 @@ import java.util.zip.ZipOutputStream;
 
 /**
  *
- * @author phrebejk
+ * 
  */
 public class ZipSaver {
 

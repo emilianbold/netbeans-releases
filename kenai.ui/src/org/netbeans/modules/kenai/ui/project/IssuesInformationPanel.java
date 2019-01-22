@@ -82,7 +82,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author petrdvorak
+ * 
  */
 public class IssuesInformationPanel extends javax.swing.JPanel implements RefreshableContentPanel {
 

@@ -82,7 +82,7 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 @ServiceProvider(service=ProjectAccessor.class)
 public class ProjectAccessorImpl extends ProjectAccessor<KenaiProject> {

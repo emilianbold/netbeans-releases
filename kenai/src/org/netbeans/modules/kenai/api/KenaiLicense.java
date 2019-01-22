@@ -51,7 +51,7 @@ import org.netbeans.modules.kenai.LicensesListData.LicensesListItem;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public final class KenaiLicense {
 

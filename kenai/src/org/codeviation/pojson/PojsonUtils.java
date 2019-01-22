@@ -44,7 +44,7 @@ package org.codeviation.pojson;
 
 /** Utility methods for endocding/decoding values and other parts of Json format.
  *
- * @author Petr Hrebejk
+ * 
  */
 public final class PojsonUtils {
 

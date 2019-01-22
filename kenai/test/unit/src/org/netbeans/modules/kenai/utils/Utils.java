@@ -43,7 +43,7 @@ package org.netbeans.modules.kenai.utils;
 
 /**
  *
- * @author peterpis
+ * 
  */
 public final class Utils {
 

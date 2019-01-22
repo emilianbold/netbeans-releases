@@ -47,7 +47,7 @@ import org.jivesoftware.smack.packet.DefaultPacketExtension;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class NotificationExtension extends DefaultPacketExtension {
 

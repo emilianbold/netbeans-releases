@@ -51,7 +51,7 @@ import java.util.List;
 
 /**
  *
- * @author phrebejk
+ * 
  */
 public class Shingler<T extends Enum> {
 

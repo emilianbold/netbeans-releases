@@ -45,7 +45,7 @@ import org.codeviation.pojson.Pojson.IgnoreNonExisting;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 @IgnoreNonExisting
 public class ProjectsListData extends ListData {

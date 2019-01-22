@@ -47,7 +47,7 @@ import org.jivesoftware.smackx.muc.Occupant;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class FakeRosterEntry implements Comparable {
     private Occupant occupant;

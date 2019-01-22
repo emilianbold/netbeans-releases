@@ -48,7 +48,7 @@ import java.util.logging.Logger;
 /**
  * Utility static methods.
  *
- * @author Maros Sandor
+ * 
  */
 public class Utils {
 

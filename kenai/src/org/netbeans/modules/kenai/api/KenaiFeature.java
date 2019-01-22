@@ -53,8 +53,8 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 
 /**
  *
- * @author Maros Sandor
- * @author Jan Becicka
+ * 
+ * 
  */
 public final class KenaiFeature {
 

@@ -53,7 +53,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class ProjectHandleImpl extends ProjectHandle<KenaiProject> implements PropertyChangeListener {
 

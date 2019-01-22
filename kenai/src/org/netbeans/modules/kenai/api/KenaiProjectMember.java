@@ -48,7 +48,7 @@ import org.netbeans.modules.kenai.UserData;
  * Represents member of project.
  * It contains reference to KenaiUser and his Role.
  *
- * @author Jan Becicka
+ * 
  */
 public final class KenaiProjectMember {
 

@@ -58,7 +58,7 @@ import java.util.Map;
 
 /** Miscelaneous useful factories
  *
- * @author Petr Hrebejk
+ * 
  */
 public class Factories {
 

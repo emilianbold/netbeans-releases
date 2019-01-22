@@ -61,7 +61,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 @ServiceProvider(service=MemberAccessor.class)
 public class MemberAccessorImpl extends MemberAccessor {

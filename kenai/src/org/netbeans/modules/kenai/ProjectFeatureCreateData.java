@@ -47,7 +47,7 @@ import org.codeviation.pojson.Pojson.SkipNullValues;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 @IgnoreNonExisting
 @SkipNullValues

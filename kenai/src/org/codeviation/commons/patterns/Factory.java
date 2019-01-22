@@ -46,7 +46,7 @@ package org.codeviation.commons.patterns;
 
 /** General factory
  *
- * @author Petr Hrebejk
+ * 
  */
 public interface Factory<T,P> {
 

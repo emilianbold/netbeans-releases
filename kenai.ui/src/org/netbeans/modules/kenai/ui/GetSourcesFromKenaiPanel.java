@@ -110,7 +110,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Milan Kubec
+ * 
  */
 public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 

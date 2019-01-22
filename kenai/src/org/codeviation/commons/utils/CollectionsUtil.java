@@ -52,7 +52,7 @@ import java.util.Iterator;
 
 /** Convenience methods for working with collections.
  *
- * @author Petr Hrebejk
+ * 
  */
 public class CollectionsUtil {
         

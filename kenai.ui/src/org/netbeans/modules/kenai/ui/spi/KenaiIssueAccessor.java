@@ -52,8 +52,8 @@ import org.openide.windows.TopComponent;
  * A class that is used for opening the issue in the IDE, based on repository and
  * the issue identifier.
  *
- * @author joshis
- * @author Tomas Stupka
+ * 
+ * 
  */
 public abstract class KenaiIssueAccessor {
 

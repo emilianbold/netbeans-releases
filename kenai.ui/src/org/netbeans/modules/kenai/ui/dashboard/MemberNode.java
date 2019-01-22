@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 /**
  * Node for a single project's source repository.
  *
- * @author Jan Becicka
+ * 
  */
 public class MemberNode extends LeafNode {
 

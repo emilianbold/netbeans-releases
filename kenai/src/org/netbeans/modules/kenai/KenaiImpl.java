@@ -51,8 +51,8 @@ import org.netbeans.modules.kenai.api.KenaiException;
 /**
  * SPI entry point.
  *
- * @author Maros Sandor
- * @author Jan Becicka
+ * 
+ * 
  */
 public abstract class KenaiImpl {
 

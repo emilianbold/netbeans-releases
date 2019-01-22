@@ -50,7 +50,7 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class KenaiFeatureTest extends NbTestCase {
 

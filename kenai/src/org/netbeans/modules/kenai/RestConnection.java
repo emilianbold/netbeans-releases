@@ -68,7 +68,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 /**
  * RestConnection
  *
- * @author Maros Sandor
+ * 
  */
 public class RestConnection {
 

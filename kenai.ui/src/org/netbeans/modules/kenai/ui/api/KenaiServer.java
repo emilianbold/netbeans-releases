@@ -85,7 +85,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 public final class KenaiServer implements TeamServer {
     private static final Map<Kenai, KenaiServer> serverMap = new WeakHashMap<Kenai, KenaiServer>(3);

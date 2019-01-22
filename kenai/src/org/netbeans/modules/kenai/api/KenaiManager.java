@@ -65,7 +65,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  * Manager of Kenai instances
- * @author Jan Becicka
+ * 
  */
 public final class KenaiManager {
 

@@ -49,7 +49,7 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class RemoveProjectAction extends AbstractAction {
 

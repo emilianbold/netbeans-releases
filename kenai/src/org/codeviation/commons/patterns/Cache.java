@@ -46,7 +46,7 @@ package org.codeviation.commons.patterns;
 
 /**
  *
- * @author Petr Hrebejk
+ * 
  */
 public interface Cache<T,P> extends Factory<T,P> {
 

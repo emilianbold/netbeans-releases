@@ -50,7 +50,7 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 
 /**
  * Instant notification about project change on Kenai
- * @author Jan Becicka
+ * 
  */
 public final class KenaiNotification {
     private Date stamp;

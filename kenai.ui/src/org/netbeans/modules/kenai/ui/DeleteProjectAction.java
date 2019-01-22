@@ -57,7 +57,7 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class DeleteProjectAction extends AbstractAction {
 

@@ -85,8 +85,8 @@ import org.xml.sax.SAXException;
 /**
  * Main entry point to Kenai integration.
  *
- * @author Maros Sandor
- * @author Jan Becicka
+ * 
+ * 
  */
 public final class Kenai implements Comparable<Kenai> {
 

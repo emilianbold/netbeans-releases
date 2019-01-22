@@ -54,7 +54,7 @@ import org.codeviation.commons.utils.StreamUtil;
 
 /**
  *
- * @author phrebejk
+ * 
  */
 public class ClassUtils {
 

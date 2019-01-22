@@ -56,8 +56,8 @@ import org.netbeans.junit.RandomlyFails;
 
 /**
  *
- * @author Maros Sandor
- * @author Jan Becicka
+ * 
+ * 
  */
 public class KenaiTest extends AbstractKenaiTestCase {
 

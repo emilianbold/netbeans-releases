@@ -44,7 +44,7 @@ package org.netbeans.modules.kenai;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 @org.codeviation.pojson.Pojson.IgnoreNonExisting
 public class CheckNameData {

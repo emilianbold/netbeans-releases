@@ -57,7 +57,7 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class MessagingHandleImpl extends MessagingHandle {
     private static final String LASTMESSAGEAT = ".last.message.at"; //NOI18N

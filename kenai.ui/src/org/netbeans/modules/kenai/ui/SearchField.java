@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
- * @author  Jan Becicka
+ * 
  */
 public class SearchField extends JPanel implements ActionListener {
 

@@ -54,7 +54,7 @@ import org.netbeans.modules.kenai.utils.ServicesChecker.ServiceDescr;
 
 /**
  *
- * @author tester
+ * 
  */
 public class KenaiServiceTest extends AbstractKenaiTestCase {
 

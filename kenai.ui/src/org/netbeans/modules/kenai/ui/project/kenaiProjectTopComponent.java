@@ -75,7 +75,7 @@ import org.openide.util.WeakListeners;
 
 /**
  * Top component which displays something.
- * @author Petr Dvorak (Petr.Dvorak@sun.com)
+ * 
  */
 @ConvertAsProperties(
     dtd="-//org.netbeans.modules.kenai.ui.project//kenaiProject//EN",

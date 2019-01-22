@@ -53,7 +53,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author Maros Sandor
+ * 
  */
 public class KenaiRESTTest {
 

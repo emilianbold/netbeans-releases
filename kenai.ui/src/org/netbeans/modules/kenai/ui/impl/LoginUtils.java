@@ -55,7 +55,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Jan Becicka, Ondrej Vrabec
+ * 
  */
 public class LoginUtils {
     public static final String ONLINE_ON_CHAT_PREF = ".online_chat"; // NOI18N

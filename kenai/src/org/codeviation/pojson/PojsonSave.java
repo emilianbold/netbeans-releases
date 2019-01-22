@@ -53,7 +53,7 @@ import org.codeviation.commons.utils.ArrayUtil;
 
 /**
  *
- * @author Petr Hrebejk
+ * 
  */
 public final class PojsonSave<T> {
 

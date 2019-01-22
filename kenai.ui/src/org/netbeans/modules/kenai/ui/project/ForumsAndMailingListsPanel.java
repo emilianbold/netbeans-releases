@@ -86,7 +86,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  *
- * @author Petr Dvorak (Petr.Dvorak@sun.com)
+ * 
  */
 public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements RefreshableContentPanel {
     public static final String CHAT_BUTTON = "CHAT_BUTTON"; //NOI18N

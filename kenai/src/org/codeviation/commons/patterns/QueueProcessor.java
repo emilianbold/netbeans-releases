@@ -52,7 +52,7 @@ import java.util.logging.Logger;
 
 /** Maintains a queue and periodically tries to empty it
  *
- * @author Petr Hrebejk
+ * 
  */
 public abstract class QueueProcessor<E> implements Runnable, Iterable<E> {
 

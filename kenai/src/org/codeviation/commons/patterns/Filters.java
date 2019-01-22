@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
 
 /** Creates combination of filters
  *
- * @author Petr Hrebejk
+ * 
  */
 public class Filters {
 

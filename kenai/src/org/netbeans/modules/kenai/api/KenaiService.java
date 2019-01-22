@@ -46,7 +46,7 @@ import org.netbeans.modules.kenai.ServicesListData.ServicesListItem;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public final class KenaiService {
 

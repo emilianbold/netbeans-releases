@@ -59,7 +59,7 @@ import org.netbeans.modules.team.commons.ColorManager;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class FilterRenderer extends javax.swing.JPanel implements ListCellRenderer {
 

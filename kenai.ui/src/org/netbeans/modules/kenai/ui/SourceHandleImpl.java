@@ -73,7 +73,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Milan Kubec, Jan Becicka
+ * 
  */
 public class SourceHandleImpl extends SourceHandle {
 

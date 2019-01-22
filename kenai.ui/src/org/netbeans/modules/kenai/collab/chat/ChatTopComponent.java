@@ -75,7 +75,7 @@ import org.openide.windows.WindowManager;
  * Top component which displays all available ChatRooms
  * @see ChatPanel
  * @see ChatContainer
- * @author Jan Becicka
+ * 
  */
 @TopComponent.OpenActionRegistration(displayName = "#Actions/Team/org-netbeans-modules-kenai-collab-chat-SendChatMessageAction.instance", preferredID = "ChatTopComponent")
 @Messages({"Actions/Team/org-netbeans-modules-kenai-collab-chat-SendChatMessageAction.instance=Send Chat Message..."})

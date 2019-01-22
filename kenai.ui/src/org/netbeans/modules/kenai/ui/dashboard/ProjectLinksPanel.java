@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public class ProjectLinksPanel extends JPanel implements PropertyChangeListener {
 

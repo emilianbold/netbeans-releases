@@ -64,7 +64,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class InsertLinkAction extends AbstractAction {
 

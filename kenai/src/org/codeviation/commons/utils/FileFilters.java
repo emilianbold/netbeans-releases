@@ -51,7 +51,7 @@ import org.codeviation.commons.patterns.Filters;
 
 /** 
  *
- * @author Petr Hrebejk
+ * 
  */
 public class FileFilters {
     

@@ -44,7 +44,7 @@ package org.netbeans.modules.kenai;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class AuthenticationData {
     public String username;

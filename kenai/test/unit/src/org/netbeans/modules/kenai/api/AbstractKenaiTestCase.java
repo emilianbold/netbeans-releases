@@ -56,7 +56,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 public abstract class AbstractKenaiTestCase extends NbTestCase {
     

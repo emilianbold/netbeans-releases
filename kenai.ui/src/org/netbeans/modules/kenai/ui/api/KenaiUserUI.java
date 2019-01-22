@@ -63,7 +63,7 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public final class KenaiUserUI {
 

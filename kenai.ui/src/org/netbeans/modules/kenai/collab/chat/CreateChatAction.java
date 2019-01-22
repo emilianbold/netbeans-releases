@@ -64,7 +64,7 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class CreateChatAction extends AbstractAction {
 

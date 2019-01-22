@@ -50,7 +50,7 @@ import org.netbeans.modules.kenai.api.KenaiManager;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class FakeRoster {
 

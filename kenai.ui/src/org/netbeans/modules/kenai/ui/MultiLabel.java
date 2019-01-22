@@ -57,7 +57,7 @@ import javax.swing.UIManager;
 
 /**
  *
- * @author Milan Kubec
+ * 
  */
 public class MultiLabel extends JLabel {
 

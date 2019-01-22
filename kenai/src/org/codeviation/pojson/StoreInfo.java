@@ -55,7 +55,7 @@ import org.codeviation.commons.reflect.FieldUtils;
 
 /**
  *
- * @author Petr Hrebejk
+ * 
  */
 public class StoreInfo {
 

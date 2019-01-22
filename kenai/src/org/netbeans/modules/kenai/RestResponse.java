@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 /**
  * RestResponse
  *
- * @author Maros Sandor
+ * 
  */
 public class RestResponse {
 

@@ -46,7 +46,7 @@ import javax.swing.Icon;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public interface ContactListItem {
 

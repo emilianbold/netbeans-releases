@@ -62,7 +62,7 @@ import org.netbeans.modules.team.commons.ColorManager;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class ContactList extends javax.swing.JPanel {
 

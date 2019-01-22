@@ -67,7 +67,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 @ServiceProvider(service=ProjectIconAnnotator.class)
 public class KenaiNBProjectAnnotator implements ProjectIconAnnotator, PropertyChangeListener {

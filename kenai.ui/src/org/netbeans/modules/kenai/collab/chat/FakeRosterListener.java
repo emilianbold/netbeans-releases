@@ -47,7 +47,7 @@ import org.jivesoftware.smack.packet.Presence;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public interface FakeRosterListener {
 

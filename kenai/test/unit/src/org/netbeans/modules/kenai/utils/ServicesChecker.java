@@ -48,7 +48,7 @@ import java.util.LinkedList;
 
 /**
  *
- * @author tester
+ * 
  */
 public class ServicesChecker {
 

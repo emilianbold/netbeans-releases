@@ -47,7 +47,7 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 /**
  * Enumerates possible activities of a Kenai user.
  * TODO: do we need this class at all?
- * @author Maros Sandor
+ * 
  */
 public enum KenaiActivity {
 

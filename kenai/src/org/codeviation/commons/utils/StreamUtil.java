@@ -61,7 +61,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Petr Hrebejk
+ * 
  */
 public final class StreamUtil {
 

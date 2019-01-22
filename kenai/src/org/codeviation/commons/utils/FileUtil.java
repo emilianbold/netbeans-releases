@@ -60,7 +60,7 @@ import org.codeviation.commons.patterns.Filter;
 
 /**
  *
- * @author Petr Hrebejk
+ * 
  */
 public final class FileUtil {
     

@@ -44,7 +44,7 @@ package org.netbeans.modules.kenai;
 
 /**
  *
- * @author Maros Sandor
+ * 
  */
 @org.codeviation.pojson.Pojson.IgnoreNonExisting
 public class LicenceData {

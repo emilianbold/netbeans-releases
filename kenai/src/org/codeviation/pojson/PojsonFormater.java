@@ -55,7 +55,7 @@ import org.codeviation.commons.patterns.Factory;
 
 /**
  *
- * @author Petr Hrebejk
+ * 
  */
 class PojsonFormater {
 

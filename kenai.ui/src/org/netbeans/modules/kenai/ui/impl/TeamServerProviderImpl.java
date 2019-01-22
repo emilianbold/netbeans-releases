@@ -76,7 +76,7 @@ import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author Ondrej Vrabec
+ * 
  */
 @ServiceProviders({
     @ServiceProvider(service=TeamServerProviderImpl.class),

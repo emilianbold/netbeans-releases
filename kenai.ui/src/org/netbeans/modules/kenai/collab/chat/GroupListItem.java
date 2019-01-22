@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class GroupListItem implements ContactListItem {
 

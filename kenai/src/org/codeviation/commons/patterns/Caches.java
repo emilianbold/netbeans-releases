@@ -49,7 +49,7 @@ import java.util.LinkedHashSet;
 
 /** Creates caches of various kind.
  *
- * @author Petr Hrebejk
+ * 
  */
 public class Caches {
 

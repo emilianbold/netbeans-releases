@@ -83,7 +83,7 @@ import org.openide.util.WeakListeners;
 
 /**
  * Class representing connection to kenai xmpp server
- * @author Jan Becicka
+ * 
  */
 public class KenaiConnection implements PropertyChangeListener {
 

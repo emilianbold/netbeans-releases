@@ -80,7 +80,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Renderer for list item to show found Kenai project
  * 
- * @author Milan Kubec
+ * 
  */
 public class KenaiProjectsListRenderer extends javax.swing.JPanel {
 

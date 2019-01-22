@@ -58,7 +58,7 @@ import org.netbeans.modules.kenai.util.Utils;
 /**
  * Provides persistence services to Kenai module.
  *
- * @author Maros Sandor
+ * 
  */
 class Persistence {
 

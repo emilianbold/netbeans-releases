@@ -86,7 +86,7 @@ import org.w3c.dom.NodeList;
 
 /**
  *
- * @author Petr Dvorak (Petr.Dvorak@sun.com)
+ * 
  */
 public class SourcesInformationPanel extends javax.swing.JPanel implements RefreshableContentPanel {
     public static final int MAX_ENTRIES = 20;

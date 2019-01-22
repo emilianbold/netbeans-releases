@@ -61,8 +61,8 @@ import org.netbeans.modules.kenai.api.KenaiException;
 /**
  * Talks to remote Kenai server via Web services API.
  *
- * @author Maros Sandor
- * @author Jan Becicka
+ * 
+ * 
  */
 public class KenaiREST extends KenaiImpl {
 

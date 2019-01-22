@@ -45,7 +45,7 @@ import java.util.Vector;
 
 /**
  * A class used for storing a chatroom message history
- * @author joshis - Petr.Dvorak@sun.com
+ * 
  */
 public class MessageHistoryManager {
 

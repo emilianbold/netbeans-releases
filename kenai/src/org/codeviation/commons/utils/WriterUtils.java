@@ -51,7 +51,7 @@ import org.codeviation.commons.patterns.Factory;
 
 /**
  *
- * @author phrebejk
+ * 
  */
 public class WriterUtils {
 

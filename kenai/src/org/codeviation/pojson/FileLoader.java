@@ -51,7 +51,7 @@ import org.codeviation.commons.utils.FileUtil;
 
 /**
  *
- * @author phrebejk
+ * 
  */
 public class FileLoader {
 

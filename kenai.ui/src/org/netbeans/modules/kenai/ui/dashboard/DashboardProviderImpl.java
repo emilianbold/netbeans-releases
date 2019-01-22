@@ -73,7 +73,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class DashboardProviderImpl extends DashboardProvider<KenaiProject> {
     

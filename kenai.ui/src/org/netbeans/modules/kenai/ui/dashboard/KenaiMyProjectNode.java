@@ -74,7 +74,7 @@ import org.openide.util.RequestProcessor;
 /**
  * My Project's root node
  *
- * @author Jan Becicka
+ * 
  */
 public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
 

@@ -60,7 +60,7 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class ContactListCellRenderer extends javax.swing.JPanel implements ListCellRenderer {
 

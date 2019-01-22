@@ -52,7 +52,7 @@ import org.codeviation.pojson.PojsonLoad;
 /**
  * Exception representing error connecting to kenai or internal kenai server
  * error
- * @author Jan Becicka
+ * 
  */
 public class KenaiException extends IOException {
 

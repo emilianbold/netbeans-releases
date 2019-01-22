@@ -68,7 +68,7 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class ChatNotifications {
     public static final String NOTIFICATIONS_PREF = "chat.notifications."; // NOI18N

@@ -46,7 +46,7 @@ import org.codeviation.pojson.Pojson.IgnoreNonExisting;
 
 /**
  *
- * @author beci
+ * 
  */
 @IgnoreNonExisting
 public abstract class ListData {

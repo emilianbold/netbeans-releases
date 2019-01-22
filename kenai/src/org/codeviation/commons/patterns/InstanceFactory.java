@@ -46,7 +46,7 @@ package org.codeviation.commons.patterns;
 
 /** Instance factory. Creates instances based on it's types
  *
- * @author Petr Hrebejk
+ * 
  */
 public interface InstanceFactory {
 

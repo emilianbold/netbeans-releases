@@ -46,7 +46,7 @@ import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class UserListItem implements ContactListItem {
 

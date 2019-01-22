@@ -47,7 +47,7 @@ import org.netbeans.modules.team.server.ui.spi.LoginHandle;
 
 /**
  * Implementation of LoginHandle. Currently fires events when user logs in/out
- * @author Jan Becicka
+ * 
  */
 public class LoginHandleImpl extends LoginHandle {
 

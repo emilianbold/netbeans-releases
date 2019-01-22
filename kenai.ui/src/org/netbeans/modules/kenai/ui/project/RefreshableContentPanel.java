@@ -46,7 +46,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
  *
- * @author Petr Dvorak (Petr.Dvorak@sun.com)
+ * 
  */
 interface RefreshableContentPanel {
 

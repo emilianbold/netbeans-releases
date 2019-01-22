@@ -72,8 +72,8 @@ import org.openide.util.NbBundle;
 /**
  * Node showing links to project's wiki, downloads and messages.
  *
- * @author S. Aubrecht
- * @author Jan Becicka
+ * . Aubrecht
+ * 
  */
 public class ProjectLinksNode extends AsynchronousNode<MessagingHandle>  {
 

@@ -55,7 +55,7 @@ import java.util.Stack;
 /** Good for parsing JSON files folowing RFC 4627. See
  *  http://www.ietf.org/rfc/rfc4627.txt
  *
- * @author Petr Hrebejk
+ * 
  */
 class Parser {
     

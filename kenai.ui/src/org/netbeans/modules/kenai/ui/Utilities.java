@@ -59,7 +59,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Milan Kubec
+ * 
  */
 public class Utilities {
 

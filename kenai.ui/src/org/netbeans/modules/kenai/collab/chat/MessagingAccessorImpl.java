@@ -61,7 +61,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 @ServiceProvider(service=MessagingAccessor.class)
 public class MessagingAccessorImpl extends MessagingAccessor<KenaiProject> {

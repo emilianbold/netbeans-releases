@@ -52,7 +52,7 @@ import java.util.Iterator;
 
 /** Good for reconstructing objects from the JSON format.
  *
- * @author Petr Hrebejk
+ * 
  */
 public class PojsonLoad {
 

@@ -56,7 +56,7 @@ import org.codeviation.pojson.Parser.Error;
 
 /** Parser Handlers.
  *
- * @author phrebejk
+ * 
  */
 class Handlers {
 

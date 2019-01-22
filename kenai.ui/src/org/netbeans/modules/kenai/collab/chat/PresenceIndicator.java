@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Icon showing online status on lower right corner
- * @author Jan Becicka
+ * 
  */
 
 public class PresenceIndicator {

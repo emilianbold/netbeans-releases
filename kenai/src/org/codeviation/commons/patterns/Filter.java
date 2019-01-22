@@ -46,7 +46,7 @@ package org.codeviation.commons.patterns;
 
 /** General Filter
  *
- * @author Petr Hrebejk
+ * 
  */
 public interface Filter<T> {
 

@@ -55,7 +55,7 @@ import org.codeviation.commons.patterns.Filter;
 
 /**
  *
- * @author Petr Hrebejk
+ * 
  */
 public class FieldUtils {
 

@@ -66,8 +66,8 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 /**
  * IDE-side representation of a Kenai project.
  *
- * @author Maros Sandor
- * @author Jan Becicka
+ * 
+ * 
  */
 public final class KenaiProject {
     /**

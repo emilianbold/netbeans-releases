@@ -48,7 +48,7 @@ import java.util.Iterator;
 
 /**
  *
- * @author phrebejk
+ * 
  */
 public class ArrayUtil {
     

@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
 /**
  * Node for a open other project
  *
- * @author Jan Becicka
+ * 
  */
 public class OpenNetBeansIDEProjects extends LeafNode {
 

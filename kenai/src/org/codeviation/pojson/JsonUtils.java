@@ -53,7 +53,7 @@ import org.codeviation.commons.reflect.ClassUtils;
 /** Various utility methods for working with JSON Files. Parts of this class
  * are taken from org.json.me
  *
- * @author Petr Hrebejk
+ * 
  */
 class JsonUtils {
 

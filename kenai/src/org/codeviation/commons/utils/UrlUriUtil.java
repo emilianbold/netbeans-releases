@@ -53,7 +53,7 @@ import java.util.Iterator;
 
 /**
  *
- * @author Petr Hrebejk
+ * 
  */
 public final class UrlUriUtil {
     

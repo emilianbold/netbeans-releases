@@ -49,7 +49,7 @@ import org.junit.Test;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 public class KenaiProjectTest extends AbstractKenaiTestCase {
 

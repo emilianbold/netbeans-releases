@@ -51,7 +51,7 @@ import org.codeviation.commons.utils.UrlUriUtil;
 
 /** Utility method for reading Json objects from URLs/URIs
  *
- * @author Petr Hrebejk
+ * 
  */
 public class NetLoader {
 

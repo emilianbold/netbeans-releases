@@ -54,7 +54,7 @@ import java.util.zip.ZipInputStream;
 
 /**
  *
- * @author phrebejk
+ * 
  */
 public class ZipUtil {
 

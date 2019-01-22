@@ -66,7 +66,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Milan Kubec, Jan Becicka
+ * 
  */
 @ServiceProvider(service=SourceAccessor.class)
 public class SourceAccessorImpl extends SourceAccessor<KenaiProject> {

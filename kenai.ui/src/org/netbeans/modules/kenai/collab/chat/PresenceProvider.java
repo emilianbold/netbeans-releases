@@ -51,7 +51,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Jan Becicka
+ * 
  */
 @ServiceProvider(service=StatusLineElementProvider.class, position=30)
 public class PresenceProvider implements StatusLineElementProvider {
