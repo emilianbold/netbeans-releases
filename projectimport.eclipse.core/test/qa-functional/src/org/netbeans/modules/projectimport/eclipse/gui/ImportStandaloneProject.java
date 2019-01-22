@@ -51,7 +51,6 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
  *
- * @author mkhramov@netbeans.org
  */
 public class ImportStandaloneProject extends ProjectImporterTestCase {
 

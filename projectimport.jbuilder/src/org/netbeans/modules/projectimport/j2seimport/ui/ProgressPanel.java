@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 /**
  * Shows status(progress) of importing.
  *
- * @author Radek Matous
+ * 
  */
 public class ProgressPanel extends javax.swing.JPanel {
     public static void showProgress(final ImportProcess iProcess) {

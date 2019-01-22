@@ -50,7 +50,6 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
  *
- * @author mkhramov@netbeans.org
  */
 public class ImportSourceFilters extends ProjectImporterTestCase {
     WizardOperator importWizard; 

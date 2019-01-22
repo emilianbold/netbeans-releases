@@ -55,7 +55,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public class AbstractProjectDefinitionTest extends NbTestCase {
     protected AbstractProject testProject;

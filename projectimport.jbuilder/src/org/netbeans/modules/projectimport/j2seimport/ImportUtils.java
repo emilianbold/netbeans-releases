@@ -83,7 +83,7 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public final class ImportUtils {
     public  static final Logger logger =

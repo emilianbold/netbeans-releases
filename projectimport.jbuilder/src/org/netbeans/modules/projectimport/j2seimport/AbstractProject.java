@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public final class AbstractProject implements ProjectModel {
     private final Collection libraries;

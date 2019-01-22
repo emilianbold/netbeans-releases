@@ -59,7 +59,6 @@ import org.netbeans.modules.projectimport.eclipse.gui.ImportTestProjects;
 
 /**
  *
- * @author mkhramov@netbeans.org
  */
 public class ImporterTest {
 

@@ -53,7 +53,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * @author Martin Krauskopf
+ * 
  */
 public class ProjectParserTest extends NbTestCase {
     

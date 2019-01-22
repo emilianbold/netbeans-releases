@@ -53,7 +53,7 @@ import org.openide.util.HelpCtx;
 /**
  * Basic wizard panel for Eclipse Wizard importer.
  *
- * @author mkrauskopf
+ * 
  */
 abstract class ImporterWizardPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 

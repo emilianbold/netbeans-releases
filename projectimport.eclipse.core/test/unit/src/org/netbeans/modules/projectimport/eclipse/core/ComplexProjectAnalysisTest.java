@@ -51,7 +51,7 @@ import java.util.Collection;
  * Tests importing of complex project (still without workspace provided). This
  * test should check all features if project analyzer.
  *
- * @author mkrauskopf
+ * 
  */
 public class ComplexProjectAnalysisTest extends ProjectImporterTestCase {
 

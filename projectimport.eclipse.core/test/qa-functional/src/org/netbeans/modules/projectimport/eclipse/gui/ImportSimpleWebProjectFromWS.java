@@ -48,7 +48,6 @@ import org.netbeans.jellytools.WizardOperator;
 
 /**
  *
- * @author mkhramov@netbeans.org
  */
 
 public class ImportSimpleWebProjectFromWS extends ProjectImporterTestCase {

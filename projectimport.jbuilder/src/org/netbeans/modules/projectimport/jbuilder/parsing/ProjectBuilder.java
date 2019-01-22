@@ -54,7 +54,7 @@ import org.openide.filesystems.FileUtil;
 /**
  * Serveral helpers for parsing, managing, loading JBuilder projects
  *
- * @author Radek Matous
+ * 
  */
 public abstract class ProjectBuilder {
     private static final ProjectBuilder[] SUPPORTED_TYPES = new ProjectBuilder[] {

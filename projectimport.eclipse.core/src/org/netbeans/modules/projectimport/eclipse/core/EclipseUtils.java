@@ -59,7 +59,7 @@ import org.openide.util.NbCollections;
  * Serveral helpers for parsing, managing, loading Eclipse projects and
  * workspace metadata.
  *
- * @author mkrauskopf
+ * 
  */
 public class EclipseUtils {
 

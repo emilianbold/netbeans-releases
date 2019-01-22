@@ -69,7 +69,7 @@ import org.openide.util.Utilities;
 /**
  * Represents Eclipse project structure.
  *
- * @author mkrauskopf
+ * 
  */
 public final class EclipseProject implements Comparable {
 

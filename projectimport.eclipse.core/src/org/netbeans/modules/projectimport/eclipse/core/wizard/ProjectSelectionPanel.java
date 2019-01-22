@@ -85,7 +85,7 @@ import org.openide.filesystems.FileChooserBuilder;
 /**
  * Represent "Project to import" step(panel) in the Eclipse importer wizard.
  *
- * @author mkrauskopf
+ * 
  */
 public final class ProjectSelectionPanel extends JPanel {
     

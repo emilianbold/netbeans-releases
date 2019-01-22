@@ -69,7 +69,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Represent "Selection" step(panel) in the JBuilder importer wizard.
  *
- * @author  Radek Matous
+ * 
  */
 public final class JBWizardPanel extends BasicWizardIterator.Panel {
     private JBWizardData    data = null;

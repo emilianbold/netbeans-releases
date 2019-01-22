@@ -56,7 +56,7 @@ import org.netbeans.modules.projectimport.eclipse.core.Workspace.Variable;
 import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 
 /**
- * @author Martin Krauskopf
+ * 
  */
 public class ClassPathParserTest extends NbTestCase {
     

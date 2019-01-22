@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public abstract class BasicPanel extends JPanel {
     private BasicWizardPanel wiardPanel;

@@ -49,7 +49,6 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
  *
- * @author mkhramov@netbeans.org
  */
 public class ImportJavaCParams extends ProjectImporterTestCase {
     WizardOperator importWizard;

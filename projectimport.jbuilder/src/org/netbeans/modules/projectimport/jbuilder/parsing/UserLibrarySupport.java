@@ -68,7 +68,7 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public final class UserLibrarySupport {
     private static final String ROOT_ELEMENT = "library";//NOI18N

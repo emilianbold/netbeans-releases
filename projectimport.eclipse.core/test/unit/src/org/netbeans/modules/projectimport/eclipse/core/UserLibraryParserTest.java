@@ -56,7 +56,7 @@ import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
 
 /**
- * @author Martin Krauskopf
+ * 
  */
 public class UserLibraryParserTest extends NbTestCase {
     

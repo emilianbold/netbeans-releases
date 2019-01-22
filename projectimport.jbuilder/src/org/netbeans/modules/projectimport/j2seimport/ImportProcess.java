@@ -49,7 +49,7 @@ import org.netbeans.api.project.Project;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public interface ImportProcess {
         int getNumberOfSteps();

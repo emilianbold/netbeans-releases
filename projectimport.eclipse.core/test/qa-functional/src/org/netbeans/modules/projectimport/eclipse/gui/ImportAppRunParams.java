@@ -50,7 +50,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
  *
- * @author Maks
+ * 
  */
 public class ImportAppRunParams extends ProjectImporterTestCase {
     WizardOperator importWizard;

@@ -54,7 +54,7 @@ import org.netbeans.modules.projectimport.j2seimport.AbstractProject;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public class UserLibrarySupportTest extends NbTestCase {
     private static final String[] reachable_libs = {"MainTest.library","RegularDepsTest.library"};

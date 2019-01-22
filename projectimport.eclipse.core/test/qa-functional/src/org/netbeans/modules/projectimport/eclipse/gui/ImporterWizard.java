@@ -49,7 +49,6 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  *
- * @author mkhramov@netbeans.org
  */
 public class ImporterWizard  extends JellyTestCase {
     public ImporterWizard(String testName) {

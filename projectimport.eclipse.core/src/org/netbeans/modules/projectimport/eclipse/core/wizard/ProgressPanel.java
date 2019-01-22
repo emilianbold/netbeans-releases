@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 /**
  * Shows status(progress) of importing.
  *
- * @author mkrauskopf
+ * 
  */
 public final class ProgressPanel extends JPanel {
     

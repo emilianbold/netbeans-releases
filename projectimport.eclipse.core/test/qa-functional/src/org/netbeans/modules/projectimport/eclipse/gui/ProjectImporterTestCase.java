@@ -62,7 +62,6 @@ import org.openide.util.test.TestFileUtils;
 
 /**
  *
- * @author mkhramov@netbeans.org
  */
 public abstract class ProjectImporterTestCase  extends NbTestCase {
     

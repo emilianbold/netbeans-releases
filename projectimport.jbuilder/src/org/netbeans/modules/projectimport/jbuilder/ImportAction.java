@@ -63,7 +63,7 @@ import org.netbeans.modules.projectimport.j2seimport.ui.WizardSupport;
 /**
  * Runs JBuilder Importer.
  *
- * @author Radek Matous
+ * 
  */
 public class ImportAction extends CallableSystemAction {
     private BasicWizardIterator wizardIterator;    

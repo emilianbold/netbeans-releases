@@ -65,7 +65,7 @@ import org.openide.util.test.MockLookup;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public class ImportUtilsTest  extends NbTestCase {
     protected AbstractProject testProject;

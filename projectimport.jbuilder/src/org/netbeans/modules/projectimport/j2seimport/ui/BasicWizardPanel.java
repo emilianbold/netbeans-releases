@@ -54,7 +54,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * @author Martin Krauskopf, Radek Matous
  */
 public abstract class BasicWizardPanel implements WizardDescriptor.Panel, PropertyChangeListener {
     

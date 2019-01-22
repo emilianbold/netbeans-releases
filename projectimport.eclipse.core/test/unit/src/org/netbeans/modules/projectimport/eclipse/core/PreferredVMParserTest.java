@@ -48,7 +48,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Martin Krauskopf
+ * 
  */
 public class PreferredVMParserTest extends ProjectImporterTestCase {
 

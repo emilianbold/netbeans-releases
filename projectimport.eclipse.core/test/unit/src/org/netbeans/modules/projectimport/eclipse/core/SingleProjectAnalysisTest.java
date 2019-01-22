@@ -56,7 +56,7 @@ import java.util.Collection;
  * be thrown.
  * </p>
  *
- * @author mkrauskopf
+ * 
  */
 public final class SingleProjectAnalysisTest extends ProjectImporterTestCase {
 

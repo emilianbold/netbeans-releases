@@ -49,7 +49,7 @@ import org.netbeans.junit.NbTestCase;
 /**
  * Tests equal and hashCode methods.
  *
- * @author mkrauskopf
+ * 
  */
 public class EqualityAndHashCodeTest extends NbTestCase {
 

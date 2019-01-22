@@ -55,7 +55,7 @@ import org.openide.filesystems.FileUtil;
 /**
  * Represent "Selection" step(panel) in the Eclipse importer wizard.
  *
- * @author mkrauskopf
+ * 
  */
 final class SelectionPanel extends JPanel {
 

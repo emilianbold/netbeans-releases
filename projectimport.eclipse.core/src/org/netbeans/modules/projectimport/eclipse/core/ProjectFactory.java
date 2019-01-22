@@ -58,7 +58,7 @@ import org.netbeans.modules.projectimport.eclipse.core.Workspace.Variable;
  * directory using a .project and .classpath file and eventually passed
  * workspace. It is also able to load the basic information from workspace.
  *
- * @author mkrauskopf
+ * 
  */
 public final class ProjectFactory {
     

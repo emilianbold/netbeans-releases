@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 final class Utils {
     

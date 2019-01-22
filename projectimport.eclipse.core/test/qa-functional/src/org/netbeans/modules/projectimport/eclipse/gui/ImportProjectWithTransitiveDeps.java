@@ -51,7 +51,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 
 /**
  *
- * @author Administrator
+ * 
  */
 public class ImportProjectWithTransitiveDeps  extends ProjectImporterTestCase {
     WizardOperator importWizard;    

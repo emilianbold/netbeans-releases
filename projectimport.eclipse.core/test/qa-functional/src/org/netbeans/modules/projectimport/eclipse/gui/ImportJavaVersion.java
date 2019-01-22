@@ -49,7 +49,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 
 /**
  *
- * @author Maks
+ * 
  */
 public class ImportJavaVersion extends ProjectImporterTestCase {
     WizardOperator importWizard;

@@ -51,7 +51,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 /**
- * @author Radek Matous
+ * 
  */
 public class JBuilderWizardIterator extends BasicWizardIterator {    
     public static JBuilderWizardIterator createIterator() {

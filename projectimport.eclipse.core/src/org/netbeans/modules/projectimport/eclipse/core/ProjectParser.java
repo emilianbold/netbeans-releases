@@ -62,7 +62,7 @@ import org.xml.sax.SAXException;
  * Parses given project's .project file and fills up the project with found
  * data.
  *
- * @author mkrauskopf
+ * 
  */
 final class ProjectParser {
     

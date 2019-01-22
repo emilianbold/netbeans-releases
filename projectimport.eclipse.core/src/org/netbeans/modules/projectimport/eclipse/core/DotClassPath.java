@@ -50,7 +50,7 @@ import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 /**
  * Represents classpath for an Eclipse project (.classpath file content)
  *
- * @author mkrauskopf
+ * 
  */
 public final class DotClassPath {
 

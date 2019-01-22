@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
 /**
  * Runs EclipseProject Importer.
  *
- * @author mkrauskopf
+ * 
  */
 public class ImportProjectAction implements ActionListener {
     

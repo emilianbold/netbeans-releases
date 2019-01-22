@@ -69,7 +69,7 @@ import org.xml.sax.SAXException;
 /**
  * Parses given workspace and fills up it with found data.
  *
- * @author mkrauskopf
+ * 
  */
 final class WorkspaceParser {
     

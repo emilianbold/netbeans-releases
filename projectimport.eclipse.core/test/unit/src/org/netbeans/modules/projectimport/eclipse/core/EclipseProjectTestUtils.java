@@ -52,7 +52,7 @@ import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 
 /**
  *
- * @author david
+ * 
  */
 public class EclipseProjectTestUtils {
 

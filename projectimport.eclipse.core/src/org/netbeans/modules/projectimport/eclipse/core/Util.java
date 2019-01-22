@@ -52,7 +52,7 @@ import org.openide.util.Parameters;
 
 /**
  * Utilities relating to Ant projects.
- * @author Jesse Glick
+ * 
  */
 public class Util {
 

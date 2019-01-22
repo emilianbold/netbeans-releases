@@ -53,7 +53,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public class JBWizardData extends BasicWizardIterator.BasicDataModel {
     public JBWizardData() {

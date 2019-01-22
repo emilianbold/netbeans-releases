@@ -53,7 +53,7 @@ import org.openide.util.test.MockLookup;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public class ImportProcessTest extends NbTestCase {
     private ImportProcess iproc;

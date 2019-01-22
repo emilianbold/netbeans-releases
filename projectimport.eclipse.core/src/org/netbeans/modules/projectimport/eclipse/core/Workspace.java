@@ -68,7 +68,7 @@ import org.openide.util.Utilities;
 /**
  * Provides access to an eclipse workspace.
  *
- * @author mkrauskopf
+ * 
  */
 public final class Workspace {
 

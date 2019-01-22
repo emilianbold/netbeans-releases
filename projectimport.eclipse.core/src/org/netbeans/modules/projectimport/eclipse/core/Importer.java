@@ -67,7 +67,7 @@ import org.openide.util.Task;
  * their required projects into NetBeans ones and stores them into the given
  * destination.
  *
- * @author mkrauskopf
+ * 
  */
 final class Importer {
     

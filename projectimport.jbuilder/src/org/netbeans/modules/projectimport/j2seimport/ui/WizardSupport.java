@@ -52,7 +52,7 @@ import org.openide.WizardDescriptor;
 
 
 /**
- * @author Radek Matous
+ * 
  */
 public class WizardSupport extends WizardDescriptor  {
     public static BasicWizardIterator.BasicDataModel show(BasicWizardIterator wizardIterator) {        

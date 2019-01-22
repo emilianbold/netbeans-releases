@@ -52,7 +52,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public interface ProjectModel {
     String getName();

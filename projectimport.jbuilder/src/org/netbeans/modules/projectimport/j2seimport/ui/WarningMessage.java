@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public class WarningMessage {
     public static void showMessages(final ImportProcess iProcess) {

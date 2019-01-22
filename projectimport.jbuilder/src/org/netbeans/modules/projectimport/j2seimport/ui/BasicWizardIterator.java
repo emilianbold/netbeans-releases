@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 /**
  * Convenient class for implementing {@link org.openide.WizardDescriptor.InstantiatingIterator}.
  *
- * @author Radek Matous
+ * 
  */
 public abstract class BasicWizardIterator implements WizardDescriptor.InstantiatingIterator {
     protected BasicWizardIterator.BasicDataModel data;

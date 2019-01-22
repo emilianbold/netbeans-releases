@@ -61,7 +61,7 @@ import org.xml.sax.XMLReader;
 /**
  * Parses default JRE containers from Eclipse workspace.
  *
- * @author mkrauskopf
+ * 
  */
 final class PreferredVMParser extends DefaultHandler {
     

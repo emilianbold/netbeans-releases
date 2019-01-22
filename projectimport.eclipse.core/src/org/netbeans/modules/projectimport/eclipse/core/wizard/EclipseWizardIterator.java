@@ -64,7 +64,7 @@ import org.openide.util.ChangeSupport;
 /**
  * Iterates on the sequence of Eclipse wizard panels.
  *
- * @author mkrauskopf
+ * 
  */
 final class EclipseWizardIterator implements
         WizardDescriptor.Iterator<WizardDescriptor>, ChangeListener {

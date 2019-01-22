@@ -63,7 +63,7 @@ import org.xml.sax.SAXException;
 /**
  * Parses a content of the .classpath file.
  *
- * @author mkrauskopf
+ * 
  */
 final class DotClassPathParser {
     

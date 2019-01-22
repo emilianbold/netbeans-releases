@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 /**
  * Wizard for importing Eclipse project.
  *
- * @author mkrauskopf
+ * 
  */
 public final class ProjectImporterWizard {
     

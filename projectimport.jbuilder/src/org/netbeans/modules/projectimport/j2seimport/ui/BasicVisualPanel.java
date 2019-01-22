@@ -49,7 +49,6 @@ import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 /**
- * @author Martin Krauskopf, Radek Matous
  */
 public abstract class BasicVisualPanel extends JPanel {
     

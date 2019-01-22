@@ -47,7 +47,7 @@ package org.netbeans.modules.projectimport.eclipse.core;
 /**
  * Indicates that the parsed project is invalid.
  *
- * @author mkrauskopf
+ * 
  */
 public class ProjectImporterException extends java.lang.Exception {
 

@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public final class WarningContainer  {
     public static final WarningContainer EMPTY = new WarningContainer();

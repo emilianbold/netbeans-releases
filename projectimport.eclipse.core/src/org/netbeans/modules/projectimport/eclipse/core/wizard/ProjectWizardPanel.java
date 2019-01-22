@@ -55,7 +55,7 @@ import org.openide.WizardValidationException;
 /**
  * Workspace panel for Eclipse Wizard importer.
  *
- * @author mkrauskopf
+ * 
  */
 final class ProjectWizardPanel extends ImporterWizardPanel implements WizardDescriptor.ValidatingPanel<WizardDescriptor> {
     

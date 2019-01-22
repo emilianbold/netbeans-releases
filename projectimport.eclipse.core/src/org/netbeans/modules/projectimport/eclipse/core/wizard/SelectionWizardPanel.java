@@ -55,7 +55,7 @@ import org.openide.WizardValidationException;
 /**
  * Selection wizard panel for Eclipse Wizard importer.
  *
- * @author mkrauskopf
+ * 
  */
 final class SelectionWizardPanel extends ImporterWizardPanel implements
         PropertyChangeListener, WizardDescriptor.ValidatingPanel<WizardDescriptor> {

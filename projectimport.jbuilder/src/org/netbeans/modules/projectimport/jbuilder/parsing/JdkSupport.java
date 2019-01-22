@@ -63,7 +63,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public final class JdkSupport {
     static final String INSTALLER_REGISTRY_FOLDER = "org-netbeans-api-java/platform/installers"; // NOI18N

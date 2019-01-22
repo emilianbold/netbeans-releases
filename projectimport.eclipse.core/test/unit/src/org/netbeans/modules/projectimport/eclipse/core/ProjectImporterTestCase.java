@@ -57,7 +57,7 @@ import org.netbeans.junit.NbTestCase;
 /**
  * Provides basic functionality for ProjectImporter tests.
  *
- * @author mkrauskopf
+ * 
  */
 public abstract class ProjectImporterTestCase extends NbTestCase {
     

@@ -54,7 +54,7 @@ import java.util.Map;
  * workspace directory using a .workspace and .classpath file and eventually
  * passed workspace. It is also able to load a basic information from workspace.
  *
- * @author mkrauskopf
+ * 
  */
 public final class WorkspaceFactory {
 

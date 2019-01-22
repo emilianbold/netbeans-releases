@@ -72,7 +72,7 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 final class JpxBuilder extends ProjectBuilder {
     private static final String ROOT_ELEMENT = "project";//NOI18N

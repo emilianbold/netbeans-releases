@@ -52,7 +52,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public final class DependencyValidator {
     private Stack solved = new Stack();

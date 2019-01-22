@@ -50,7 +50,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Radek Matous
+ * 
  */
 public class DependencyValidatorTest extends NbTestCase {
 
