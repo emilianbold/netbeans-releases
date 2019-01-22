@@ -50,7 +50,7 @@ import javax.swing.JTextField;
 
 /**
  *
- * @author an156382
+ * 
  */
 public class OperationTextFieldKeyListener implements KeyListener {
 

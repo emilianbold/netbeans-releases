@@ -58,7 +58,7 @@ import org.openide.util.actions.NodeAction;
 
 /**
  * Action used to add Operations to an existing MBean.
- * @author tl156378
+ * 
  */
 public class AddOpAction extends NodeAction {
     

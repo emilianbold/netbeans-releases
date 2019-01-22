@@ -50,7 +50,7 @@ import org.netbeans.modules.jmx.common.WizardConstants;
 
 /**
  *
- * @author an156382
+ * 
  */
 public class MBeanWrapperAttribute extends MBeanAttribute {
 

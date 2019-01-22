@@ -52,7 +52,6 @@ import org.openide.nodes.Node;
 import org.netbeans.api.java.source.JavaSource;
 /**
  * Displays folders and Java source files under a source node.
- * @author Marian Petras, Jesse Glick
  */
 public class MBeanChildren extends JavaChildren {
 

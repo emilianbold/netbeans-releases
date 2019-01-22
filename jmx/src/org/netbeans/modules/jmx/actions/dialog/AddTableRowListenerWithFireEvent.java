@@ -53,7 +53,7 @@ import org.netbeans.modules.jmx.mbeanwizard.tablemodel.AbstractJMXTableModel;
 
 /**
  * Interceptor to fire an event to a class which implements FireEvent interface.
- * @author tl156378
+ * 
  */
 public class AddTableRowListenerWithFireEvent extends AddTableRowListener{
 

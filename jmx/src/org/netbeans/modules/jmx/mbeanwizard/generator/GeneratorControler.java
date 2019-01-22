@@ -56,7 +56,7 @@ import org.openide.loaders.TemplateWizard;
 
 /**
  * Wizard MBean code generator controller class.
- * @author jfdenise
+ * 
  */
 public class GeneratorControler {
     

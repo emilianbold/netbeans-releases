@@ -53,7 +53,7 @@ import org.netbeans.modules.jmx.common.WizardConstants;
 
 /**
  *
- * @author tl156378
+ * 
  */
 public class MBeanDO {
     private List<MBeanAttribute> attributes;

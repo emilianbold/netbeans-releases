@@ -52,7 +52,6 @@ import org.openide.nodes.Node;
 
 /**
  * Displays folders and Java source files under a source node.
- * @author Marian Petras, Jesse Glick
  */
 public class JavaChildren extends FilterNode.Children {
 

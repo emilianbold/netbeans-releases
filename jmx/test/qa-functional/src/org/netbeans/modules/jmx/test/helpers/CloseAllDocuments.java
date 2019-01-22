@@ -50,7 +50,7 @@ import org.netbeans.jellytools.EditorOperator;
 
 /**
  *
- * @author an156382
+ * 
  */
 public class CloseAllDocuments extends JMXTestCase {
     

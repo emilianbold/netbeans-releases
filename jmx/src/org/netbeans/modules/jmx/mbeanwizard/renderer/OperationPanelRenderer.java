@@ -54,7 +54,7 @@ import javax.swing.JButton;
 
 /**
  *
- * @author alex
+ * 
  */
 public class OperationPanelRenderer extends  DefaultTableCellRenderer {
 	

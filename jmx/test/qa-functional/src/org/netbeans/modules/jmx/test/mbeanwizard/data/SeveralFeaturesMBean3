@@ -12,7 +12,7 @@ import java.util.Arrays;
 /**
  * Class SeveralFeaturesMBean3
  *
- * @author <author>
+ * <author>
  */
 public class SeveralFeaturesMBean3 extends StandardMBean implements SeveralFeaturesMBean3MBean {
     /**

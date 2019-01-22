@@ -54,7 +54,7 @@ import org.netbeans.modules.jmx.common.WizardConstants;
 
 /**
  * class representing a MBean Attribute.
- * @author tl156378
+ * 
  */
 public class MBeanAttribute implements Comparable {
     

@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Martin Grebac
+ * 
  */
 public class JMXSampleProjectIterator implements TemplateWizard.Iterator {
 

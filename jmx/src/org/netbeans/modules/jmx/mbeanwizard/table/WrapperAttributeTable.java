@@ -73,7 +73,7 @@ import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
         
 /**
  *
- * @author an156382
+ * 
  */
 public class WrapperAttributeTable extends AttributeTable{
 

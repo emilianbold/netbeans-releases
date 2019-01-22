@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 
 /**
  * MBean Interface code generator class
- * @author jfdenise
+ * 
  */
 public class MBeanInterfaceGen extends MBeanFileGenerator {
     String suffix;

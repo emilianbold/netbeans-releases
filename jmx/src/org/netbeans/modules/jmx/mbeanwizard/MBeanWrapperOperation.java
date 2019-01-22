@@ -52,7 +52,7 @@ import org.netbeans.modules.jmx.MBeanOperationException;
 
 /**
  *
- * @author an156382
+ * 
  */
 public class MBeanWrapperOperation extends MBeanOperation{
 

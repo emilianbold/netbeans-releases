@@ -75,7 +75,6 @@ import org.openide.util.MutexException;
 /**
  * Create a sample web project by unzipping a template into some directory
  *
- * @author Martin Grebac, Tomas Zezula. Modified by jfdenise to update namespace and jar name generation
  */
 public class JMXSampleProjectGenerator {
 

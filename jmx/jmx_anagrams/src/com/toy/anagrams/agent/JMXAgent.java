@@ -54,7 +54,7 @@ import com.toy.anagrams.mbeans.AnagramsStats;
 /**
  * JMX agent class.
  * You may use the New JMX MBean wizard to create a Managed Bean.
- * @author jfdenise
+ * 
  */
 public class JMXAgent {
     private AnagramsStats mbean;

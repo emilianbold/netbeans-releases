@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Panel which is used to ask new attributes to user.
- * @author  tl156378
+ * 
  */
 public class AddAttributesPanel extends javax.swing.JPanel 
         implements FireEvent, ListSelectionListener {

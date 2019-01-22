@@ -44,7 +44,7 @@ import org.netbeans.modules.jmx.common.WizardConstants;
 
 /**
  *
- * @author jfdenise
+ * 
  */
 public class MXBeanIterator extends MBeanIterator {
 

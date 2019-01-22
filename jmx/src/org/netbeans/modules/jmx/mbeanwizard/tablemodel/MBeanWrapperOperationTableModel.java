@@ -51,7 +51,7 @@ import org.netbeans.modules.jmx.MBeanOperation;
 
 /**
  *
- * @author an156382
+ * 
  */
 public class MBeanWrapperOperationTableModel extends MBeanOperationTableModel {
 

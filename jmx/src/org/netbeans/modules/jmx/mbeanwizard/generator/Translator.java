@@ -67,7 +67,7 @@ import org.openide.loaders.TemplateWizard;
 /**
  * create a Data Object for an MBean with the informations of the MBean 
  * informations map. 
- * @author thomas
+ * 
  */
 public class Translator {
     

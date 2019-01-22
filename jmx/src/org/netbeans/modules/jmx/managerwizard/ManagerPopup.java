@@ -69,7 +69,7 @@ import org.openide.DialogDisplayer;
 
 /**
  *
- * @author  an156382
+ * 
  */
 public class ManagerPopup extends javax.swing.JPanel implements DocumentListener,
     FocusListener {

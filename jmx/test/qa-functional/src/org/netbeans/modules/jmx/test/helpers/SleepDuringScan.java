@@ -51,7 +51,7 @@ import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
  *
- * @author an156382
+ * 
  */
 public class SleepDuringScan extends JMXTestCase {
     

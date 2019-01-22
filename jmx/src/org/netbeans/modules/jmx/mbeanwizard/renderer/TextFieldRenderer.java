@@ -53,7 +53,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 /**
  *
- * @author an156382
+ * 
  */
 public class TextFieldRenderer extends  DefaultTableCellRenderer {
 

@@ -52,7 +52,7 @@ import org.netbeans.modules.jmx.MBeanAttribute;
 
 /**
  *
- * @author an156382
+ * 
  */
 public class MBeanWrapperAttributeTableModel extends MBeanAttributeTableModel {
 

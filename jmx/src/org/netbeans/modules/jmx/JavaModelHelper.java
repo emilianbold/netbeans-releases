@@ -112,7 +112,7 @@ import org.netbeans.modules.jmx.common.WizardHelpers;
 
 /**
  *
- * @author jfdenise
+ * 
  */
 public class JavaModelHelper {
     

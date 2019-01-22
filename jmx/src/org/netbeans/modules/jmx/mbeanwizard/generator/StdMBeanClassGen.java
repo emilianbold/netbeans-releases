@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Standard MBean code generator class
- * @author jfdenise
+ * 
  */
 public class StdMBeanClassGen extends MBeanFileGenerator {
     

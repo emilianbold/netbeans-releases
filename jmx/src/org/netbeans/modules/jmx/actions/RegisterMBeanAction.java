@@ -66,7 +66,7 @@ import org.netbeans.modules.jmx.common.WizardHelpers;
 
 /**
  * Action used to add MBean registration code to an existing JMX Agent.
- * @author jfdenise
+ * 
  */
 public class RegisterMBeanAction extends NodeAction {
     

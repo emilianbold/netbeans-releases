@@ -65,7 +65,7 @@ package org.netbeans.modules.jmx.mbeanwizard;
  * as soon as another message is to be displayed.
  *
  * @see  #setMessage
- * @author Marian Petras
+ * 
  */
 public final class MessageStack {
     

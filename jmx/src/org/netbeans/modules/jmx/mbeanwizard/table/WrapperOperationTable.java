@@ -84,7 +84,7 @@ import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperAttributeTabl
 
 /**
  *
- * @author an156382
+ * 
  */
 public class WrapperOperationTable extends OperationTable {
     

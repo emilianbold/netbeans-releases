@@ -48,7 +48,7 @@ import javax.swing.table.DefaultTableModel;
 
 /**
  * Allows to have a non editable table.
- * @author tl156378
+ * 
  */
 public class NonEditableTableModel extends DefaultTableModel {
 

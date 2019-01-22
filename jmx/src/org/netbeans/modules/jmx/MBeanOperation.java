@@ -57,7 +57,7 @@ import org.netbeans.modules.jmx.common.WizardHelpers;
 
 /**
  *
- * @author tl156378
+ * 
  */
 public class MBeanOperation implements Comparable {
 

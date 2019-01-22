@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
  * Class responsible for the warning message shown when you use Add Attributes...
  * popup action in the contextual management menu and there is already an 
  * existing implementation of a specified attribute.
- * @author  tl156378
+ * 
  */
 public class AddAttributesInfoPanel extends javax.swing.JPanel {
     

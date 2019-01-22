@@ -58,7 +58,7 @@ import org.openide.util.actions.NodeAction;
 
 /**
  * Action used to add attributes to an existing MBean.
- * @author tl156378
+ * 
  */
 public class AddAttrAction extends NodeAction {
     

@@ -49,7 +49,7 @@ import org.openide.loaders.DataObject;
 
 /**
  * Generic MBean File generator.
- * @author thomas
+ * 
  */
 public abstract class MBeanFileGenerator {
     /**

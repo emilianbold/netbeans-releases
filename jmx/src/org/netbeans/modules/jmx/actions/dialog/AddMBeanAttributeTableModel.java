@@ -49,7 +49,7 @@ import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanAttributeTableModel;
 
 /**
  * Allows the table to have non-editable cells.
- * @author tl156378
+ * 
  */
 public class AddMBeanAttributeTableModel extends MBeanAttributeTableModel {
 

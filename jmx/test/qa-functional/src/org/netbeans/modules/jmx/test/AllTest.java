@@ -64,7 +64,7 @@ import org.netbeans.modules.jmx.test.mbeanwizard.MBeanOperationsWizard;
 
 /**
  *
- * @author Tomas Hurka
+ * 
  */
 public class AllTest {
     

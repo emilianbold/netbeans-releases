@@ -71,7 +71,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author tl156378
+ * 
  */
 public class MBeanClassButton {
     

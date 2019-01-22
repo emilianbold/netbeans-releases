@@ -50,7 +50,7 @@ import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanOperationTableModel;
 
 /**
  * Allows the table to have non-editable cells.
- * @author tl156378
+ * 
  */
 public class AddMBeanOperationTableModel extends MBeanOperationTableModel {
 

@@ -46,7 +46,7 @@ package org.netbeans.modules.jmx.mbeanwizard.generator.test;
 
 /**
  *
- * @author thomas
+ * 
  */
 public class TestConstants {
 

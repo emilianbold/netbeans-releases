@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  * Class responsible for the warning message shown when you use Add Operations...
  * popup action in the contextual management menu and there is already an 
  * existing implementation of a specified operation.
- * @author  tl156378
+ * 
  */
 public class AddOperationsInfoPanel extends javax.swing.JPanel {
     

@@ -63,7 +63,7 @@ import org.netbeans.modules.jmx.mbeanwizard.renderer.OperationExceptionPanelRend
 /**
  * Class responsible for the operation table shown when you use Add Operations...
  * popup action in the contextual management menu.
- * @author tl156378
+ * 
  */
 public class AddOperationTable extends OperationTable {
     

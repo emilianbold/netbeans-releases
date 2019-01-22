@@ -275,7 +275,7 @@ public class WizardHelpers
      * {@link #foldersToSourceGroupsMap}.
      *
      * @param  sourceGroup  source group to create a map from
-     * @author  Marian Petras
+     * 
      */
     private static Map createFoldersToSourceGroupsMap(
             final SourceGroup[] sourceGroups) {

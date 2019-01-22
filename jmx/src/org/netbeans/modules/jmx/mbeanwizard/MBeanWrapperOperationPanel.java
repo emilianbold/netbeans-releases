@@ -70,7 +70,7 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author an156382
+ * 
  */
 public class MBeanWrapperOperationPanel extends MBeanOperationPanel 
     implements ListSelectionListener{

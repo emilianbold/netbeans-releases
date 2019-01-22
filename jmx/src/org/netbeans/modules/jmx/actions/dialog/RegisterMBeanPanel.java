@@ -75,7 +75,7 @@ import org.netbeans.modules.jmx.JavaModelHelper;
 
 /**
  * Panel which is used to ask which MBean to instantiate and register.
- * @author  tl156378
+ * 
  */
 public class RegisterMBeanPanel extends javax.swing.JPanel
         implements ItemListener, DocumentListener {

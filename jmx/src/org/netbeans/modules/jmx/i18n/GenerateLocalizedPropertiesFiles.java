@@ -51,7 +51,7 @@ import java.util.StringTokenizer;
 
 /**
  *
- * @author jfdenise
+ * 
  */
 public class GenerateLocalizedPropertiesFiles {
 

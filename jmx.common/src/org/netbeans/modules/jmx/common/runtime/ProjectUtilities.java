@@ -64,7 +64,7 @@ import java.util.Properties;
 /**
  * Utilities for interaction with the NetBeans IDE, specifically related to Projects
  *
- * @author Ian Formanek
+ * 
  */
 public class ProjectUtilities {
   private static Action mainProjectHack; // only used in 4.0

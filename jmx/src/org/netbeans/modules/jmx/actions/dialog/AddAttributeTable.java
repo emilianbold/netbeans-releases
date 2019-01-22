@@ -53,7 +53,7 @@ import org.netbeans.modules.jmx.mbeanwizard.table.AttributeTable;
 /**
  * Class responsible for the attribute table shown when you use Add Attributes...
  * popup action in the contextual management menu.
- * @author tl156378
+ * 
  */
 public class AddAttributeTable extends AttributeTable {
     

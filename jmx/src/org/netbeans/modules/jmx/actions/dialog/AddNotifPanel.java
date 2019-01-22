@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Panel which is used to ask notifications to user.
- * @author  tl156378
+ * 
  */
 public class AddNotifPanel extends javax.swing.JPanel {
     

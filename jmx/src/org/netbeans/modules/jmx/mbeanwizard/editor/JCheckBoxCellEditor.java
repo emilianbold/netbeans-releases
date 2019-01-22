@@ -52,7 +52,7 @@ import javax.swing.table.TableModel;
 
 /**
  *
- * @author an156382
+ * 
  */
 public class JCheckBoxCellEditor extends DefaultCellEditor {
 

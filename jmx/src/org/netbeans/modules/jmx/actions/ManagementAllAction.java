@@ -56,7 +56,7 @@ import org.openide.util.actions.NodeAction;
 /** 
  * Action which just groups update actions.
  *
- * @author  tleveque
+ * 
  * @version 1.0
  */
 public class ManagementAllAction extends NodeAction implements Presenter.Menu, Presenter.Popup {

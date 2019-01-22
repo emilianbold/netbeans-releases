@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Panel which is used to ask MBean to instantiate and register.
- * @author  tl156378
+ * 
  */
 public class AddRegistIntfPanel extends javax.swing.JPanel {
     

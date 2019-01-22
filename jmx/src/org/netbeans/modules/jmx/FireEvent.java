@@ -46,7 +46,7 @@ package org.netbeans.modules.jmx;
 
 /**
  *
- * @author tl156378
+ * 
  */
 public interface FireEvent {
     public void event();
