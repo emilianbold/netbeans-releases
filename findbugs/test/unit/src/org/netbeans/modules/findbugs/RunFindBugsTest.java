@@ -62,7 +62,7 @@ import org.openide.loaders.DataObject;
 
 /**
  *
- * @author lahvac
+ * 
  */
 public class RunFindBugsTest extends NbTestCase {
 

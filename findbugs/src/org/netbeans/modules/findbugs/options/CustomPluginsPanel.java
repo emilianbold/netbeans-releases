@@ -57,7 +57,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author lahvac
+ * 
  */
 public class CustomPluginsPanel extends javax.swing.JPanel {
 

@@ -77,7 +77,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author lahvac
+ * 
  */
 public class RunInEditor implements CancellableTask<CompilationInfo> {
 

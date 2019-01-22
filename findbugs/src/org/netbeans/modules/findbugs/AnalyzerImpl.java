@@ -93,7 +93,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author lahvac
+ * 
  */
 public class AnalyzerImpl implements Analyzer {
 

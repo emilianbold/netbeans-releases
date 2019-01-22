@@ -60,7 +60,7 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author lahvac
+ * 
  */
 public class DetectorCollectionProvider {
     

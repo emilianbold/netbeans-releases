@@ -58,7 +58,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Dusan Balek
+ * 
  */
 public final class NbDirectoryCodeBase extends DirectoryCodeBase {
 

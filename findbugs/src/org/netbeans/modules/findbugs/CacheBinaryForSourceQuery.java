@@ -52,7 +52,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Dusan Balek
+ * 
  */
 public class CacheBinaryForSourceQuery {
     

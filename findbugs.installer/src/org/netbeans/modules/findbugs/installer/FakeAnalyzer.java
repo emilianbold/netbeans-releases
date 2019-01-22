@@ -51,7 +51,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author lahvac
+ * 
  */
 public class FakeAnalyzer implements Analyzer {
 

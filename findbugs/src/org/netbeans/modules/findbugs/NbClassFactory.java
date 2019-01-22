@@ -65,7 +65,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Dusan Balek
+ * 
  */
 public final class NbClassFactory implements IClassFactory {
 
