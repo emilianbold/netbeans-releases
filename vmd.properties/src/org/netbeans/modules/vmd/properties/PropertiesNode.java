@@ -55,7 +55,7 @@ import org.openide.nodes.Sheet;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public class PropertiesNode extends AbstractNode {
 

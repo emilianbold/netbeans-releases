@@ -55,7 +55,7 @@ import org.openide.nodes.PropertySupport;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public abstract class DefaultPropertySupport extends PropertySupport {
 

@@ -65,7 +65,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class PaletteItemDataNode extends DataNode {
 

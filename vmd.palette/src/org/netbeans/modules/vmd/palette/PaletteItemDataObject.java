@@ -63,7 +63,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 @NbBundle.Messages("PaletteResolver=VMD Palette Files")
 @MIMEResolver.ExtensionRegistration(

@@ -52,7 +52,7 @@ import org.openide.loaders.UniFileLoader;
 
 /**
  *
- * @author Anton Chechel
+ * 
  */
 public class PaletteItemDataLoader extends UniFileLoader {
     static final String EXTENSION = "vmd_palette"; // NOI18N

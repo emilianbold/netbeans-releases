@@ -57,7 +57,7 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.DataEditorViewLookupFactory.class)
 public class PropertiesEditorViewLookupFactory implements DataEditorViewLookupFactory {

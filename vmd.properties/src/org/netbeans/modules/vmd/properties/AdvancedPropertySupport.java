@@ -51,7 +51,7 @@ import org.netbeans.modules.vmd.api.properties.GroupValue;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class AdvancedPropertySupport extends DefaultPropertySupport {
     

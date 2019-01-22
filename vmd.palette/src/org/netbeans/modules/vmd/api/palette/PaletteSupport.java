@@ -52,7 +52,7 @@ import org.openide.util.datatransfer.ExTransferable;
 import java.awt.datatransfer.Transferable;
 
 /**
- * @author David Kaspar
+ * 
  */
 public final class PaletteSupport {
 

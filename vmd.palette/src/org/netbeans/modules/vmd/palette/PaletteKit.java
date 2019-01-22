@@ -70,7 +70,6 @@ import org.openide.util.Lookup.Result;
 import org.openide.util.LookupListener;
 
 /**
- * @author David Kaspar, Anton Chechel
  */
 public class PaletteKit implements Runnable, LookupListener {
 

@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
 
 
 /**
- * @author Karol Harezlak
+ * 
  */
 public class PropertiesWindowManager implements ActiveViewSupport.Listener {
     

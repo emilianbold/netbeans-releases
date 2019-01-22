@@ -51,7 +51,7 @@ import java.util.Map;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 /**
  * This class provide support to handle more that one DesignComponent property

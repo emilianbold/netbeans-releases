@@ -68,7 +68,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  * 
- * @author David Kaspar, Anton Chechel
  */
 public final class PaletteMap implements ActiveDocumentSupport.Listener, DescriptorRegistryListener, PropertyChangeListener {
 

@@ -48,7 +48,7 @@ import java.util.Arrays;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 
 /**

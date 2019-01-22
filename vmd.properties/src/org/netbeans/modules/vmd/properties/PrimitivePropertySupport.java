@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 public final class PrimitivePropertySupport extends DefaultPropertySupport {
     

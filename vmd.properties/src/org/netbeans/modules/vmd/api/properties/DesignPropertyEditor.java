@@ -67,7 +67,7 @@ import org.openide.nodes.PropertySupport;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 /**
  * 

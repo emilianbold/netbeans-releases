@@ -50,7 +50,7 @@ import java.util.List;
 /**
  * This interface represents category in the VMD palette.
  *
- * @author Anton Chechel
+ * 
  */
 public interface PaletteProvider {
 

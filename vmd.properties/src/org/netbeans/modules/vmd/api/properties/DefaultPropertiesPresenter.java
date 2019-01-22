@@ -54,7 +54,7 @@ import javax.swing.SwingUtilities;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 /**
  * This class is a default implmentation of PropertiesPresenter. It helps in easy way to compose

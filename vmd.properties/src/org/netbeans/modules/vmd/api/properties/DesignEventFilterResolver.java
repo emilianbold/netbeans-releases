@@ -49,7 +49,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 /**
  * This class is used for resolving DesignEventFilter for a PropertiesPresenter.
  *
- * @author David Kaspar
+ * 
  */
 public abstract class DesignEventFilterResolver {
 

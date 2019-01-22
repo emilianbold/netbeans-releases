@@ -65,7 +65,7 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 /**
  * This class contains satic support methods to help maintaince Visual Designer properties shown

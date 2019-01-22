@@ -74,7 +74,7 @@ import org.openide.util.WeakSet;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- * @author Karol Harezlak
+ * 
  */
 //TODO rename it to PropeertiesViewNodesManager or PropeertiesViewNodesController
 public final class PropertiesNodesManager implements DesignDocumentAwareness,

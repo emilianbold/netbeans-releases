@@ -52,7 +52,7 @@ import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 
 /**
  *
- * @author Karol Harezlak
+ * 
  */
 final class SaveToModelSupport {
     
