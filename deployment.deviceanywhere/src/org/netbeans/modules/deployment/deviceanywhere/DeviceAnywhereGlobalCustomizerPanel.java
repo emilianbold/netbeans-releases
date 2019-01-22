@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  suchys
+ * 
  */
 public class DeviceAnywhereGlobalCustomizerPanel extends javax.swing.JPanel {
         

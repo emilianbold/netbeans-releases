@@ -70,7 +70,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author  suchys
+ * 
  */
 public class DeviceChooser extends javax.swing.JPanel {
     

@@ -51,7 +51,7 @@ import org.netbeans.mobility.activesync.*;
 
 /**
  *
- * @author Martin Ryzl
+ * 
  */
 public class WindowsMobileDeployTask extends Task {
     

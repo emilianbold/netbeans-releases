@@ -52,7 +52,7 @@ import org.openide.NotifyDescriptor;
 
 /**
  *
- * @author  Martin Ryzl
+ * 
  */
 public class WindowsMobileCustomizerPanel extends javax.swing.JPanel {
     

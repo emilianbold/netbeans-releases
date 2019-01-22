@@ -70,7 +70,7 @@ import org.netbeans.modules.deployment.deviceanywhere.service.ApplicationAPIUplo
 import org.netbeans.modules.deployment.deviceanywhere.service.ReturnCodes;
 
 /**
- * @author suchys
+ * 
  */
 public class DeviceAnywhereUploadTask extends Task {
     private ResourceBundle bundle;
