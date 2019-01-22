@@ -58,7 +58,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class RemoveStoppedAction extends AbstractAction {
   private static final String ICON = NbBundle.getMessage(RemoveStoppedAction.class, "RemoveStoppedAction_Icon"); // NOI18N

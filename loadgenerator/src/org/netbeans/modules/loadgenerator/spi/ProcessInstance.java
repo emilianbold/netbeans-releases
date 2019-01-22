@@ -63,7 +63,7 @@ import org.openide.windows.OutputWriter;
  * Provides the basic scaffolding for a ILoadGeneratorInstance implementation
  *
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public abstract class ProcessInstance {
   public static final String FACTORY = ProcessInstance.class.getName() + "#FACTORY";

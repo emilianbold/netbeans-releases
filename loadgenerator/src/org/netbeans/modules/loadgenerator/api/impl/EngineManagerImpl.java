@@ -70,7 +70,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.loadgenerator.api.EngineManager.class)
 public class EngineManagerImpl implements EngineManager, ProcessInstanceListener {

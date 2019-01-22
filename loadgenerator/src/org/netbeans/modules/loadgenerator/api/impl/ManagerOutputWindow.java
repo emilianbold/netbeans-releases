@@ -55,7 +55,7 @@ import org.openide.windows.InputOutput;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class ManagerOutputWindow {
   private String script;

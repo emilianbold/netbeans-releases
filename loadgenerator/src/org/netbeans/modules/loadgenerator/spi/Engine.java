@@ -53,7 +53,7 @@ import java.util.Iterator;
 import java.util.List;
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public abstract class Engine {
   public static final String STATE = Engine.class.getName() + "#STATE"; // STATE property

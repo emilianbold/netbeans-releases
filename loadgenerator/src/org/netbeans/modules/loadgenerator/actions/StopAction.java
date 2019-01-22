@@ -61,7 +61,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class StopAction extends AbstractAction {
   private static final String ICON = NbBundle.getMessage(StopAction.class, "StopAction_Icon"); // NOI18N

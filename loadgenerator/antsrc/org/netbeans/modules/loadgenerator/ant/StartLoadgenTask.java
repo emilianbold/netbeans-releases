@@ -50,7 +50,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
- * @author Jaroslav Bachorik
+ * 
  */
 public class StartLoadgenTask extends Task {
   private String scriptPath;

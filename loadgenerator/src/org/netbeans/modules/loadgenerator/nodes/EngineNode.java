@@ -61,7 +61,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class EngineNode extends AbstractNode {
   private final static Action[] ACTIONARRAY = new Action[]{};

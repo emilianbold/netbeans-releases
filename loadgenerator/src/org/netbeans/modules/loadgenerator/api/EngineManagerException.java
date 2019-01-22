@@ -32,7 +32,7 @@ package org.netbeans.modules.loadgenerator.api;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class EngineManagerException extends Exception {
 

@@ -51,7 +51,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author jb198685
  */
 public class ManagerChildren extends Children.Keys<Engine> {
   

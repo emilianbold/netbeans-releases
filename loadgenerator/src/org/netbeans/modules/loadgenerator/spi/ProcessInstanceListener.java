@@ -48,7 +48,7 @@ import java.util.EventListener;
 
 /**
  * This is a listener for a load generator's events
- * @author Jaroslav Bachorik
+ * 
  */
 public interface ProcessInstanceListener extends EventListener {
   /**

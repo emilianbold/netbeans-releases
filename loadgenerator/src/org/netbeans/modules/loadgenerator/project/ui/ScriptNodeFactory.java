@@ -83,7 +83,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class ScriptNodeFactory implements NodeFactory {
 

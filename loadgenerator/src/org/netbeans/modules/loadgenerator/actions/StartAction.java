@@ -61,7 +61,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class StartAction extends AbstractAction {
   private static final String ICON = NbBundle.getMessage(StartAction.class, "StartAction_Icon"); // NOI18N

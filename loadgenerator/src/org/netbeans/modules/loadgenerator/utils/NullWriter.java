@@ -49,7 +49,7 @@ import java.io.Writer;
 
 /**
  * A NULL writer - effectively dumps all data
- * @author Jaroslav Bachorik
+ * 
  */
 public class NullWriter extends Writer {
   public void write(char[] cbuf, int off, int len) throws IOException {

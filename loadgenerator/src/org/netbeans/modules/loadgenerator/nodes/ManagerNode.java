@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class ManagerNode extends AbstractNode implements LookupListener {
   private Lookup.Result lookup;

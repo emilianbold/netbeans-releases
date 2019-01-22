@@ -60,7 +60,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class ProcessNode extends AbstractNode {
   private ProcessInstance provider;

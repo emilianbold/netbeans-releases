@@ -49,7 +49,7 @@ import org.netbeans.modules.loadgenerator.spi.*;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public interface EngineManager {
   public Collection<Engine> findEngines();

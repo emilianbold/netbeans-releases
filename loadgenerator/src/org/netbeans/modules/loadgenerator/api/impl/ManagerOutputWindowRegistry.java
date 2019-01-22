@@ -55,7 +55,7 @@ import org.netbeans.modules.loadgenerator.spi.ProcessInstance;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * 
  */
 public class ManagerOutputWindowRegistry {
   final private static ManagerOutputWindowRegistry instance = new ManagerOutputWindowRegistry();

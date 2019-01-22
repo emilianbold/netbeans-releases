@@ -51,7 +51,7 @@ import org.openide.windows.OutputWriter;
 
 /**
  * A NULL OutputWriter - effectively dumps all data
- * @author Jaroslav Bachorik
+ * 
  */
 public class NullOutputWriter extends OutputWriter {
   private final static Writer writer = new NullWriter();
