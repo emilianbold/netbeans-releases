@@ -58,7 +58,7 @@ import javax.swing.event.ListSelectionListener;
 
 /**
  *
- * @author jfdenise
+ * 
  */
 public class PathController implements ActionListener, ListSelectionListener, ListDataListener {
     private JList l;

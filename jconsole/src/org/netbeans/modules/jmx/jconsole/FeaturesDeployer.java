@@ -45,7 +45,7 @@ package org.netbeans.modules.jmx.jconsole;
 
 /**
  * Class used to discover Which JVM is used in order to enable only supported features.
- * @author jfdenise
+ * 
  */
 public class FeaturesDeployer {
     private static Boolean enable;

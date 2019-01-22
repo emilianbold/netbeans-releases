@@ -68,7 +68,7 @@ import org.openide.util.MutexException;
 
 /**
  *
- * @author  jfdenise
+ * 
  */
 public class MonitoringPanel extends javax.swing.JPanel implements ActionListener {
     private Project project;

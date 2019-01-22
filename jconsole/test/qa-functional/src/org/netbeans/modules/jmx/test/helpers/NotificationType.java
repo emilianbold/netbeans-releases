@@ -46,7 +46,6 @@ package org.netbeans.modules.jmx.test.helpers;
 
 /**
  *
- * @author an156382
  */
 public class NotificationType {
 

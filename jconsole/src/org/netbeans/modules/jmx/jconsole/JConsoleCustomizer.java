@@ -60,7 +60,7 @@ import org.netbeans.modules.jmx.j2seproject.customizer.PathController;
 
 /**
  *
- * @author  jfdenise
+ * 
  */
 public class JConsoleCustomizer extends javax.swing.JPanel {
     private boolean changed;

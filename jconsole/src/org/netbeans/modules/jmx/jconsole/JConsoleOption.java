@@ -49,7 +49,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
 /**
- * @author jfdenise
+ * 
  */
 public final class JConsoleOption extends AdvancedOption {
 

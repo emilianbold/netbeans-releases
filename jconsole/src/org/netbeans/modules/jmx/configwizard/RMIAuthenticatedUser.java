@@ -48,7 +48,7 @@ import java.util.Properties;
 
 /**
  * Class used for authenticate table
- * @author jfdenise
+ * 
  */
 public class RMIAuthenticatedUser {
 

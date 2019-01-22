@@ -68,8 +68,8 @@ import org.openide.util.HelpCtx;
  *
  * Lauch JConsole action
  *
- * @author jfdenise
- * @author Tomas Hurka
+ * 
+ * 
  */
 public class LaunchAction extends AbstractAction {
 

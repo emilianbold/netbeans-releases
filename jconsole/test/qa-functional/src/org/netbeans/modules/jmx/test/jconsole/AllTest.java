@@ -49,7 +49,7 @@ import org.netbeans.modules.jmx.test.configwizard.ManagementConfigurationWizard;
 
 /**
  *
- * @author Tomas Hurka
+ * 
  */
 public class AllTest {
     

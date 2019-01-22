@@ -48,7 +48,6 @@ import java.util.ArrayList;
 
 /**
  *
- * @author an156382
  */
 public class Notification {
 

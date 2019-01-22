@@ -51,7 +51,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 /**
- * @author jfdenise
+ * 
  */
 public final class JConsolePanelController extends OptionsPanelController {
 
