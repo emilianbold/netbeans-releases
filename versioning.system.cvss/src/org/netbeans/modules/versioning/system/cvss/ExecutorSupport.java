@@ -90,7 +90,7 @@ import org.openide.xml.XMLUtil;
  * <p>Static method {@link #prepareBasicCommand} splits command
  * operating over files in multiple repositories as necessary.
  *
- * @author Maros Sandor
+ * 
  */
 public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Groupable  {
     

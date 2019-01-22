@@ -66,7 +66,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author pvcs
+ * 
  */
 public class UpdateTest extends JellyTestCase {
 

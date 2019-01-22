@@ -67,7 +67,7 @@ import java.io.File;
 /**
  * Prototype impl of defined modules listing.
  *
- * @author Petr Kuzel
+ * 
  */
 public final class ModuleSelector {
 

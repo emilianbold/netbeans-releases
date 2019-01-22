@@ -100,7 +100,7 @@ import org.netbeans.modules.versioning.util.Utils;
  * into versioned using <tt>checkout</tt> and copying respective
  * CVS metadata.
  *
- * @author Petr Kuzel
+ * 
  */
 public final class AddToRepositoryAction extends NodeAction implements ChangeListener {
 

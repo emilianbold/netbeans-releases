@@ -62,7 +62,7 @@ import org.netbeans.modules.versioning.util.Utils;
 /**
  * CVS registration class.
  * 
- * @author Maros Sandor
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
 public class CVS extends VersioningSystem implements VersioningListener, PreferenceChangeListener {

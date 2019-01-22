@@ -62,7 +62,7 @@ import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 /**
  * Hides folders that have 'Localy removed' status.
  * 
- * @author Maros Sandor
+ * 
  */
 public class CvsVisibilityQuery extends VCSVisibilityQuery implements VersioningListener {
 

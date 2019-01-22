@@ -55,7 +55,7 @@ import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 /**
  * Utility class that can create copies of commands.
  *
- * @author Maros Sandor
+ * 
  */
 public abstract class CommandDuplicator {
     

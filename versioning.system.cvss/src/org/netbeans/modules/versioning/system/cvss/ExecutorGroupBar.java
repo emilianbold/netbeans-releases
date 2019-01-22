@@ -71,7 +71,7 @@ import java.util.Iterator;
  * group.execute();
  * </pre>
  *
- * @author Petr Kuzel
+ * 
  */
 final class ExecutorGroupBar implements ExecutorGroup.Groupable {
 

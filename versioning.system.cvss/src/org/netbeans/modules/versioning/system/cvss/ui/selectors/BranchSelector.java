@@ -74,7 +74,7 @@ import java.util.logging.Logger;
 /**
  * Allows to select branches for given repository path,
  *
- * @author Petr Kuzel
+ * 
  */
 public final class BranchSelector implements Runnable {
 

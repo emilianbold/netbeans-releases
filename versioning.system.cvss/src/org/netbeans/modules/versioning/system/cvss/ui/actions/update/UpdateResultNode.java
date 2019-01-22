@@ -59,7 +59,7 @@ import java.text.MessageFormat;
 /**
  * The node that is rendered in the Update Results view.
  * 
- * @author Maros Sandor
+ * 
  */
 class UpdateResultNode extends AbstractNode {
     

@@ -63,7 +63,7 @@ import org.openide.util.RequestProcessor;
  * Runnable that actually performs a command and stores
  * an exception it may throw and its isFinished state.
  *
- * @author Maros Sandor
+ * 
  */
 class CommandRunnable implements Runnable, Cancellable {
 

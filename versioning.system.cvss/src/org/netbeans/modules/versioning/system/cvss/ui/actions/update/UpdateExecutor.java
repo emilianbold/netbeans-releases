@@ -67,7 +67,7 @@ import java.util.logging.Level;
 /**
  * Executes a given 'update' command and refreshes file statuses.
  * 
- * @author Maros Sandor
+ * 
  */
 public class UpdateExecutor extends ExecutorSupport {
     

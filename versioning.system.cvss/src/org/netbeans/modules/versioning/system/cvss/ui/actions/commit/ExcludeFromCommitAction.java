@@ -59,7 +59,7 @@ import java.awt.event.ActionEvent;
 /**
  * Excludes selected nodes from commit.
  *
- * @author Maros Sandor
+ * 
  */
 public class ExcludeFromCommitAction extends AbstractAction implements Presenter.Menu {
 

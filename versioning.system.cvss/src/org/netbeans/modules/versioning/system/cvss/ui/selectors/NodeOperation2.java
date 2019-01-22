@@ -63,7 +63,7 @@ import java.beans.PropertyChangeEvent;
 /**
  * NodeOperations without icons and root.
  *
- * @author Petr Kuzel
+ * 
  * @see issue #63249
  */
 public final class NodeOperation2 extends BeanTreeView implements PropertyChangeListener {

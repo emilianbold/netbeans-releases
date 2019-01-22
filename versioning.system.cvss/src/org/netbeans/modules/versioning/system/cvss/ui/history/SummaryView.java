@@ -79,7 +79,7 @@ import java.io.FileInputStream;
 /**
  * Shows Search History results in a JList.
  * 
- * @author Maros Sandor
+ * 
  */
 class SummaryView implements MouseListener, ComponentListener, MouseMotionListener {
 

@@ -55,7 +55,7 @@ import org.openide.modules.Places;
 /**
  * Storage of file attributes with shortcut to retrieve all stored values.
  *
- * @author Maros Sandor
+ * 
  */
 class DiskMapTurboProvider implements TurboProvider {
 

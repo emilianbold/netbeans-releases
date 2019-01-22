@@ -65,7 +65,7 @@ import org.netbeans.modules.versioning.util.SearchHistorySupport;
 /**
  * Handles events fired from the filesystem such as file/folder create/delete/move.
  * 
- * @author Maros Sandor
+ * 
  */
 class FilesystemHandler extends VCSInterceptor {
         

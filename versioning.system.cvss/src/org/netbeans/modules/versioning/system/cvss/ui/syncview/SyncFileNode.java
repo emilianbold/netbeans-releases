@@ -66,7 +66,7 @@ import java.io.File;
  * The node that is rendered in the SyncTable view. It gets values to display from the
  * CvsFileNode which serves as the 'data' node for this 'visual' node.
  * 
- * @author Maros Sandor
+ * 
  */
 public class SyncFileNode extends AbstractNode {
     

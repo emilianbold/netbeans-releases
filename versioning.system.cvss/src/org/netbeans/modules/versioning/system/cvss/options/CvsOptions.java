@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
 /**
  * Integrates CVS options into IDE's Miscellaneous Options section.
  * 
- * @author Maros Sandor
+ * 
  */
 public class CvsOptions extends AdvancedOption {
 

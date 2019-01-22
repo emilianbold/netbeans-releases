@@ -54,7 +54,7 @@ import java.io.File;
 /**
  * Fetches given revision.
  *
- * @author Petr Kuzel
+ * 
  */
 final class VersionsCacheExecutor extends ExecutorSupport {
 

@@ -64,7 +64,7 @@ import java.util.logging.Logger;
 /**
  * Central part of CVS status management, deduces and caches statuses of files under version control.
  * 
- * @author Maros Sandor
+ * 
  */
 public class FileStatusCache {
 

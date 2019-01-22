@@ -52,7 +52,7 @@ import org.openide.util.Utilities;
 /**
  * Tests for the Util class.
  *
- * @author Maros Sandor
+ * 
  */
 public class UtilTest extends TestCase {
 

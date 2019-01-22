@@ -56,7 +56,7 @@ import java.io.File;
 /**
  * Adds files to .cvsignore file.
  *
- * @author Maros Sandor
+ * 
  */
 public class IgnoreAction extends AbstractSystemAction {
     

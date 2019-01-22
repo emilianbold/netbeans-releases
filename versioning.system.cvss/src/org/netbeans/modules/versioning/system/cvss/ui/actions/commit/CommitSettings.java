@@ -72,7 +72,7 @@ import org.netbeans.modules.spellchecker.api.Spellchecker;
 /**
  * Customization of commits.
  * 
- * @author Maros Sandor
+ * 
  */
 public class CommitSettings extends javax.swing.JPanel implements PreferenceChangeListener, TableModelListener, DocumentListener {
     

@@ -65,7 +65,7 @@ import java.io.IOException;
 /**
  * Executes a given 'rlog' command.
  * 
- * @author Maros Sandor
+ * 
  */
 public class RLogExecutor extends ExecutorSupport {
     

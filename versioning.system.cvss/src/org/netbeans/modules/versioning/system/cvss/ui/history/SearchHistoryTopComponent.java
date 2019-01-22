@@ -58,7 +58,7 @@ import java.util.*;
 /**
  * Search History component.
  *
- * @author Maros Sandor
+ * 
  */
 public class SearchHistoryTopComponent extends TopComponent implements DiffSetupSource {
 

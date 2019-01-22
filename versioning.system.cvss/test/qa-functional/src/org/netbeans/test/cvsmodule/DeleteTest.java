@@ -64,7 +64,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author peter
+ * 
  */
 public class DeleteTest extends JellyTestCase {
 

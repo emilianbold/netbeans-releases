@@ -51,7 +51,7 @@ import java.io.File;
 /**
  * Provides support for listing files that have a common parent and a given versioning status.
  *
- * @author Maros Sandor
+ * 
  */
 public class CvsFileTableModel {
 

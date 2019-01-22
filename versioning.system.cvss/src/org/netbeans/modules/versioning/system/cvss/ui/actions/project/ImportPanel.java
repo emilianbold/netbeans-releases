@@ -46,7 +46,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.project;
 
 /**
  *
- * @author  Petr Kuzel
+ * 
  */
 public class ImportPanel extends javax.swing.JPanel {
 

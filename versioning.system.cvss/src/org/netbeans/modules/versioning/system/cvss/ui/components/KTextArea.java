@@ -53,7 +53,7 @@ import javax.swing.*;
  * JTextArea with patched focus cycling policy that
  * binds to usual tab/shift-tab.
  *
- * @author Petr Kuzel
+ * 
  */
 public class KTextArea extends JTextArea {
 

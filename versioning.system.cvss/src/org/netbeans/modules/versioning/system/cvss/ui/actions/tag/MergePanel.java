@@ -63,7 +63,7 @@ import java.text.MessageFormat;
 /**
  * Merge from Branch settings panel.
  *
- * @author Maros Sandor
+ * 
  */
 class MergePanel extends javax.swing.JPanel implements DocumentListener {
     

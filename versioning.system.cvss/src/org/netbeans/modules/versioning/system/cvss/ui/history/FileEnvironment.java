@@ -59,7 +59,7 @@ import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 /**
  * Defines numb read-only File environment.
  *
- * @author  Petr Kuzel
+ * 
  */
 public abstract class FileEnvironment implements CloneableEditorSupport.Env {
 

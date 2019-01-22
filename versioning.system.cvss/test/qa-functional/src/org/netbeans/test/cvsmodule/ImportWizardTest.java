@@ -71,7 +71,7 @@ import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
 /**
  *
- * @author peter
+ * 
  */
 public class ImportWizardTest extends JellyTestCase {
     

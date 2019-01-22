@@ -60,7 +60,7 @@ import java.io.File;
 /**
  * Executes a given 'checkout' command and refreshes file statuses.
  * 
- * @author Maros Sandor
+ * 
  */
 public class CheckoutExecutor extends ExecutorSupport {
     

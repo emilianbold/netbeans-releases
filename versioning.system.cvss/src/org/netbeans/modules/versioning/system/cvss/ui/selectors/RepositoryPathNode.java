@@ -70,7 +70,7 @@ import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
  *
  * <p>Lookup contains a string identifing rpresented path.
  *
- * @author Petr Kuzel
+ * 
  */
 public class RepositoryPathNode extends AbstractNode {
 

@@ -75,7 +75,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author novakm
+ * 
  */
 public class ResolveConflictsAndRevertTest extends JellyTestCase {
     static String os_name;

@@ -67,7 +67,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 /**
- * @author Maros Sandor
+ * 
  */
 public class ChangeCVSRootAction extends AbstractAction {
     

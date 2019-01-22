@@ -58,7 +58,7 @@ import java.util.*;
  * Behaves as standard admin handler except for deleted files and directories where it acts as if the files
  * were removed with 'cvs remove'.
  * 
- * @author Maros Sandor
+ * 
  */
 class CvsLiteAdminHandler implements AdminHandler {
 

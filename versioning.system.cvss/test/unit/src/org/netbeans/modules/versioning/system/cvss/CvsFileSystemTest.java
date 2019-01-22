@@ -70,7 +70,7 @@ import org.openide.filesystems.*;
 
 
 /**
- * @author Tomas Stupka
+ * 
  */
 public class CvsFileSystemTest extends FileSystemFactoryHid {
 

@@ -57,7 +57,7 @@ import java.util.*;
 /**
  * View Revision customization panel.
  *
- * @author Maros Sandor
+ * 
  */
 class ViewRevisionPanel extends javax.swing.JPanel {
     

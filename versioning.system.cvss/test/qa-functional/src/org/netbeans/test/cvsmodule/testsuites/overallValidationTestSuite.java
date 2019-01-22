@@ -56,7 +56,7 @@ import org.netbeans.test.cvsmodule.VersioningButtonsTest;
 
 /**
  *
- * @author tester
+ * 
  */
 public class overallValidationTestSuite extends JellyTestCase {
 

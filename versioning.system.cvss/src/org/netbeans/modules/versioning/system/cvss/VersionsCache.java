@@ -62,7 +62,7 @@ import java.io.*;
  * TODO: Files are never deleted from cache, should we address this? 
  * TODO: cache dead files
  * 
- * @author Maros Sandor
+ * 
  */
 public class VersionsCache {
     

@@ -53,7 +53,7 @@ import java.awt.*;
 /**
  * Simple component that displays an arrow.
  *
- * @author Maros Sandor
+ * 
  */
 class Divider extends JPanel {
 

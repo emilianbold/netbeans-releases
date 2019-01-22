@@ -73,7 +73,7 @@ import org.openide.awt.Mnemonics;
 /**
  * View that displays nodes in the Synchronize view. 
  * 
- * @author Maros Sandor
+ * 
  */
 class CommitTable implements AncestorListener, TableModelListener, MouseListener {
 

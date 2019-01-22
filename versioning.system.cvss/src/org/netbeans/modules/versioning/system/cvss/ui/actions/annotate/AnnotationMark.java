@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Petr Kuzel
+ * 
  */
 final class AnnotationMark implements Mark {
 

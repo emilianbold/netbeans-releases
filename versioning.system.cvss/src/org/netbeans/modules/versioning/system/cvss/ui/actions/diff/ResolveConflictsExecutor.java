@@ -76,7 +76,7 @@ import javax.swing.*;
  * visual merging tool and after successfull conflicts resolution save it back
  * to the original file.
  *
- * @author  Martin Entlicher
+ * 
  */
 public class ResolveConflictsExecutor {
     

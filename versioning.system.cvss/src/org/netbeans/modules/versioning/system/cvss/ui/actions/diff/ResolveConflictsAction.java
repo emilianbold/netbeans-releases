@@ -62,7 +62,7 @@ import java.io.File;
 /**
  * Opens the Visual Merge component. 
  *  
- * @author Maros Sandor
+ * 
  */
 public class ResolveConflictsAction extends AbstractSystemAction {
     

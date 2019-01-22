@@ -58,7 +58,7 @@ import java.io.IOException;
 /**
  * Utilities
  *
- * @author Petr Kuzel
+ * 
  */
 public final class Kit implements Client.Factory {
 

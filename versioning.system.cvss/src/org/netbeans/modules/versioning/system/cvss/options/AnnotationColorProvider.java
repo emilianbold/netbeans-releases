@@ -60,7 +60,7 @@ import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author ondra
+ * 
  */
 @ServiceProviders({@ServiceProvider(service=OptionsPanelColorProvider.class), @ServiceProvider(service=AnnotationColorProvider.class)})
 @OptionsPanelController.Keywords(keywords={"cvs", "#KW_Colors"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle="#CTL_AnnotationColorsPanel.title")

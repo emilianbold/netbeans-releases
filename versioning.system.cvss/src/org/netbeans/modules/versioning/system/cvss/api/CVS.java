@@ -53,7 +53,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Ondra Vrabec
+ * 
  */
 public class CVS {
 

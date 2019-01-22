@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
 /**
  * Provides SSH tunnel for :ext: connection method. 
  * 
- * @author Maros Sandor
+ * 
  */
 public class SSHConnection extends AbstractConnection {
 

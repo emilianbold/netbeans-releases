@@ -57,7 +57,7 @@ import org.netbeans.modules.versioning.util.VCSOptionsKeywordsProvider;
 
 /**
  * 
- * @author Maros Sandor
+ * 
  */
 class CvsOptionsController extends OptionsPanelController implements VCSOptionsKeywordsProvider {
 

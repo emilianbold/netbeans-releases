@@ -51,7 +51,7 @@ import org.netbeans.test.cvsmodule.TestKit;
 
 /**
  *
- * @author tester
+ * 
  */
 public class workingWithBranchesTestSuite extends JellyTestCase {
 

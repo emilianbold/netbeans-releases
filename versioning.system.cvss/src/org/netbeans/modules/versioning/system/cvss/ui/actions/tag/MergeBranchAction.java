@@ -70,7 +70,7 @@ import org.netbeans.modules.versioning.util.Utils;
 /**
  * Performs the CVS 'update -j' command on selected nodes.
  * 
- * @author Maros Sandor
+ * 
  */
 public class MergeBranchAction extends AbstractSystemAction {
 

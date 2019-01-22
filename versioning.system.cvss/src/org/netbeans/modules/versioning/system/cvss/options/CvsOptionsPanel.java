@@ -53,7 +53,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 /**
  * UI panel for CVS settings.
  * 
- * @author Maros Sandor
+ * 
  */
 @OptionsPanelController.Keywords(keywords={"cvs"}, location="Team", tabTitle="#CTL_OptionsPanel.title")
 @NbBundle.Messages("CTL_OptionsPanel.title=Versioning")

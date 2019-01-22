@@ -46,7 +46,7 @@ import junit.framework.TestCase;
 
 /**
  *
- * @author Ondra Vrabec
+ * 
  */
 public class CVSApi extends TestCase {
 

@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 /**
  * Show differencies between the current working copy and repository version we started from. 
  *  
- * @author Maros Sandor
+ * 
  */
 public class DiffAction extends AbstractSystemAction {
     

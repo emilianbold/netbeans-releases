@@ -69,7 +69,7 @@ import org.openide.util.ImageUtilities;
 /**
  * Base for all context-sensitive CVS actions.
  * 
- * @author Maros Sandor
+ * 
  */
 public abstract class AbstractSystemAction extends NodeAction {
 

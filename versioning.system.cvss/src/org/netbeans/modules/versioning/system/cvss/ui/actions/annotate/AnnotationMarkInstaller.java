@@ -51,7 +51,7 @@ import org.netbeans.modules.editor.errorstripe.privatespi.MarkProviderCreator;
 /**
  * ErrorStripe SPI entry point registered at layer.
  *
- * @author Petr Kuzel
+ * 
  */
 public final class AnnotationMarkInstaller implements MarkProviderCreator {
 

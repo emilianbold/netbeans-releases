@@ -61,7 +61,7 @@ import java.io.File;
 /**
  * Search History action.
  *
- * @author Maros Sandor
+ * 
  */
 public class SearchHistoryAction extends AbstractSystemAction  {
 

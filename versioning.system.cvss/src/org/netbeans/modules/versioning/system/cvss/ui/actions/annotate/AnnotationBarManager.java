@@ -55,7 +55,7 @@ import javax.swing.text.JTextComponent;
  * <p>It's registered in module layer into
  * <tt>Editors/text/base/SideBar</tt> registry.
  *
- * @author Petr Kuzel
+ * 
  */
 public final class AnnotationBarManager implements SideBarFactory {
 

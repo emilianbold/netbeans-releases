@@ -58,7 +58,7 @@ import org.openide.text.NbDocument;
 /**
  * ErrorStripe liason, real work is done in AnnotationBar.
  *
- * @author Petr Kuzel
+ * 
  */
 final class AnnotationMarkProvider extends MarkProvider {
     

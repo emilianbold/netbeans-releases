@@ -60,7 +60,7 @@ import org.openide.util.HelpCtx;
  *
  * <p>It also allows to edit CVS root field by field.
  *
- * @author Petr Kuzel
+ * 
  */
 public final class RootWizard implements ActionListener, DocumentListener {
 

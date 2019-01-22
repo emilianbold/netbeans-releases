@@ -79,7 +79,7 @@ import org.netbeans.modules.versioning.util.KeyringSupport;
  * are taken directly from UI. These are propagated
  * into CvsRootSettings on {@link #storeValidValues()}.
  *
- * @author Petr Kuzel
+ * 
  */
 public final class RepositoryStep extends AbstractStep implements WizardDescriptor.AsynchronousValidatingPanel, ActionListener, DocumentListener {
 

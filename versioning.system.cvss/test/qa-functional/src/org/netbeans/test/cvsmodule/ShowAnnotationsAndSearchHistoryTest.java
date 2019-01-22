@@ -79,7 +79,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author novakm
+ * 
  */
 public class ShowAnnotationsAndSearchHistoryTest extends JellyTestCase {
     static String os_name;

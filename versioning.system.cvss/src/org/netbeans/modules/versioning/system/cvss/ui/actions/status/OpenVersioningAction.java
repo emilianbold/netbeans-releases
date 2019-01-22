@@ -59,7 +59,7 @@ import java.awt.event.ActionEvent;
  * view it behaves like StatusProjectsAction without
  * on-open refresh.
  *
- * @author Petr Kuzel
+ * 
  */
 public class OpenVersioningAction extends StatusProjectsAction {
     

@@ -67,7 +67,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author peter
+ * 
  */
 public class UpdateErrorTest extends JellyTestCase {
 

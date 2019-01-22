@@ -60,7 +60,7 @@ import org.openide.util.*;
 /**
  * Settings panel for the Branch command.
  * 
- * @author Maros Sandor
+ * 
  */
 class BranchSettings extends javax.swing.JPanel {
     

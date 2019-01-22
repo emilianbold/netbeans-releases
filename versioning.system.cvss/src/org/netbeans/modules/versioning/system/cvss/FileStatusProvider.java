@@ -56,7 +56,7 @@ import java.awt.Image;
  *
  * <p>It's registered using {@link org.openide.util.lookup.ServiceProvider}.
  * 
- * @author Maros Sandor
+ * 
  */
 class FileStatusProvider extends VCSAnnotator {
 

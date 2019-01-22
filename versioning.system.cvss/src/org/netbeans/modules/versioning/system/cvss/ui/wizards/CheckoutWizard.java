@@ -75,7 +75,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 /**
  * Checkout wizard controller with input validation.
  *
- * @author Petr Kuzel
+ * 
  */
 public final class CheckoutWizard implements ChangeListener{
 

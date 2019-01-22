@@ -60,7 +60,7 @@ import java.io.File;
 /**
  * Performs the CVS 'update' command on selected nodes.
  * 
- * @author Maros Sandor
+ * 
  */
 public class UpdateAction extends AbstractSystemAction {
 

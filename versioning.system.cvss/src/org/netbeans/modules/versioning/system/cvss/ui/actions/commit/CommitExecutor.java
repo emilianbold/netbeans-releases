@@ -61,7 +61,7 @@ import java.util.logging.Logger;
 /**
  * Executes a given 'commit' command and refreshes file statuses.
  * 
- * @author Maros Sandor
+ * 
  */
 public class CommitExecutor extends ExecutorSupport {
     

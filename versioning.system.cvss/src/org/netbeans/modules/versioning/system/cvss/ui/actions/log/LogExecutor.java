@@ -62,8 +62,8 @@ import java.io.IOException;
 /**
  * Executes a given 'log' command.
  * 
- * @author Petr Kuzel
- * @author Maros Sandor
+ * 
+ * 
  */
 public class LogExecutor extends ExecutorSupport {
 

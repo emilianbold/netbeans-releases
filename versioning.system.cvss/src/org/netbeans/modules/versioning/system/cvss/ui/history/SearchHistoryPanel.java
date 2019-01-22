@@ -76,7 +76,7 @@ import java.awt.Dimension;
 /**
  * Contains all components of the Search History panel.
  *
- * @author Maros Sandor
+ * 
  */
 class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, ActionListener, DiffSetupSource {
 

@@ -77,7 +77,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author peter
+ * 
  */
 public class StandardWorkFlowTest extends JellyTestCase {
 

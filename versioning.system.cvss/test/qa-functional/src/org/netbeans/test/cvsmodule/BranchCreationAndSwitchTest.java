@@ -45,7 +45,7 @@ package org.netbeans.test.cvsmodule;
 
 /**
  *
- * @author novakm
+ * 
  */
 
 import java.io.File;
@@ -75,7 +75,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author novakm
+ * 
  */
 public class BranchCreationAndSwitchTest extends JellyTestCase {
     

@@ -49,7 +49,7 @@ import javax.swing.*;
 
 /**
  *
- * @author Maros Sandor
+ * 
  */
 class ChangeCVSRootPanel extends javax.swing.JPanel {
     

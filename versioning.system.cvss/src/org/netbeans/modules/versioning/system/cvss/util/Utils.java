@@ -80,7 +80,7 @@ import org.openide.windows.WindowManager;
 /**
  * Provides static utility methods for CVS module.
  * 
- * @author Maros Sandor
+ * 
  */
 public class Utils {
 

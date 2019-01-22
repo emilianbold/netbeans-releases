@@ -58,7 +58,6 @@ import org.openide.awt.StatusDisplayer;
 /**
  * Rewrites CVS/Root files with new content. Acts on one root folder recursively. 
  * 
- * @author Michael Nascimento Santos
  */
 public class CvsRootRewriter {
     private static final String CVS_FOLDER = "CVS";  // NOI18N

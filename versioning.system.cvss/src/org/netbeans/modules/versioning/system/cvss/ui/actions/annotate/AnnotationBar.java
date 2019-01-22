@@ -92,7 +92,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
  *   <li> {@link LogOutputListener} events
  * </ul>
  *
- * @author Petr Kuzel
+ * 
  */
 final class AnnotationBar extends JComponent implements Accessible, PropertyChangeListener, LogOutputListener, DocumentListener, ChangeListener, ActionListener, Runnable, ComponentListener {
 

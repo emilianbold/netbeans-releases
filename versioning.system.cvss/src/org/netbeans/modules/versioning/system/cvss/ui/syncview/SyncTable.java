@@ -100,7 +100,7 @@ import org.openide.util.RequestProcessor;
 /**
  * Table that displays nodes in the Versioning view. 
  * 
- * @author Maros Sandor
+ * 
  */
 class SyncTable implements MouseListener, ListSelectionListener, AncestorListener, VersioningListener {
 

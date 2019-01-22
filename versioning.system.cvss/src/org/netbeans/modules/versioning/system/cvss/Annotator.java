@@ -85,7 +85,7 @@ import org.openide.util.ImageUtilities;
  * Annotates names for display in Files and Projects view (and possible elsewhere). Uses
  * Filesystem support for this feature (to be replaced later in Core by something more generic).
  * 
- * @author Maros Sandor
+ * 
  */
 public class Annotator {
 

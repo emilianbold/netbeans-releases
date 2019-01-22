@@ -80,7 +80,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.Setup;
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots. 
  * 
- * @author Maros Sandor
+ * 
  */
 class SynchronizePanel extends JPanel implements ExplorerManager.Provider, PropertyChangeListener, PreferenceChangeListener, VersioningListener, ActionListener {
     

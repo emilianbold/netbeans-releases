@@ -57,7 +57,7 @@ import java.io.File;
 /**
  * Packages search criteria in Search History panel.
  *
- * @author Maros Sandor
+ * 
  */
 class SearchCriteriaPanel extends javax.swing.JPanel {
     

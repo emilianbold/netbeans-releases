@@ -82,7 +82,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author tomas
+ * 
  */
 public class VCSKenaiSupportImplTest extends NbTestCase {
     private String username;

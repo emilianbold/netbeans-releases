@@ -52,7 +52,7 @@ import java.awt.event.KeyEvent;
 /**
  * Tooltip-like Window.
  * 
- * @author Maros Sandor
+ * 
  */
 class TooltipWindow extends JWindow implements AWTEventListener {
 

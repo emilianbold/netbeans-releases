@@ -64,7 +64,7 @@ import java.util.logging.Level;
 /**
  * Simple import command ExecutorSupport subclass.
  *
- * @author Petr Kuzel
+ * 
  */
 final class ImportExecutor extends ExecutorSupport implements Runnable {
 

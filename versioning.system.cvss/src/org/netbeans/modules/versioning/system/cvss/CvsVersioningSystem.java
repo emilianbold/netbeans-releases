@@ -76,7 +76,7 @@ import java.util.regex.PatternSyntaxException;
  * A singleton CVS manager class, center of CVS module. Use {@link #getInstance()} to get access
  * to CVS module functionality.
  * 
- * @author Maros Sandor
+ * 
  */
 public class CvsVersioningSystem {
 

@@ -69,7 +69,7 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
  *
  * TODO add consolidated error reporting, nowadays, multiple errors from backgroud thread can popup
  *
- * @author Petr Kuzel
+ * 
  */
 public final class ExecutorGroup extends AbstractAction implements Cancellable {
 

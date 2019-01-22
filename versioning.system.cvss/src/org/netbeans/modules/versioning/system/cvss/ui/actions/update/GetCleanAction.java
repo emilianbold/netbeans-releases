@@ -69,7 +69,7 @@ import org.openide.LifecycleManager;
 /**
  * Revert modifications action.
  * 
- * @author Maros Sandor
+ * 
  */
 public class GetCleanAction extends AbstractSystemAction {
 

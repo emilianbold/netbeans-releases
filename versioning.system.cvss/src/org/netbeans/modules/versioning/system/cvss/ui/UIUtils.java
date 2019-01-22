@@ -52,7 +52,7 @@ import java.awt.*;
 /**
  * Swing toolkit utility methods.
  *
- * @author Petr Kuzel
+ * 
  */
 public class UIUtils {
 

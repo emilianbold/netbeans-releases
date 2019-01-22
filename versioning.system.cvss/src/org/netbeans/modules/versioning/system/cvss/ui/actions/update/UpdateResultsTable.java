@@ -79,7 +79,7 @@ import org.netbeans.modules.versioning.util.SortedTable;
 /**
  * Table that displays nodes in the Update Results view. 
  * 
- * @author Maros Sandor
+ * 
  */
 class UpdateResultsTable implements MouseListener, ListSelectionListener, AncestorListener {
 

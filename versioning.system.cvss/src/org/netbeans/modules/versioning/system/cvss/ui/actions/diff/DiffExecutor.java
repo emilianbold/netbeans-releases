@@ -65,7 +65,7 @@ import org.openide.util.lookup.ProxyLookup;
  * and shows the diff. It actually does not execute "cvs diff" but rather uses our
  * own diff algorithm. 
  * 
- * @author Maros Sandor
+ * 
  */
 public class DiffExecutor {
 

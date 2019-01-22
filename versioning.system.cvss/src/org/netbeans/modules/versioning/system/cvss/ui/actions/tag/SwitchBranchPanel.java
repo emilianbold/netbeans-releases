@@ -56,7 +56,7 @@ import org.openide.util.*;
 /**
  * Settings panel for the Switch To Branch action.
  * 
- * @author Maros Sandor
+ * 
  */
 class SwitchBranchPanel extends javax.swing.JPanel {
     

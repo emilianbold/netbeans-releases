@@ -66,7 +66,7 @@ import org.netbeans.modules.versioning.util.Utils;
 /**
  * Performs the CVS 'tag' command on selected nodes.
  * 
- * @author Maros Sandor
+ * 
  */
 public class TagAction extends AbstractSystemAction {
     

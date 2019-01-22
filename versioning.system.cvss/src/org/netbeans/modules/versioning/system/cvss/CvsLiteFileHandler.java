@@ -67,7 +67,7 @@ import java.io.FileOutputStream;
  * <p>It supresses FilesystemHandler event propagating
  * to cache to avoid
  *
- * @author Petr Kuzel
+ * 
  */
 class CvsLiteFileHandler extends DefaultFileHandler implements FileReadOnlyHandler {
 

@@ -51,7 +51,7 @@ import java.io.File;
 /**
  * Contract for log and annotate commands output,
  *
- * @author Petr Kuzel
+ * 
  */
 public interface LogOutputListener {
 

@@ -63,7 +63,7 @@ import java.util.Collections;
  *
  * <p>It supports only non-recursive commands.
  *
- * @author Petr Kuzel
+ * 
  */
 final class VirtualAdminHandler implements AdminHandler {
 

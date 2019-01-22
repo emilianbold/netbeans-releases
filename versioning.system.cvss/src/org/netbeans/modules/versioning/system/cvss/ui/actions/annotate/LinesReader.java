@@ -54,7 +54,7 @@ import java.util.List;
  * Reader over annotation lines. It uses '\n' as
  * line separator to match Document line separator.
  *
- * @author Petr Kuzel
+ * 
  */
 public final class LinesReader extends  Reader {
 

@@ -73,7 +73,7 @@ import org.openide.util.Mutex;
  * Show/Hide Annotations action. It's enabled for single
  * node selections only.
  * 
- * @author Petr Kuzel
+ * 
  */
 public class AnnotationsAction extends AbstractSystemAction {
 

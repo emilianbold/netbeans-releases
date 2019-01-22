@@ -80,7 +80,7 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 /**
  *
- * @author peter
+ * 
  */
 public class CommittingCvs11Test extends JellyTestCase {
 

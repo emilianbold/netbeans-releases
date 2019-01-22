@@ -58,7 +58,7 @@ import java.io.File;
 /**
  * Settings panel for the Tag command.
  *
- * @author Maros Sandor
+ * 
  */
 public class TagSettings extends javax.swing.JPanel implements DocumentListener {
     

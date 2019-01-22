@@ -71,7 +71,7 @@ import org.openide.cookies.OpenCookie;
 /**
  * Allows to view a specific revision of the given file.
  * 
- * @author Maros Sandor
+ * 
  */
 public class ViewRevisionAction extends AbstractAction implements Runnable {
     

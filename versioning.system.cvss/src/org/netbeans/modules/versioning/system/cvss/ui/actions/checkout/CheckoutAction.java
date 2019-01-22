@@ -69,7 +69,7 @@ import org.netbeans.modules.versioning.util.ProjectUtilities;
  * detects checked out projects and optionally
  * shows open/create project dialog.
  * 
- * @author Petr Kuzel
+ * 
  */
 public final class CheckoutAction extends SystemAction {
 

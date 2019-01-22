@@ -50,7 +50,7 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
 /**
  * Test utility method in AnnotationBar
  *
- * @author Petr Kuzel
+ * 
  */
 public class AnnotationBarTest extends TestCase {
 

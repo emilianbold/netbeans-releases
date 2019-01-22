@@ -59,7 +59,7 @@ import java.util.*;
 /**
  * Table model for the Commit dialog table.
  *
- * @author Maros Sandor
+ * 
  */
 class CommitTableModel extends AbstractTableModel {
 

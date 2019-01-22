@@ -63,7 +63,7 @@ import org.openide.util.actions.SystemAction;
 /**
  * Container menu for copy actions.
  *
- * @author Ondra
+ * 
  */
 public final class BranchMenu extends DynamicMenu {
     private final ActionDestination dest;

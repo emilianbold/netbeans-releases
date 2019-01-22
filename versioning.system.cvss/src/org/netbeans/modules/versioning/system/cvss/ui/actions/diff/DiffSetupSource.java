@@ -54,7 +54,7 @@ import java.util.Collection;
  * TopComponets or it can be added in their lookup
  * (it allows proxing).
  *
- * @author Petr Kuzel
+ * 
  */
 public interface DiffSetupSource {
 

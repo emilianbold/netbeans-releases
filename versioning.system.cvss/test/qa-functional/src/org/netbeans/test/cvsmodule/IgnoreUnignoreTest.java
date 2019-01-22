@@ -80,7 +80,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author novakm
+ * 
  */
 public class IgnoreUnignoreTest extends JellyTestCase {
     static String os_name;

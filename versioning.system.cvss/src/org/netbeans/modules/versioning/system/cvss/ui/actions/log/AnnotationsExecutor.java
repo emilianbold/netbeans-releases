@@ -62,7 +62,7 @@ import java.io.File;
 /**
  * Executes a given 'annotate' command.
  * 
- * @author Petr Kuzel
+ * 
  */
 public class AnnotationsExecutor extends ExecutorSupport {
 

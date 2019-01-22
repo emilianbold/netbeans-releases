@@ -55,7 +55,7 @@ import java.text.DateFormat;
 /**
  * Displays files that have been updated.
  * 
- * @author Maros Sandor
+ * 
  */
 class UpdateResults extends JComponent {
     

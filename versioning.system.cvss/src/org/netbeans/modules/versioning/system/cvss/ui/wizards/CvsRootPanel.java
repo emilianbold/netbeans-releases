@@ -53,7 +53,7 @@ import javax.swing.text.BadLocationException;
 /**
  * CVS Root field by field customizer UI.
  *
- * @author  Petr Kuzel
+ * 
  */
 public class CvsRootPanel extends javax.swing.JPanel {
 

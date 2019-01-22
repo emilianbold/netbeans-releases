@@ -60,7 +60,7 @@ import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 /**
  * Open the Versioning status view for all projects.
  *
- * @author Maros Sandor
+ * 
  */
 public class StatusProjectsAction extends SystemAction {
 

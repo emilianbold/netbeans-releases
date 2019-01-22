@@ -68,7 +68,7 @@ import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 /**
  * Represents module aliases subtree.
  *
- * @author Petr Kuzel
+ * 
  */
 final class AliasesNode extends AbstractNode {
 

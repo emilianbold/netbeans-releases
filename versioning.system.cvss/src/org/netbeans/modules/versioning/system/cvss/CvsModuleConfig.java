@@ -60,7 +60,7 @@ import org.netbeans.modules.versioning.util.KeyringSupport;
 /**
  * Stores CVS module configuration.
  *
- * @author Maros Sandor
+ * 
  */
 public class CvsModuleConfig {
     

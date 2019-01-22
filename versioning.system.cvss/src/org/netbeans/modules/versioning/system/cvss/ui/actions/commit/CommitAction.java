@@ -73,7 +73,7 @@ import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 /**
  * Represents the "Commit" main/popup action and provides programmatic Commit action upon any context.
  *
- * @author Maros Sandor
+ * 
  */
 public class CommitAction extends AbstractSystemAction {
     

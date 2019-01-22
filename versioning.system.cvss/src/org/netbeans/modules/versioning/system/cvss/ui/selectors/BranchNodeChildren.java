@@ -58,7 +58,7 @@ import java.util.Collections;
  * Defines Tags and Branches node structure. Nodes representing
  * tag or branch have <code>String</code> it their lookups.
  *
- * @author Petr Kuzel
+ * 
  */
 final class BranchNodeChildren extends Children.Keys {
 

@@ -75,7 +75,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author peter
+ * 
  */
 public class CheckOutWizardTest extends JellyTestCase {
 

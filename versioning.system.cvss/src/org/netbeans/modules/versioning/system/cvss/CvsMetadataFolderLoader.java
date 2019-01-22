@@ -57,7 +57,7 @@ import org.openide.util.Exceptions;
  * Prevents refactoring from creating DataObjects for CVS folders and
  * therefore touching (copying/moving) them.
  *
- * @author Tomas Stupka
+ * 
  */
 public class CvsMetadataFolderLoader extends DataLoader {
 

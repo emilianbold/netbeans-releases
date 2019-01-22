@@ -58,7 +58,7 @@ import java.io.*;
 /**
  * Top component of the Versioning view.
  *
- * @author Maros Sandor
+ * 
  */
 public class CvsSynchronizeTopComponent extends TopComponent implements Externalizable {
 

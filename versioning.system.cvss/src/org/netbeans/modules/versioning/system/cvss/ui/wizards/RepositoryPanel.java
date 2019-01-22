@@ -60,7 +60,7 @@ import java.util.*;
  * UI for remote CVS repository selection. Components
  * are dynamically hidden.
  *
- * @author  Petr Kuzel
+ * 
  */
 final class RepositoryPanel extends javax.swing.JPanel implements ActionListener {
 

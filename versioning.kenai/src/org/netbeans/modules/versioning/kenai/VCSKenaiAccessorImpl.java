@@ -78,7 +78,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Tomas Stupka
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.VCSKenaiAccessor.class)
 public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyChangeListener {

@@ -64,7 +64,7 @@ import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
  * Delete action enabled only for new local files only.
  * It eliminates <tt>CVS/Entries</tt> scheduling if exists too.
  *
- * @author Petr Kuzel
+ * 
  */
 public final class DeleteLocalAction extends AbstractSystemAction {
 

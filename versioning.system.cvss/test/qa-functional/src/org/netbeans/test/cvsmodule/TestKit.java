@@ -81,7 +81,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 /**
  * Set of utility methods.
  *
- * @author Peter Pis
+ * 
  */
 public class TestKit {
 

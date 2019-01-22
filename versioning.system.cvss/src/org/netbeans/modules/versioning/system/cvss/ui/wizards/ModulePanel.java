@@ -47,7 +47,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.wizards;
 /**
  * UI for selecting repository module and local working directory.
  *
- * @author  Petr Kuzel
+ * 
  */
 final class ModulePanel extends javax.swing.JPanel {
 

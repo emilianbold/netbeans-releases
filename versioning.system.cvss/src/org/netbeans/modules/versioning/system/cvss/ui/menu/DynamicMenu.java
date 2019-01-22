@@ -50,7 +50,7 @@ import org.openide.util.actions.Presenter;
 
 /**
  *
- * @author ondra
+ * 
  */
 public abstract class DynamicMenu extends AbstractAction implements Presenter.Menu, Presenter.Popup {
     

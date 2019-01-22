@@ -61,7 +61,7 @@ import java.io.File;
 /**
  * Executes cvs remove command.
  *
- * @author Maros Sandor
+ * 
  */
 public class RemoveExecutor extends ExecutorSupport {
 

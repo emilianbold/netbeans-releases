@@ -62,7 +62,7 @@ import java.io.IOException;
 /**
  * Executes a given 'tag' command and refreshes file statuses.
  * 
- * @author Maros Sandor
+ * 
  */
 public class TagExecutor extends ExecutorSupport {
     

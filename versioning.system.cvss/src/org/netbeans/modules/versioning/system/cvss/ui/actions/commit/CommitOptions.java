@@ -47,7 +47,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.commit;
 import org.openide.util.NbBundle;
 
 /**
- * @author Maros Sandor
+ * 
  */
 abstract class CommitOptions {
 

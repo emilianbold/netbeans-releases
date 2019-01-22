@@ -64,7 +64,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 /**
  * Visible in the Search History Diff view.
  * 
- * @author Maros Sandor
+ * 
  */
 class DiffNode extends AbstractNode {
     

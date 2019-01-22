@@ -54,7 +54,7 @@ import org.openide.nodes.Node;
 /**
  * Opens the Versioning window.
  * 
- * @author Maros Sandor
+ * 
  */
 public class StatusAction extends AbstractSystemAction {
     

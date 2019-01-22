@@ -54,7 +54,7 @@ import java.util.ArrayList;
 /**
  * Represents real or virtual (non-local) file.
  *
- * @author Maros Sandor
+ * 
  */
 public class CvsFileNode {
 

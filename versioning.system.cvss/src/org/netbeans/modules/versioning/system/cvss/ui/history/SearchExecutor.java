@@ -73,7 +73,7 @@ import org.openide.awt.StatusDisplayer;
 /**
  * Executes searches in Search History panel.
  * 
- * @author Maros Sandor
+ * 
  */
 class SearchExecutor implements Runnable {
 

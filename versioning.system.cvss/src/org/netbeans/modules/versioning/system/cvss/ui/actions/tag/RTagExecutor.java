@@ -63,7 +63,7 @@ import java.text.MessageFormat;
 /**
  * Executes a given 'rtag' command.
  * 
- * @author Maros Sandor
+ * 
  */
 public class RTagExecutor extends ExecutorSupport {
     

@@ -72,7 +72,7 @@ import java.util.*;
 /**
  * Performs the CVS 'update -r branch' command on selected nodes.
  * 
- * @author Maros Sandor
+ * 
  */
 public class SwitchBranchAction extends AbstractSystemAction {
 

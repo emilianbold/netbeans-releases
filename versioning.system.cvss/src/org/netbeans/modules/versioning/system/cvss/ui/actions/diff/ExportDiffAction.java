@@ -87,7 +87,7 @@ import java.awt.*;
  * working copy and BASE repository version.
  * </ul>
  *  
- * @author Petr Kuzel
+ * 
  */
 public class ExportDiffAction extends AbstractSystemAction {
     

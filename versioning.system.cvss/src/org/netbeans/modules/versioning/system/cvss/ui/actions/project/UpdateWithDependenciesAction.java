@@ -67,7 +67,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemActi
  * dependee projects that are under CVS version
  * control.
  *
- * @author Petr Kuzel
+ * 
  */
 public final class UpdateWithDependenciesAction extends AbstractSystemAction {
 

@@ -69,7 +69,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author peter
+ * 
  */
 public class TagTest extends JellyTestCase {
 

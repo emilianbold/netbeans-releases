@@ -72,7 +72,7 @@ import java.util.*;
 /**
  * Performs the CVS 'tag -b' command on selected nodes.
  * 
- * @author Maros Sandor
+ * 
  */
 public class BranchAction extends AbstractSystemAction {
 

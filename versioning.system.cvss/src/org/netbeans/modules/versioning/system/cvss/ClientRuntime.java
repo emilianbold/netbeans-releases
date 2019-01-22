@@ -73,7 +73,7 @@ import org.netbeans.modules.versioning.util.KeyringSupport;
  * a new instance of ClientRuntime is created and cached. This objects is then responsible for running
  * commands for that CVS root.
  * 
- * @author Maros Sandor
+ * 
  */
 public class ClientRuntime {
 

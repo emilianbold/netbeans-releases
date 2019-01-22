@@ -54,7 +54,7 @@ import java.util.zip.GZIPInputStream;
  * Cvs client library FileHandler that performs
  * operations using openide filesystems.
  *
- * @author Petr Kuzel
+ * 
  */
 class CvsLiteGzippedFileHandler extends CvsLiteFileHandler {
 

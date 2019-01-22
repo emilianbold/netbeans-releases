@@ -45,7 +45,7 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 /**
- * @author Maros Sandor
+ * 
  */
 public class NotVersionedException extends Exception {
 

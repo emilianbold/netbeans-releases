@@ -63,7 +63,7 @@ import java.beans.PropertyChangeEvent;
  * annotations including listening on changes.
  *
  * @see http://www.netbeans.org/issues/show_bug.cgi?id=57776
- * @author Petr Kuzel
+ * 
  */
 class LogicalFileAnnotator extends AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
 

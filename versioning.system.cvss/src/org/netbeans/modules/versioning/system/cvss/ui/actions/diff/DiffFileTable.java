@@ -97,7 +97,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  * 
- * @author Maros Sandor
+ * 
  */
 class DiffFileTable implements MouseListener, ListSelectionListener, AncestorListener {
     

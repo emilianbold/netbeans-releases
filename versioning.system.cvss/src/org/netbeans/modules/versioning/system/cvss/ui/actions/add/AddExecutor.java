@@ -58,7 +58,7 @@ import java.io.IOException;
 /**
  * Executes a given 'add' command and refreshes file statuses.
  *
- * @author Maros Sandor
+ * 
  */
 public class AddExecutor extends ExecutorSupport {
 

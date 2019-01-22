@@ -83,7 +83,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author novakm
+ * 
  */
 public class ExportPatchAndDiffTest extends JellyTestCase {
     
