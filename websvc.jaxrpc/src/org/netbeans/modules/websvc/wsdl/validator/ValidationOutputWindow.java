@@ -66,8 +66,8 @@ import org.openide.windows.OutputWriter;
 
 /**
  * Class to manage displaying validation information in the Output window.
- * @author Praveen Savur
- * @author Rico Cruz
+ * 
+ * 
  */
 public class ValidationOutputWindow {
     

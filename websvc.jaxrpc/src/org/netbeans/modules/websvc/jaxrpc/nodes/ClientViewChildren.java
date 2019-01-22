@@ -69,7 +69,7 @@ import org.openide.filesystems.FileUtil;
  *  this module has been enabled to use as a client.  Driven by existence of
  *  wsdl files in the wsdl folder of the owner module.
  *
- * @author Peter Williams
+ * 
  */
 public class ClientViewChildren extends FilterNode.Children {
     FileObject wsdlFolder;

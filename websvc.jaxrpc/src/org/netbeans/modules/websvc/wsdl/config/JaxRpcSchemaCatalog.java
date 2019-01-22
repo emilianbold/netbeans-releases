@@ -66,7 +66,7 @@ import org.netbeans.modules.xml.catalog.spi.CatalogListener;
  *
  *  Original code before webservice modifications taken from DDCatalog.java in web/core
  *
- * @author Peter Williams
+ * 
  *
  */
 public class JaxRpcSchemaCatalog implements CatalogReader, CatalogDescriptor2, EntityResolver  {

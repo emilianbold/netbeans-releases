@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 /**
- * @author  rico
+ * 
  */
 public class RegenerateFromWsdlAction extends CookieAction{
     

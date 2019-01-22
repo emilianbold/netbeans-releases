@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.wsdl.config.api;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public interface Handler extends CommonDDBean {
     public void setClassName(java.lang.String value);

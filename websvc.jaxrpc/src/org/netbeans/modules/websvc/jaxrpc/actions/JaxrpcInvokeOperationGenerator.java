@@ -101,7 +101,7 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public class JaxrpcInvokeOperationGenerator {
 

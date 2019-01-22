@@ -82,7 +82,7 @@ import org.netbeans.modules.websvc.wsdl.xmlutils.SAXParseError;
 
 /** DataObject for JAX-RPC WsCompile config files.
  *
- * @author Peter Williams
+ * 
  */
 public class WsCompileConfigDataObject extends DD2beansDataObject implements WsCompileConfigCookie,
         Node.Cookie, ConfigurationProxy.OutputProvider, ChangeListener {

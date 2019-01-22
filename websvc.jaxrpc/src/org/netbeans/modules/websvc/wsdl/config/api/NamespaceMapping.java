@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.wsdl.config.api;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public interface NamespaceMapping extends CommonDDBean {
     public void setNamespace(java.net.URI value);

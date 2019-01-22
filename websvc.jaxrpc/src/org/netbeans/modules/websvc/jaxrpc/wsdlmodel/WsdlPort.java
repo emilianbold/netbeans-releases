@@ -51,7 +51,7 @@ import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 
 /**
  *
- * @author Roderico Cruz
+ * 
  */
 public class WsdlPort implements WSPort{
 

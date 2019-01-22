@@ -66,7 +66,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author rico
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel.WsdlModelProvider.class)
 public class JaxrpcWsdlModelProvider implements WsdlModelProvider {

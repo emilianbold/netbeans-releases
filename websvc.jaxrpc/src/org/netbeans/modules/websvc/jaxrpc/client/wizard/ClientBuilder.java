@@ -102,7 +102,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public class ClientBuilder {
 

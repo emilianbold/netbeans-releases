@@ -54,7 +54,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Milan Kuchtiak
+ * 
  */
 public class JaxRpcHandlerCreator implements HandlerCreator {
     

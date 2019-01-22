@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Martin Grebac
+ * 
  */
 public class NoWebServiceClientsPanel extends JPanel implements HelpCtx.Provider {
 

@@ -55,7 +55,7 @@ import org.netbeans.modules.websvc.core.ProjectClientViewProvider;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.ProjectClientViewProvider.class)
 public class PrototypeWebServicesClientView implements WebServicesClientViewImpl, ProjectClientViewProvider {

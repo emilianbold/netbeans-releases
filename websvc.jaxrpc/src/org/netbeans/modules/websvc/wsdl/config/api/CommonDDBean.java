@@ -50,7 +50,7 @@ package org.netbeans.modules.websvc.wsdl.config.api;
  *<p><b><font color="red"><em>Important note: Do not provide an implementation of this interface.</em></font></b>
  *</p>
  *
- * @author Peter Williams
+ * 
  *
  */
 public interface CommonDDBean {

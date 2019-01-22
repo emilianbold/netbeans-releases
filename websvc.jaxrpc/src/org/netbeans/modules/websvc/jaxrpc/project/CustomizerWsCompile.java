@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public class CustomizerWsCompile extends javax.swing.JPanel implements WsCompileEditorSupport.Panel, HelpCtx.Provider {
     

@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.wsdl.config.api;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public interface Configuration extends RootInterface {
     public static final String PROPERTY_VERSION="cfg_version"; //NOI18N

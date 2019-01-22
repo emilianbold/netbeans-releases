@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.jaxrpc.dev.wizard;
 
 /**
  *
- * @author mg116726
+ * 
  */
 public class NoWSPortDefinedException extends java.lang.Exception {
     

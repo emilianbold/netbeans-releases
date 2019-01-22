@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 
 /** Loader for WsCompile Configuration File DataObjects.
  *
- * @author Peter Williams
+ * 
  */
 public class WsCompileConfigDataLoader extends UniFileLoader {
 

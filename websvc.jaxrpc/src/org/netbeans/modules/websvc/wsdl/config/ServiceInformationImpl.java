@@ -67,7 +67,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
- * @author rico
+ * 
  * Refactored methods from the WsdlDataObject
  */
 public class ServiceInformationImpl implements ServiceInformation {

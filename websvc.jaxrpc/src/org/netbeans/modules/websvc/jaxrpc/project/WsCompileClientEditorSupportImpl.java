@@ -51,7 +51,7 @@ import org.openide.WizardValidationException;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport.class)
 public class WsCompileClientEditorSupportImpl implements WsCompileClientEditorSupport {

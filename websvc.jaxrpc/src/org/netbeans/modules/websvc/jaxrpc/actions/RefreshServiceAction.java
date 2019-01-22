@@ -75,7 +75,7 @@ import org.netbeans.modules.websvc.wsdl.config.ServiceInformationImpl;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public class RefreshServiceAction extends NodeAction {
 

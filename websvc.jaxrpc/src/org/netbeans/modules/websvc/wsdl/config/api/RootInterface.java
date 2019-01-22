@@ -53,7 +53,7 @@ import org.netbeans.modules.schema2beans.BaseBean;
  *<p><b><font color="red"><em>Important note: Do not provide an implementation of this interface!</em></font></b>
  *</p>
  *
- * @author Peter Williams
+ * 
  */
 public interface RootInterface extends CommonDDBean {
     /**

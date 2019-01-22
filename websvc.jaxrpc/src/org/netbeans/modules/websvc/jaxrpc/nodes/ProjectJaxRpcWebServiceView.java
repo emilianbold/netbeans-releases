@@ -74,7 +74,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Ajit
+ * 
  */
 final class ProjectJaxRpcWebServiceView extends AbstractProjectWebServiceViewImpl {
 

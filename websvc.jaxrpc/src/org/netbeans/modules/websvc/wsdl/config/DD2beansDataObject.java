@@ -61,7 +61,7 @@ import org.openide.util.WeakListeners;
 
 /** Represents a DD2beansDataObject in the Repository.
  *
- * @author  mkuchtiak
+ * 
  */
 public abstract class DD2beansDataObject extends XMLJ2eeDataObject implements org.openide.nodes.CookieSet.Factory{
 

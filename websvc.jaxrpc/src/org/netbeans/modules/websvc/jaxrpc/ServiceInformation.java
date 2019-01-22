@@ -50,7 +50,7 @@ import org.openide.nodes.Node;
 
 /** Provides the general information about web service
  *
- * @author Milan Kuchtiak
+ * 
  */
 public interface ServiceInformation extends Node.Cookie {
 

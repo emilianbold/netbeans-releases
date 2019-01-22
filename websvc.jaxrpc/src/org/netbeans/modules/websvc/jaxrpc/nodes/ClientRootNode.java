@@ -65,7 +65,7 @@ import org.openide.util.lookup.Lookups;
 /** This is the root node for the graph of web services for which this module
  *  has been client-enabled (e.g. services this module is using.)
  *
- * @author Peter Williams
+ * 
  */
 public final class ClientRootNode extends AbstractNode {
 

@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", position=600)
 public class JaxRpcCompositePanelProvider implements ProjectCustomizer.CompositeCategoryProvider {

@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.wsdl.config.api;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public interface Modelfile extends CommonDDBean {
     public void setLocation(java.net.URI value);

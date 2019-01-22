@@ -46,7 +46,7 @@ import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaType;
 
 /**
  *
- * @author Roderico Cruz
+ * 
  */
 public class WsdlJavaType implements JavaType{
     private com.sun.xml.rpc.processor.model.java.JavaType javaType;

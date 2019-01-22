@@ -65,7 +65,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Milan Kuchtiak
+ * 
  */
 public class JaxRpcWebServiceNodeFactory implements NodeFactory {
     private static final String WS_DD = "webservices.xml"; //NOI18N

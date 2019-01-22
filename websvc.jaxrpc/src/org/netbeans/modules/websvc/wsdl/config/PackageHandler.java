@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.wsdl.config;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public class PackageHandler extends org.xml.sax.helpers.DefaultHandler {
     private String packageName;

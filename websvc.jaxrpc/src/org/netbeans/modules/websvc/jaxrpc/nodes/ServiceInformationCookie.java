@@ -50,7 +50,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public interface ServiceInformationCookie extends Node.Cookie {
 

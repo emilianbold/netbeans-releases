@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.wsdl.config.api;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public interface TypeMapping extends CommonDDBean {
     public void setEncodingStyle(java.net.URI value);

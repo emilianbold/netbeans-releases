@@ -64,7 +64,7 @@ import org.netbeans.spi.xml.cookies.*;
 
 /** Represents a XMLJ2eeDataObject in the Repository.
  *
- * @author  mkuchtiak
+ * 
  */
 public abstract class XMLJ2eeDataObject extends XMLDataObject implements CookieSet.Factory {
 

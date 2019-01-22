@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.wsdl.config.api;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public interface TypeMappingRegistry extends CommonDDBean {
     public void setImport(Import value);

@@ -50,7 +50,7 @@ import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 
 /**
  *
- * @author Roderico Cruz
+ * 
  */
 public class WsdlModel implements org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel.WsdlModel{
 

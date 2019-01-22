@@ -50,7 +50,7 @@ import org.netbeans.modules.websvc.core.WsdlRetriever;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public class DownloadWsdlPanel extends javax.swing.JPanel implements WsdlRetriever.MessageReceiver {
 

@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.wsdl.config.api;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public interface Chain extends CommonDDBean {
     public void setRunAt(java.lang.String value);

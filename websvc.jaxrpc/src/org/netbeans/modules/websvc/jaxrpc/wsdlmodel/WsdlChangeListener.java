@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.jaxrpc.wsdlmodel;
 
 /** Listener for WsdlModeler object to notify the client when WSDL model is changed
  *
- * @author mkuchtiak
+ * 
  */
 public interface WsdlChangeListener {
     

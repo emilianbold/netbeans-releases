@@ -60,7 +60,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 @ProjectServiceProvider(service=WebServiceDataProvider.class, projectType={
     "org-netbeans-modules-web-project",

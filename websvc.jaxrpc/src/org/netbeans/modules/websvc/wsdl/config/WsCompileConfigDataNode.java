@@ -62,7 +62,7 @@ import org.netbeans.modules.websvc.wsdl.xmlutils.XMLJ2eeDataObject;
 
 /** Node for WsCompile configuration files in the explorer views.
  *
- * @author Peter Williams
+ * 
  */
 public class WsCompileConfigDataNode extends DataNode {
 

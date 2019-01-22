@@ -62,7 +62,7 @@ import org.netbeans.modules.websvc.spi.support.DefaultClientSelectionPanel;
 
 /**
  *
- * @author Peter Williams, Milan Kuchtiak
+ * 
  */
 public class ClientExplorerPanel extends DefaultClientSelectionPanel {
 

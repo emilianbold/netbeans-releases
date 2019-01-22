@@ -65,7 +65,7 @@ import org.netbeans.modules.websvc.wsdl.config.ConfigurationProxy;
  *
  * Copied/Inspired by DDProvider from web/ddapi
  *
- * @author Peter Williams
+ * 
  */
 public final class DDProvider {
     private static DDProvider ddProvider;

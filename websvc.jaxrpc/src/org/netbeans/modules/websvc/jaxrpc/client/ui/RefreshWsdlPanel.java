@@ -60,7 +60,7 @@ import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 
 /**
  *
- * @author  peterw99
+ * 
  */
 public class RefreshWsdlPanel extends javax.swing.JPanel {
 

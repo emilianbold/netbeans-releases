@@ -86,7 +86,7 @@ import org.openide.util.NbBundle;
 /** JaxWsAddOperation.java
  * Created on December 12, 2006, 4:36 PM
  *
- * @author mkuchtiak
+ * 
  */
 public class JaxRpcAddOperation implements AddOperationCookie {
 

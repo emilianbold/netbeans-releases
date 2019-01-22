@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.wsdl.config.api;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public interface NamespaceMappingRegistry extends CommonDDBean {
     public void setNamespaceMapping(int index, NamespaceMapping value);

@@ -64,7 +64,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class AntJaxRpcService implements WebServiceImplementation {
 

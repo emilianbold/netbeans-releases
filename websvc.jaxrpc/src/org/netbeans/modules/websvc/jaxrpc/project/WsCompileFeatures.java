@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author rico
+ * 
  * Table containing wscompile options and corresponding description
  */
 public class WsCompileFeatures {

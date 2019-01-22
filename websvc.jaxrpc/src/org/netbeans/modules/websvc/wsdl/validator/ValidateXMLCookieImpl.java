@@ -54,7 +54,7 @@ import org.openide.loaders.DataObject;
 
 /**
  *
- * @author rico
+ * 
  */
 public class ValidateXMLCookieImpl implements ValidateXMLCookie{
     private DataObject dobj;

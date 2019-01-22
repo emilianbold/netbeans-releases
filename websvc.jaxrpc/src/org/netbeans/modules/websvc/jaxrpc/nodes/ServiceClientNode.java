@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
  *  corresponding registry node, along with registry properties and short
  *  description.
  *
- * @author Peter Williams
+ * 
  */
 
 public class ServiceClientNode extends FilterNode implements PropertyChangeListener {

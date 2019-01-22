@@ -54,7 +54,7 @@ import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
 
 /**
  *
- * @author Roderico Cruz
+ * 
  */
 public class WsdlOperation implements WSOperation{
 

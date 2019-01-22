@@ -48,7 +48,7 @@ import org.netbeans.modules.websvc.wsdl.config.api.Configuration;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public class ConfigurationProxy implements Configuration {
     private Configuration configuration;

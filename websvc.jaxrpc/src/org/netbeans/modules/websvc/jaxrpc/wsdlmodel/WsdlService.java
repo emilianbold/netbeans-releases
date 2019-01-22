@@ -51,7 +51,7 @@ import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 
 /**
  *
- * @author Roderico Cruz
+ * 
  */
 public class WsdlService implements WSService{
     private Service service;

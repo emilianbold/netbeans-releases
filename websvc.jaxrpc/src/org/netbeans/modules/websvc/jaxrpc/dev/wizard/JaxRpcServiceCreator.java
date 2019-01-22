@@ -92,7 +92,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Ajit Bhate
+ * 
  */
 public class JaxRpcServiceCreator implements ServiceCreator, WsdlRetriever.MessageReceiver {
     private static final String WSDL_FILE_PATH = "wsdlFilePath"; //NOI18N

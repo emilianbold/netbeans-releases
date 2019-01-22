@@ -53,7 +53,7 @@ import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaType;
 
 /**
  *
- * @author rico
+ * 
  */
 public class WsdlJavaMethod implements JavaMethod{
    private com.sun.xml.rpc.processor.model.java.JavaMethod method;

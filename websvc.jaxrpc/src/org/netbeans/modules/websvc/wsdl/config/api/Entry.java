@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.wsdl.config.api;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public interface Entry extends CommonDDBean {
     public void setSchemaType(java.lang.String/*QName*/ value);

@@ -53,7 +53,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class JaxRpcInvokeOperation implements InvokeOperationCookie {
 

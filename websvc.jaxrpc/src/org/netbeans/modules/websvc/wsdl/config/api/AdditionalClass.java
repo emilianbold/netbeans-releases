@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.wsdl.config.api;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public interface AdditionalClass extends CommonDDBean {
     public void setName(java.lang.String value);

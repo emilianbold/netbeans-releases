@@ -68,7 +68,7 @@ import javax.xml.parsers.ParserConfigurationException;
  *
  * @credits Pattern of execute method lifted from ant <uptodate> task.
  *
- * @author Peter Williams
+ * 
  */
 public class WsClientUpToDate extends Task {
 

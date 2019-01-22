@@ -47,7 +47,7 @@ package org.netbeans.modules.websvc.jaxrpc.wsdlmodel;
 /** Listener for WsdlInfo object in order to be notified when
  * WSDL model is created
  *
- * @author mkuchtiak
+ * 
  */
 public interface WsdlModelListener {
     

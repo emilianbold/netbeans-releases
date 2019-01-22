@@ -47,7 +47,7 @@ import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaParameter;
 
 /**
  *
- * @author rico
+ * 
  */
 public class WsdlJavaParameter implements JavaParameter {
 

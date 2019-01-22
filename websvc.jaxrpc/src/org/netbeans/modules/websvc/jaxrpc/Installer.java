@@ -58,7 +58,7 @@ import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
 
 /**
- * @author Peter Williams
+ * 
  */
 public class Installer extends ModuleInstall {
 

@@ -61,7 +61,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author rico
+ * 
  */
 public class WsdlModeler {
 

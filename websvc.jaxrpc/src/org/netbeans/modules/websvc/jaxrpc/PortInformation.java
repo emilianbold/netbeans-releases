@@ -46,12 +46,12 @@ package org.netbeans.modules.websvc.jaxrpc;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 
 /** Provides the general information from WSDL file
  *
- * @author Milan Kuchtiak
+ * 
  */
 public interface PortInformation {
 

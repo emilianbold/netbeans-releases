@@ -58,7 +58,7 @@ import org.openide.loaders.DataObject;
 
 /**
  *
- * @author rico
+ * 
  */
 public class ServiceInformationSupport {
     private static ServiceInformationSupport serviceInfoSupport;

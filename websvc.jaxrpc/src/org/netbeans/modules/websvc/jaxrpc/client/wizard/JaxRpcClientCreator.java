@@ -90,7 +90,7 @@ import org.openide.util.Task;
 
 /**
  *
- * @author radko
+ * 
  */
 public class JaxRpcClientCreator implements ClientCreator {
     

@@ -60,7 +60,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author mkuchtiak
+ * 
  */
 public class AntJaxRpcClient implements WebServiceImplementation {
 

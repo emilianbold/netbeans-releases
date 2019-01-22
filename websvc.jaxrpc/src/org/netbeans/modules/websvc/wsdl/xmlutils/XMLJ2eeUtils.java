@@ -49,7 +49,7 @@ import java.util.*;
 
 /** Static methods useful for XMLJ2eeDataObject.
  *
- * @author  mkuchtiak
+ * 
  */
 
 public class XMLJ2eeUtils {

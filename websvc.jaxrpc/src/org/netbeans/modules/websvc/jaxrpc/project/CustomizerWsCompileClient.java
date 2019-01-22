@@ -69,7 +69,7 @@ import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public class CustomizerWsCompileClient extends javax.swing.JPanel implements WsCompileClientEditorSupport.Panel, HelpCtx.Provider {
 

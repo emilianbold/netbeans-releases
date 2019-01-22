@@ -69,7 +69,7 @@ import org.openide.util.MutexException;
  *
  *  property format: 'webservice.client.[servicename].features=xxx,yyy,zzz
  *
- * @author Peter Williams
+ * 
  */
 public class CustomizerWSClientHost extends javax.swing.JPanel implements PropertyChangeListener, HelpCtx.Provider {
     

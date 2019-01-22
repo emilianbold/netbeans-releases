@@ -48,7 +48,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  *
- * @author  mkuchtiak
+ * 
  * @version
  */
 public class SAXParseError {

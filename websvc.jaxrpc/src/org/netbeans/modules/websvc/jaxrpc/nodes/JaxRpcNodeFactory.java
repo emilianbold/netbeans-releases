@@ -69,7 +69,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Milan Kuchtiak
+ * 
  */
 public class JaxRpcNodeFactory implements NodeFactory {
     private static final String WSDL_FOLDER = "wsdl"; //NOI18N

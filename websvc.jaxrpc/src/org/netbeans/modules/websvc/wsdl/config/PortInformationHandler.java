@@ -54,7 +54,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author Peter Williams
+ * 
  */
 public class PortInformationHandler extends DefaultHandler implements PortInformation {
 

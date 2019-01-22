@@ -65,7 +65,7 @@ import org.netbeans.modules.xml.api.EncodingUtil;
 
 /** Support for editing a XMLJ2eeDataObject as text.
  *
- * @author mkuchtiak
+ * 
  */
 
 public class XMLJ2eeEditorSupport extends DataEditorSupport

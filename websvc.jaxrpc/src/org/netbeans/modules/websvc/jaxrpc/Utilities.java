@@ -51,7 +51,7 @@ import org.openide.WizardDescriptor;
 
 /** Utility methods shared for web service modules.
  *
- * @author Peter Williams
+ * 
  */
 public final class Utilities {
     

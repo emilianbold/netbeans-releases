@@ -46,7 +46,7 @@ package org.netbeans.modules.websvc.wsdl.xmlutils;
 
 /**
  *
- * @author  builder
+ * 
  */
 public class ElementAttrInfo {
 
