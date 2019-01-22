@@ -53,7 +53,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 /**
  * FileBuiltQueryImplementation for bluej projects..
- * @author Milos Kleint
+ * 
  *
  */
 public class BluejFileBuiltQuery implements FileBuiltQueryImplementation, PropertyChangeListener {

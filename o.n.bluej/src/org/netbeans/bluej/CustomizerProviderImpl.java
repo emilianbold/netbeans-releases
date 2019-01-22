@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author mkleint
+ * 
  */
 public class CustomizerProviderImpl implements CustomizerProvider {
     private BluejProject project;

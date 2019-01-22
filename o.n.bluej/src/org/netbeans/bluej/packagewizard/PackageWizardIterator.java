@@ -61,7 +61,7 @@ import org.openide.util.Lookup;
 /**
  * a hacky wrapper around the default package wizard iterator, making sure we create the bluej.pkg file in a package so
  * that it appears in the bluej view.
- * @author mkleint
+ * 
  */
 public class PackageWizardIterator implements WizardDescriptor.InstantiatingIterator {
     

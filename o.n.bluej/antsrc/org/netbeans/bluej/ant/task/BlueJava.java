@@ -66,7 +66,7 @@ import org.openide.windows.OutputWriter;
 
 /**
  * Ant task for redirecting the output of java task to the netbeans output window.
- * @author Milos Kleint
+ * 
  */
 public class BlueJava extends Java  {
     

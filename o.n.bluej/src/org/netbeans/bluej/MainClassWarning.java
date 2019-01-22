@@ -51,8 +51,7 @@ import org.openide.filesystems.FileObject;
 
 /** Shows a warning that no main class is set and allows choose a main class.
  *
- * @author  Jiri Rechtacek
- * @author Milos Kleint copied from j2se project type to bluej one
+ * 
  */
 public class MainClassWarning extends JPanel {
    

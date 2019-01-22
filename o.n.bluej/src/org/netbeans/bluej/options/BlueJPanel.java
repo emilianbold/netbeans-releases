@@ -57,7 +57,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  mkleint
+ * 
  */
 public class BlueJPanel extends javax.swing.JPanel {
 

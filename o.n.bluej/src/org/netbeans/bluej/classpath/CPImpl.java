@@ -66,7 +66,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author mkleint
+ * 
  */
 public class CPImpl implements ClassPathImplementation {
     

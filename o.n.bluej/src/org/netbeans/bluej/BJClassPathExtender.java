@@ -57,7 +57,7 @@ import org.openide.filesystems.URLMapper;
 
 /**
  *
- * @author mkleint
+ * 
  */
 public class BJClassPathExtender implements ProjectClassPathExtender{
 

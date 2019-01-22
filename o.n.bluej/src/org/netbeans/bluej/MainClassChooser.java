@@ -70,8 +70,7 @@ import org.openide.util.RequestProcessor;
 
 /** Browses and allows to choose a project's main class.
  *
- * @author  Jiri Rechtacek
- * @author Milos Kleint copied from j2se project type to bluej one
+ * 
  */
 public class MainClassChooser extends JPanel {
 

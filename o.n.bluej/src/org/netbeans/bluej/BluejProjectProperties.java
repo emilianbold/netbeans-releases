@@ -60,7 +60,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
 /**
- * @author mkleint
+ * 
  */
 public class BluejProjectProperties {
     

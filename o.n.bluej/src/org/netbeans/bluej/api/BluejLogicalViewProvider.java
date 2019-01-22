@@ -48,7 +48,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author mkleint
+ * 
  */
 public interface BluejLogicalViewProvider {
     Node getBigIconRootNode();

@@ -79,7 +79,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author mkleint
+ * 
  */
 public class BluejLogicalViewRootNode extends AbstractNode {
     

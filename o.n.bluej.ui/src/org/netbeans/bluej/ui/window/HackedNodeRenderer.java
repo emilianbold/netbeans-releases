@@ -57,7 +57,7 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author mkleint
+ * 
  */
 public class HackedNodeRenderer extends NodeRenderer {
 

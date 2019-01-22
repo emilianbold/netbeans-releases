@@ -90,7 +90,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * Represents one bluej project.
- * @author Milos Kleint
+ * 
  */
 public final class BluejProject implements Project, AntProjectListener {
     

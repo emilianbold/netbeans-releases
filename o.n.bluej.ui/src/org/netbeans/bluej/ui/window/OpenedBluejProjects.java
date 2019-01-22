@@ -65,7 +65,7 @@ import org.openide.windows.WindowManager;
 /**
  * Class holding opened BlueJ projects and providing ComboBoxModel
  *
- * @author Milan Kubec
+ * 
  */
 public class OpenedBluejProjects implements PropertyChangeListener {
     

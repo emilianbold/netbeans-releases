@@ -62,7 +62,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author mkleint
+ * 
  */
 public class SFBQueryImpl implements SourceForBinaryQueryImplementation, JavadocForBinaryQueryImplementation {
     

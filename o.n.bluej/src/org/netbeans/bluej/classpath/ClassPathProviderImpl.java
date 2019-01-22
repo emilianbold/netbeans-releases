@@ -63,7 +63,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author mkleint
+ * 
  */
 public class ClassPathProviderImpl implements ClassPathProvider {
 

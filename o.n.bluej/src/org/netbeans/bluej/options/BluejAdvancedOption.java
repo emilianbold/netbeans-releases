@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author mkleint
+ * 
  */
 public class BluejAdvancedOption extends org.netbeans.spi.options.AdvancedOption {
     

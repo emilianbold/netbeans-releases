@@ -48,7 +48,7 @@ import org.netbeans.api.project.Project;
 
 /**
  *
- * @author mkleint
+ * 
  */
 public interface BluejOpenCloseCallback {
     void projectOpened(Project project);

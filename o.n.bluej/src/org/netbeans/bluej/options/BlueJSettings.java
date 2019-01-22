@@ -57,7 +57,7 @@ import org.openide.util.Utilities;
 
 /**
  * 
- * @author Milos Kleint
+ * 
  */
 public class BlueJSettings {
     public static final String PROP_HOME = "home"; // NOI18N

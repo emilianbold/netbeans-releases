@@ -80,7 +80,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * Support for creating logical views.
- * @author Milos Kleint
+ * 
  */
 public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbeans.bluej.api.BluejLogicalViewProvider {
     

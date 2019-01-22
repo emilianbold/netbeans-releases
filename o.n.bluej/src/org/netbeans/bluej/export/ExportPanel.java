@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  mkleint
+ * 
  */
 public class ExportPanel extends javax.swing.JPanel {
     

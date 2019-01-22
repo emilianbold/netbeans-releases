@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  phrebejk
+ * 
  */
 public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     

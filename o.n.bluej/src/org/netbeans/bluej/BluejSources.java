@@ -62,7 +62,7 @@ import org.openide.util.Utilities;
 
 /**
  * Implementation of {@link Sources} interface for BluejProject.
- * @author Milos Kleint
+ * 
  */
 public class BluejSources implements Sources {
     
