@@ -60,7 +60,6 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author jarda
  */
 @org.openide.util.lookup.ServiceProvider(service=org.openide.awt.StatusLineElementProvider.class, position=500)
 public class SubmitStatus implements StatusLineElementProvider {

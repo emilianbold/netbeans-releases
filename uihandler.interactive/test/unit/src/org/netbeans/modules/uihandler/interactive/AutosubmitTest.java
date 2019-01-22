@@ -63,7 +63,6 @@ import org.openide.util.SharedClassObject;
 
 /**
  *
- * @author Jaroslav Tulach
  */
 public class AutosubmitTest extends NbTestCase {
     private ModuleInstall o;

@@ -59,7 +59,6 @@ import junit.framework.Assert;
 
 /**
  *
- * @author Jaroslav Tulach
  */
 public class MemoryURL extends URLStreamHandler {
 

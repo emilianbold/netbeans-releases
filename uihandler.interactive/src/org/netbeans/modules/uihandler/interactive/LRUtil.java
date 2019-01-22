@@ -47,7 +47,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Martin Entlicher
  */
 final class LRUtil {
     
