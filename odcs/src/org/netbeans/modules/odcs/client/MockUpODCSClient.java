@@ -286,10 +286,10 @@ public class MockUpODCSClient implements ODCSClient {
     private class DummyProfile extends Profile {
         public DummyProfile() {
             setAccountDisabled(false);
-            setEmail("Juraj.Janosheek@hornychlapci.org");
+            setEmail("");
             setEmailVerfied(true);
-            setFirstName("Juraj");
-            setFirstName("Janosheek");
+            setFirstName("");
+            setFirstName("");
         }
     }
     

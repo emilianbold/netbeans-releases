@@ -52,7 +52,6 @@ Contributor(s):
     </volume>
     
     <properties>
-        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
             <value>javax.el:el-api:1.0:jar</value>

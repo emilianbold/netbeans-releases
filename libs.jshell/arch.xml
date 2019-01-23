@@ -50,7 +50,6 @@ made subject to such option by the copyright holder.
 <api-answers
   question-version="1.28"
   module="Javac API Wrapper"
-  author="tball@netbeans.org"
 >
 
   &api-questions;

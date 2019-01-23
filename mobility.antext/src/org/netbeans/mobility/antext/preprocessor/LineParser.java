@@ -8,7 +8,6 @@
 //###           16 May 01  -- Bob Jamison -- added custom stack sizing
 //###           04 Mar 02  -- Yuval Oren  -- improved java performance, added options
 //###           14 Mar 02  -- Tomas Hurka -- -d support, static initializer workaround
-//### Please send bug reports to tom@hukatronic.cz
 //### static char yysccsid[] = "@(#)yaccpar	1.8 (Berkeley) 01/20/90";
 package org.netbeans.mobility.antext.preprocessor;
 

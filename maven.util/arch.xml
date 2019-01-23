@@ -44,7 +44,7 @@ Contributor(s):
 
 <api-answers
   question-version="1.29"
-  author="yourname@netbeans.org"
+  author=""
 >
 
   &api-questions;

@@ -60,7 +60,6 @@ Contributor(s):
         <type>javadoc</type>
     </volume>
     <properties>
-        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
             <value>myfaces:myfaces-all:1.1.0:jar</value>

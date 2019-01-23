@@ -107,7 +107,7 @@ public final class KenaiUser {
     }
 
     /**
-     * fully qualified name. E.g. john@java.net
+     * fully qualified name.
      * @return
      */
     public String getFQN() {
