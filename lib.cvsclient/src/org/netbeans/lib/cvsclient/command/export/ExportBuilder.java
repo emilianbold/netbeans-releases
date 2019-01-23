@@ -50,7 +50,7 @@ import org.netbeans.lib.cvsclient.command.*;
 import org.netbeans.lib.cvsclient.event.*;
 
 /**
- * @author  Milos Kleint
+ * 
  */
 public class ExportBuilder implements Builder {
 

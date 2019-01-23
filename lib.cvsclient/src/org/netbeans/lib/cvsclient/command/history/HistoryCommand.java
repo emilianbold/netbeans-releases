@@ -53,7 +53,7 @@ import org.netbeans.lib.cvsclient.request.*;
 
 /**
  * The history command provides information history of activities in repository.
- * @author  Milos Kleint
+ * 
  */
 public class HistoryCommand extends Command {
     /**

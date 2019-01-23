@@ -52,7 +52,7 @@ import java.util.*;
 /**
  * Represents .cvspass passwords file.
  *
- * @author Petr Kuzel
+ * 
  */
 public final class PasswordsFile {
 

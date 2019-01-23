@@ -54,7 +54,7 @@ import org.netbeans.lib.cvsclient.event.*;
  * Handles the building of a annotate information object and the firing of
  * events when complete objects are built.
  *
- * @author  Milos Kleint
+ * 
  */
 public class AnnotateBuilder implements Builder {
     private static final String UNKNOWN = ": nothing known about";  //NOI18N

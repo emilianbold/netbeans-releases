@@ -55,7 +55,7 @@ import org.netbeans.lib.cvsclient.util.*;
 
 /**
  * Handles standard message responses
- * @author  Milos Kleint
+ * 
  */
 class MessageTaggedResponse implements Response {
     /**

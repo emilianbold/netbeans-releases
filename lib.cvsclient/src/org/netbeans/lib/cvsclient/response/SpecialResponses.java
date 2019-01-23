@@ -47,7 +47,7 @@ package org.netbeans.lib.cvsclient.response;
 /**
  * Defines few hacks needed to support special and error cases.
  *
- * @author Petr Kuzel
+ * 
  */
 final class SpecialResponses {
 

@@ -55,7 +55,7 @@ import java.io.BufferedOutputStream;
 /**
  * Provides support for the :ext: connection method.
  *
- * @author Maros Sandor
+ * 
  */
 public class ExtConnection extends AbstractConnection {
 

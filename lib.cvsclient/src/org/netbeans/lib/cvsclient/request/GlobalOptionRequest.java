@@ -47,7 +47,7 @@ package org.netbeans.lib.cvsclient.request;
  * The global options request.
  * Sends global switch to the server.
  *
- * @author  Milos Kleint
+ * 
  */
 public class GlobalOptionRequest extends Request {
     /**

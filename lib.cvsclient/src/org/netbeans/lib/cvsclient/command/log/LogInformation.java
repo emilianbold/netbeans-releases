@@ -54,7 +54,7 @@ import org.netbeans.lib.cvsclient.util.*;
  * Describes log information for a file. This is the result of doing a
  * cvs log command. The fields in instances of this object are populated
  * by response handlers.
- * @author  Milos Kleint
+ * 
  */
 public class LogInformation extends FileInfoContainer {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z"); //NOI18N

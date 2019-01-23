@@ -49,7 +49,7 @@ import java.io.*;
  * interface for recognizing if the local files are to be ignored.
  * Implements the functionality of the .cvsignore files..
  *
- * @author  Milos Kleint
+ * 
  */
 public interface IgnoreFileFilter {
 

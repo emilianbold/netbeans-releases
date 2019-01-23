@@ -52,7 +52,7 @@ import java.io.*;
  * Such info is then transmitted via the event mechanism (CVSEvent) to the
  * appropriate UI classes that use this information to display it to the user.
  *
- * @author  Milos Kleint
+ * 
  */
 public abstract class FileInfoContainer {
     public abstract File getFile();

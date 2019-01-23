@@ -50,7 +50,7 @@ import org.netbeans.lib.cvsclient.command.*;
  * cvs commit command. The fields in instances of this object are populated
  * by response handlers.
  *
- * @author  Milos Kleint
+ * 
  */
 public class CommitInformation extends DefaultFileInfoContainer {
 

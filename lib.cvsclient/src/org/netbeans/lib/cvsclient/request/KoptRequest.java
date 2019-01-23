@@ -47,7 +47,7 @@ package org.netbeans.lib.cvsclient.request;
 /**
  * Represents <tt>Kopt option\n</tt> request.
  *
- * @author Petr Kuzel
+ * 
  */
 public class KoptRequest extends Request {
 

@@ -50,7 +50,7 @@ package org.netbeans.lib.cvsclient.request;
 
 /**
  * The questionable request. Tell the server which directory to use.
- * @author  Milos Kleint
+ * 
  */
 public final class QuestionableRequest extends Request {
 

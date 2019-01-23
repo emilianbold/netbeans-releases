@@ -50,7 +50,7 @@ import java.io.IOException;
 /**
  * Custom output stream factory.
  *
- * @author Petr Kuzel
+ * 
  */
 public interface OutputStreamProvider {
     OutputStream createOutputStream() throws IOException;

@@ -50,7 +50,7 @@ import org.netbeans.lib.cvsclient.util.*;
 
 /**
  * Handles the Set-sticky response.
- * @author  Milos Kleint
+ * 
  */
 
 class SetStickyResponse implements Response {

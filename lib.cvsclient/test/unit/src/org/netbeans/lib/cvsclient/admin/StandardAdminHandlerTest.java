@@ -52,7 +52,7 @@ import org.netbeans.lib.cvsclient.file.FileUtils;
 
 /**
  *
- * @author Petr Kuzel
+ * 
  */
 public class StandardAdminHandlerTest extends TestCase {
 

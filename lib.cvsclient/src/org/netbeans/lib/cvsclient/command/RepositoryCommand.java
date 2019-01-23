@@ -56,7 +56,7 @@ import org.netbeans.lib.cvsclient.request.*;
  * A class that provides common functionality for CVS commands that
  * operate upon the repository.
  *
- * @author Martin Entlicher
+ * 
  */
 public abstract class RepositoryCommand extends BuildableCommand {
     /**

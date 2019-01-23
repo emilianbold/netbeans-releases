@@ -47,7 +47,7 @@ import org.netbeans.lib.cvsclient.util.*;
 
 /**
  * Tells the server about the eviroment variables to set for CVSROOT/*info executions.
- * @author  Milos Kleint
+ * 
  */
 public class SetRequest extends Request {
 

@@ -55,7 +55,7 @@ import org.netbeans.lib.cvsclient.request.*;
 
 /**
  * The annotate command shows all lines of the file and annotates each line with cvs-related info.
- * @author  Milos Kleint
+ * 
  */
 public class AnnotateCommand extends BasicCommand {
     /**

@@ -54,7 +54,7 @@ import org.netbeans.lib.cvsclient.util.*;
  * It's possible to set the processor the preffered line-ending.
  * The default is dependant on the platform.
  *
- * @author  Milos Kleint
+ * 
  */
 public class WriteRcsDiffFilePreprocessor implements WriteTextFilePreprocessor {
 

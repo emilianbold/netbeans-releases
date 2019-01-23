@@ -56,7 +56,7 @@ import org.netbeans.lib.cvsclient.request.*;
  * The rlog command is similar to log, but doens't operate on currently checked
  * out sources.
  *
- * @author  MIlos Kleint
+ * 
  */
 public class RlogCommand extends BasicCommand {
 

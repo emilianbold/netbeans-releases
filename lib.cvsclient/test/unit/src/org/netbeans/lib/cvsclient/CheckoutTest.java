@@ -59,7 +59,7 @@ import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 /**
  * Checkout test suite. Works at C/S protocol wire level.
  *
- * @author Petr Kuzel
+ * 
  */
 public class CheckoutTest extends TestCase {
 

@@ -53,7 +53,7 @@ import org.netbeans.lib.cvsclient.file.*;
  * Handles the building of a status information object and the firing of
  * events when complete objects are built.
  *
- * @author  Milos Kleint
+ * 
  * @author  Thomas Singer
  */
 public class StatusBuilder implements Builder {

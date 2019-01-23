@@ -55,7 +55,7 @@ import org.netbeans.lib.cvsclient.request.*;
  * The watchers command looks up who is watching this file,
  * who is interested in it.
  *
- * @author Milos Kleint
+ * 
  * @author Thomas Singer
  */
 public class WatchersCommand extends BasicCommand {

@@ -49,7 +49,7 @@ import org.netbeans.lib.cvsclient.util.*;
 
 /**
  * Handles the Clear-sticky response.
- * @author  Milos Kleint
+ * 
  */
 
 class ClearStickyResponse implements Response {

@@ -52,7 +52,7 @@ import org.netbeans.lib.cvsclient.command.*;
  * cvs remove command. The fields in instances of this object are populated
  * by response handlers.
  *
- * @author  Milos Kleint
+ * 
  */
 public class RemoveInformation extends FileInfoContainer {
     private File file;

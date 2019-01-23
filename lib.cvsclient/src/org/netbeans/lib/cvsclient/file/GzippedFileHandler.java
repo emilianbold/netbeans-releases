@@ -59,7 +59,7 @@ import org.netbeans.lib.cvsclient.request.*;
 /**
  * Handles the reading and writing of Compressed files to and from the
  * server.
- * @author  Milos Kleint
+ * 
  */
 public class GzippedFileHandler extends DefaultFileHandler {
     /**

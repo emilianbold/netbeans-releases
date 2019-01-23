@@ -57,7 +57,7 @@ import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 /**
  * Add command test suite.
  *
- * @author Petr Kuzel
+ * 
  */
 public class AddTest extends TestCase {
 

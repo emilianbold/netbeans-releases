@@ -50,7 +50,7 @@ import java.io.File;
  * It's faster alternative to Modified but must be used with
  * care see protocol specs.
  *
- * @author Petr Kuzel
+ * 
  */
 public final class IsModifiedRequest extends Request {
 

@@ -107,7 +107,6 @@ import org.openide.filesystems.Repository;
 
 /** XTest / JUnit test class performing validation of JavaCVS module
  *
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  * @see #suite JavaCVS validation testsuite definition
  * @version 1.0
  */

@@ -56,7 +56,7 @@ import org.netbeans.lib.cvsclient.util.*;
 /**
  * Indicates that a file has been successfully operated on, e.g. checked in,
  * added etc. is the same as Checked-in but operates on modified files..
- * @author  Milos Kleint
+ * 
  */
 class NewEntryResponse implements Response {
     /**

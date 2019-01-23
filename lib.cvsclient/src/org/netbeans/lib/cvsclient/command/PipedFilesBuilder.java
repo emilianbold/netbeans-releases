@@ -52,7 +52,7 @@ import org.netbeans.lib.cvsclient.event.*;
  * the checked out file to the temporary file and the firing of
  * events when complete objects are built.
  *
- * @author  Milos Kleint
+ * 
  */
 public class PipedFilesBuilder implements Builder, BinaryBuilder {
 

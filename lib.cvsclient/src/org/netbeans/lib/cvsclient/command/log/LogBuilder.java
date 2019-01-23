@@ -55,7 +55,7 @@ import org.netbeans.lib.cvsclient.util.*;
 /**
  * Handles the building of a log information object and the firing of
  * events when complete objects are built.
- * @author Milos Kleint
+ * 
  */
 public class LogBuilder implements Builder {
     private static final String LOGGING_DIR = ": Logging "; //NOI18N

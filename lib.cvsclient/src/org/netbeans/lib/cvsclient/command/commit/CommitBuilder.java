@@ -53,7 +53,7 @@ import org.netbeans.lib.cvsclient.event.*;
  * Handles the building of update information object and the firing of
  * events when complete objects are built.
  *
- * @author  Milos Kleint
+ * 
  */
 public class CommitBuilder
         implements Builder {

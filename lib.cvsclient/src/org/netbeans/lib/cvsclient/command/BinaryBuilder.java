@@ -48,7 +48,7 @@ package org.netbeans.lib.cvsclient.command;
  * that farmework must call this interface {@link #parseBytes}
  * instead of {@link Builder#parseLine}.
  *
- * @author Petr Kuzel
+ * 
  */
 public interface BinaryBuilder {
 

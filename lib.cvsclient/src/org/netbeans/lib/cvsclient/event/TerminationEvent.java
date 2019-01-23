@@ -51,7 +51,7 @@ package org.netbeans.lib.cvsclient.event;
 /**
  * An event sent from the server to indicate that a the output from the server
  * has ended for the current command
- * @author  Milos Kleint
+ * 
  */
 public class TerminationEvent extends CVSEvent {
 

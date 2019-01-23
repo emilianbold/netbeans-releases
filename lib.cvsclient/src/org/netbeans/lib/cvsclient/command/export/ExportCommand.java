@@ -56,7 +56,7 @@ import org.netbeans.lib.cvsclient.request.*;
  * The export command exports the projects (modules in the repository)
  * to the local directory structure.
  *
- * @author  MIlos Kleint
+ * 
  */
 public class ExportCommand extends RepositoryCommand {
 

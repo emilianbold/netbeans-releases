@@ -51,7 +51,7 @@ package org.netbeans.lib.cvsclient.event;
 /**
  * An event sent from the server to indicate that a message should be
  * displayed to the user
- * @author  Milos Kleint
+ * 
  */
 public class EnhancedMessageEvent extends MessageEvent {
 

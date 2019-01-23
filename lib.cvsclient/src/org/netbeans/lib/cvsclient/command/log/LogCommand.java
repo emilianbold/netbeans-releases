@@ -53,7 +53,7 @@ import org.netbeans.lib.cvsclient.request.*;
 
 /**
  * The log command looks up the log(history) of file(s) in the repository
- * @author  Milos Kleint
+ * 
  */
 public class LogCommand extends BasicCommand {
     /**

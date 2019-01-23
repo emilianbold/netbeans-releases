@@ -53,7 +53,7 @@ import org.netbeans.lib.cvsclient.command.*;
  * Describes diff information for 2 fversions of a file. This is the result of doing a
  * cvs diff command. The fields in instances of this object are populated
  * by response handlers.
- * @author  Milos Kleint
+ * 
  */
 public class DiffInformation extends FileInfoContainer {
     private File file;

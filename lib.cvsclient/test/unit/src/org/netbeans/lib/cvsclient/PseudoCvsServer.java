@@ -75,7 +75,7 @@ import java.util.zip.ZipInputStream;
  *   <li>incoming responses stream use <pre>nc $cvs.netbeans.org $2401 | tee $reponses.log</pre>
  * </ul>
  *
- * @author Petr Kuzel
+ * 
  */
 public final class PseudoCvsServer implements Runnable {
 

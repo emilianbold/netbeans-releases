@@ -46,7 +46,7 @@ package org.netbeans.lib.cvsclient.command;
 import java.io.*;
 
 /**
- * @author  Milos Kleint
+ * 
  */
 public interface TemporaryFileCreator {
 

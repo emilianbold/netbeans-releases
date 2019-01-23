@@ -53,7 +53,7 @@ import org.netbeans.lib.cvsclient.command.*;
  * Describes annotate information for  a file. This is the result of doing a
  * cvs annotate command. The fields in instances of this object are populated
  * by response handlers.
- * @author  Milos Kleint
+ * 
  */
 public class AnnotateInformation extends FileInfoContainer {
     /**

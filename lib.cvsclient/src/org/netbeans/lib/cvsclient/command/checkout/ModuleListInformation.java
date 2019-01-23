@@ -51,8 +51,6 @@ import org.netbeans.lib.cvsclient.command.*;
 /**
  * Object containing information about various modules defined in the repository.
  * Is parsed from the output of cvs checkout -c and cvs checkout -s.
-
- * @author   Milos Kleint
  */
 public class ModuleListInformation extends FileInfoContainer {
 

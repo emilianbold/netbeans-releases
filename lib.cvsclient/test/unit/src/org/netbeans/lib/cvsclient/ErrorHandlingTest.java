@@ -60,7 +60,7 @@ import org.netbeans.lib.cvsclient.command.CommandAbortedException;
  * Tescase covering handling network unreliability and
  * known server protocol errors (library contains workarounds).
  *
- * @author Petr Kuzel
+ * 
  */
 public class ErrorHandlingTest extends TestCase {
 

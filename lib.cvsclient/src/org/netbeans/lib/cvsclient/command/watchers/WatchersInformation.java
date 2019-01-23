@@ -55,7 +55,7 @@ import org.netbeans.lib.cvsclient.util.*;
  * The fields in instances of this object are populated
  * by response handlers.
  *
- * @author  Milos Kleint
+ * 
  */
 public class WatchersInformation extends FileInfoContainer {
 

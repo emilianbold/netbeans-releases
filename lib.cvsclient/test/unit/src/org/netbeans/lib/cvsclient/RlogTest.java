@@ -57,7 +57,7 @@ import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 /**
  * Rlog command testcase.
  *
- * @author Petr Kuzel
+ * 
  */
 public class RlogTest extends TestCase {
 

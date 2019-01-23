@@ -54,7 +54,7 @@ import java.io.*;
  * Handles the logging of communication to and from the server
  *
  * @author Robert Greig
- * @author Petr Kuzel rewriten to streams
+ *  rewriten to streams
  */
 public final class Logger {
     /**

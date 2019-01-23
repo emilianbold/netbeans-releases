@@ -57,7 +57,7 @@ import org.netbeans.lib.cvsclient.request.*;
  * out sources.
 
  *
- * @author  MIlos Kleint
+ * 
  */
 public class RannotateCommand extends BasicCommand {
 

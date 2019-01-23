@@ -60,7 +60,7 @@ import org.netbeans.lib.cvsclient.event.CVSListener;
 
 /**
  * The locbundlecheck command
- * @author  Milos Kleint
+ * 
  */
 public class locbundlecheck extends CVSAdapter implements CommandProvider {
 

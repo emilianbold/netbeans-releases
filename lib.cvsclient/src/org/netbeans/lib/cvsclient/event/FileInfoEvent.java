@@ -49,7 +49,7 @@ import org.netbeans.lib.cvsclient.command.*;
 /**
  * This event is created when file information is received from the
  * server.
- * @author  Milos Kleint
+ * 
  */
 public class FileInfoEvent extends CVSEvent {
     /**

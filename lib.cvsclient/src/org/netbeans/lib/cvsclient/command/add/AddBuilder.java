@@ -53,7 +53,7 @@ import org.netbeans.lib.cvsclient.event.*;
  * Handles the building of add information object and the firing of
  * events when complete objects are built.
  *
- * @author  Milos Kleint
+ * 
  */
 public class AddBuilder implements Builder {
     private static final String UNKNOWN = ": nothing known about"; //NOI18N

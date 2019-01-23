@@ -56,7 +56,7 @@ import org.netbeans.lib.cvsclient.commandLine.*;
 
 /**
  * The rlog command
- * @author  Milos Kleint
+ * 
  */
 public class rannotate extends AbstractCommandProvider {
 

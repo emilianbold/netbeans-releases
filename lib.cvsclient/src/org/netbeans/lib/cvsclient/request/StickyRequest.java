@@ -46,7 +46,7 @@ package org.netbeans.lib.cvsclient.request;
 
 /**
  * Implements the Sticky request
- * @author  Milos Kleint
+ * 
  */
 public final class StickyRequest extends Request {
     /**

@@ -51,7 +51,6 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class DefaultTransmitTextFilePreprocessorTest extends NbTestCase {
     private String prevEndings;

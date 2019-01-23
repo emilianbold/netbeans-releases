@@ -48,7 +48,7 @@ package org.netbeans.lib.cvsclient.response;
  * Acts just like the Updated response but refuses to overwrite existing files. Server uses either only the
  * Updated response or Created/Update-existing responses, depending on responses supported by client.
  *
- * @author Maros Sandor
+ * 
  */
 public class CreatedResponse extends UpdatedResponse {
 

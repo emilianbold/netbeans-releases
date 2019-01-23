@@ -50,7 +50,7 @@ package org.netbeans.lib.cvsclient.event;
 
 /**
  * Indicates that a file is to be removed.
- * @author Martin Entlicher
+ * 
  */
 public class FileToRemoveEvent extends CVSEvent {
 

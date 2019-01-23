@@ -50,7 +50,7 @@ import java.io.IOException;
 /**
  * Set of utility methods.
  *
- * @author Petr Kuzel
+ * 
  */
 public class TestKit {
     public static File createTmpFolder(String prefix) throws IOException {

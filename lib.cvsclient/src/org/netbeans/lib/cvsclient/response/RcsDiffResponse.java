@@ -60,7 +60,7 @@ import org.netbeans.lib.cvsclient.util.*;
 /**
  * Sends a diff of a particular file, indicating that the file currently
  * checked-out needs to be updated by the patch sent with this response.
- * @author  Milos Kleint
+ * 
  */
 class RcsDiffResponse implements Response {
 

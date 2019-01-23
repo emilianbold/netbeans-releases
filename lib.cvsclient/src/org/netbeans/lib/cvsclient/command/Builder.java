@@ -44,7 +44,7 @@
 package org.netbeans.lib.cvsclient.command;
 
 /**
- * @author  Milos Kleint
+ * 
  */
 public interface Builder {
 

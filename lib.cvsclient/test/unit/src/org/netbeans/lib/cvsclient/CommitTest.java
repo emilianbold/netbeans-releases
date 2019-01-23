@@ -59,7 +59,7 @@ import org.netbeans.lib.cvsclient.connection.PServerConnection;
 /**
  * Commit command test suite.
  *
- * @author Petr Kuzel
+ * 
  */
 public class CommitTest extends TestCase {
 
