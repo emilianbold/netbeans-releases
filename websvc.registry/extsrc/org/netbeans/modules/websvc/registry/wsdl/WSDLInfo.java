@@ -95,12 +95,6 @@ public class WSDLInfo {
     private String errorMessage;
     private boolean hasOperations;
     
-    /**
-     * The following is taken from com.sun.xml.rpc.processor.modeler.wsdl.WSDLModelerBase where it's used to set
-     * the documentation property on Model.
-     */
-    private static final String WSDL_DOCUMENTATION = "com.sun.xml.rpc.processor.modeler.wsdl.documentation";
-    
     public static final String SERVICE_DISPLAYNAME_TOKEN = "%%DISPLAY_NAME%%";
     public static final String TOKEN_SEPARATOR = "@";
     public static final String SIG_SEPARATOR = "|";
