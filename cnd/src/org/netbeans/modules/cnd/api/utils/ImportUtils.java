@@ -47,7 +47,6 @@ import java.util.List;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class ImportUtils {
 
