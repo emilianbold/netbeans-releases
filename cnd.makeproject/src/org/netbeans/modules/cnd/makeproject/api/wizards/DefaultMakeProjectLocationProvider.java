@@ -47,7 +47,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander
  */
 public abstract class DefaultMakeProjectLocationProvider {
 

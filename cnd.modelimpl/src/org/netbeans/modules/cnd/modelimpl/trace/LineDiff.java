@@ -60,8 +60,6 @@ import org.openide.filesystems.FileUtil;
  * Line Diff with formated textual output.
  * Number of context lines in output is configurable through system property 'nbjunit.linediff.context'.
  * based on org.netbeans.junit.diff.LineDiff, but extended with comparison of List of lines
- * @author  ehucka
- * @author Vladimir Voskresensky
  */
 public final class LineDiff {
     

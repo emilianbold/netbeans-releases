@@ -77,7 +77,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * 
- * @author vv159170
  */
 public final class NativeProjectProvider {
     

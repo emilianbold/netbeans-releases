@@ -90,7 +90,6 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.file.FileProviderFactory.class, position=1000)
 public class MakeProjectFileProviderFactory extends MakeProjectFileProvider implements FileProviderFactory {

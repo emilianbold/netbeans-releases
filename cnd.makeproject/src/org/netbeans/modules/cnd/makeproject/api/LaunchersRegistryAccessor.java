@@ -47,7 +47,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Nikolay Koldunov
  * 
  */
 public abstract class LaunchersRegistryAccessor {

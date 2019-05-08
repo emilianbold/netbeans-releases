@@ -55,7 +55,6 @@ import org.netbeans.editor.Utilities;
 
 /**
  *
- * @author Vladimir Voskresensky
  * based on idea of org.netbeans.modules.editor.java.CamelCaseOperations
  */
 /* package */ class CamelCaseOperations {

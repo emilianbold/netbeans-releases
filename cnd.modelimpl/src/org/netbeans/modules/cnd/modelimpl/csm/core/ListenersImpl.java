@@ -58,7 +58,6 @@ import org.openide.util.Lookup;
 
 /**
  * CsmListeners implementation
- * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.CsmListeners.class)
 public class ListenersImpl extends CsmListeners {

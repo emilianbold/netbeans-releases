@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 
 /**
  *
- * @author Egor Ushakov
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmObjectAttributeQuery.class)
 public class CsmObjectAttributeQueryImpl extends CsmObjectAttributeQuery {

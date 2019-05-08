@@ -71,7 +71,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Alexander Simon
  */
 class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChangeListener {
 

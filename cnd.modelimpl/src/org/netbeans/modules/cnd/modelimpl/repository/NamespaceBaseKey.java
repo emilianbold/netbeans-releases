@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
- * @author alsimon
  */
 /*package*/ abstract class NamespaceBaseKey extends ProjectContainerKey {
 

@@ -50,8 +50,6 @@ import java.util.EventListener;
  * may also be on disk.
  * <p>Event methods are fired with read access to
  * {@link org.netbeans.api.project.ProjectManager#mutex}.
- * @author Jesse Glick
- * @author Alexander Simon
  */
 public interface MakeProjectListener extends EventListener {
 

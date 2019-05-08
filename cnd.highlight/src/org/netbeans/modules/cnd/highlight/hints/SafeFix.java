@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 /**
  * Allows to perform a change when the user selects the hint if file can be modified,
  * displays warning otherwise
- * @author Danila Sergeyev
  */
 public abstract class SafeFix implements Fix {
 

@@ -50,7 +50,6 @@ import org.openide.util.Lookup;
 /**
  * Provider of additional actions in the build log window
  * 
- * @author Alexander Simon
  */
 public abstract class BuildActionsProvider {
 

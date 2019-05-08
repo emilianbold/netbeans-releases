@@ -45,7 +45,6 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface MakeProjectLookupProvider {
     void addLookup(MakeProject owner, ArrayList<Object> ic);

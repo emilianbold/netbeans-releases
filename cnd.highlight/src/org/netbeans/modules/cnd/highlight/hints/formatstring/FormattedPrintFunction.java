@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 
 /**
  *
- * @author Danila Sergeyev
  */
 class FormattedPrintFunction {
     private final CsmFile file;

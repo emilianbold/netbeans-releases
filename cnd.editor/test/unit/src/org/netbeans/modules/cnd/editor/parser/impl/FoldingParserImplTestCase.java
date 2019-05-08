@@ -57,7 +57,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class FoldingParserImplTestCase extends CndBaseTestCase {
 

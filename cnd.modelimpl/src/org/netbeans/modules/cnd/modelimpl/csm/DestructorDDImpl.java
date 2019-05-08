@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.openide.util.CharSequences;
 
 /**
- * @author Vladimir Kvashin
  */
 public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
 

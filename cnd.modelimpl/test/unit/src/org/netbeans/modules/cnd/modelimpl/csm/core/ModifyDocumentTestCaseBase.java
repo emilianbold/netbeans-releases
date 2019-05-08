@@ -83,7 +83,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * Test for reaction on editor modifications
- * @author Vladimir Voskresensky
  */
 public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
     private final ObjectsChangeListener doListener = new ObjectsChangeListener();

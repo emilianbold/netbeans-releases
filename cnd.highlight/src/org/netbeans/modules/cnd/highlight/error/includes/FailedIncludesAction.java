@@ -46,7 +46,6 @@ import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FailedIncludesAction extends NodeAction {
     

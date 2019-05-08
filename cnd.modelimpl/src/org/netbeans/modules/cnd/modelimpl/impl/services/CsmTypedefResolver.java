@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 /**
  *
- * @author vv159170
  */
 class CsmTypedefResolver {
 

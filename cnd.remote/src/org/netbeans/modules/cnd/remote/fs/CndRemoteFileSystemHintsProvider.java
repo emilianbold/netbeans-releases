@@ -46,7 +46,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author vkvashin
  */
 @ServiceProvider(service =  RemoteFileSystemHintsProvider.class)
 public class CndRemoteFileSystemHintsProvider implements RemoteFileSystemHintsProvider {

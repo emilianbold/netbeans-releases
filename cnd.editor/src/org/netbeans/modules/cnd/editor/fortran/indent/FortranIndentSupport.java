@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FortranIndentSupport {
 

@@ -45,7 +45,6 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author alsimon
  */
 public class MakeProjectLookupProviders {
     

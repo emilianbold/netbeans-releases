@@ -50,7 +50,6 @@ import org.openide.windows.WindowManager;
 
 /**
  * (This used to be PopupUtil in org.netbeans.modules.editor.codegen)
- * @author phrebejk
  */
 public final class PopupUtil {
 

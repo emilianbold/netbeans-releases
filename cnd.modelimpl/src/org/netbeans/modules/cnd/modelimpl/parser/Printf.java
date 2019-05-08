@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class Printf {
 

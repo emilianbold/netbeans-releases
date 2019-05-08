@@ -66,7 +66,6 @@ import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
 
 /**
- * @author Petr Hrebejk
  */
 class CheckRenderer extends JPanel implements TreeCellRenderer {
 

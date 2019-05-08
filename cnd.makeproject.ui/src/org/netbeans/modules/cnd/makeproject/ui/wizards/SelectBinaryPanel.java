@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, NamedPanel, ChangeListener {
     private WizardDescriptor wizardDescriptor;

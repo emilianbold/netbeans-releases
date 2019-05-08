@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class ModuleImpl extends OffsetableDeclarationBase<CsmNamespaceDefinition>
     implements CsmModule, CsmNamespaceDefinition, MutableDeclarationsContainer, Disposable {

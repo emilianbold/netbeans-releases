@@ -61,7 +61,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Alexander Simon
  */
 public class NameHolder {
     private final CharSequence name;

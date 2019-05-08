@@ -51,7 +51,6 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
  *
- * @author Alexander Simon
  */
 class BracesStack implements Cloneable {
     

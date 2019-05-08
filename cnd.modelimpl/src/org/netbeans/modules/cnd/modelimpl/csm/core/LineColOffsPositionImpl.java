@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * (line, col, offset) based CsmOffsetable.Position implementation
- * @author Vladimir Voskresensky
  */
 public class LineColOffsPositionImpl implements CsmOffsetable.Position {
     private final int line;

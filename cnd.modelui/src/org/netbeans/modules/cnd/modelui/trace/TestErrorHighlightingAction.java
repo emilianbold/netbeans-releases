@@ -77,7 +77,6 @@ import org.openide.windows.OutputWriter;
 
 /**
  * Tests error highlighting providers
- * @author Vladimir Kvashin
  */
 public class TestErrorHighlightingAction extends TestProjectActionBase {
 

@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  * utilities to convert between CsmUID and CsmObjects
- * @author Vladimir Voskresensky
  */
 public final class UIDCsmConverter {
 

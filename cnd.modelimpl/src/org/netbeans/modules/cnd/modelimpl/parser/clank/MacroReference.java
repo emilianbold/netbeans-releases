@@ -63,7 +63,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class MacroReference extends OffsetableBase implements CsmReference {
     private final CsmMacro referencedMacro;

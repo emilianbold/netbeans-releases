@@ -72,7 +72,6 @@ import org.netbeans.swing.plaf.LFCustoms;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CsmDisplayUtilities {
 

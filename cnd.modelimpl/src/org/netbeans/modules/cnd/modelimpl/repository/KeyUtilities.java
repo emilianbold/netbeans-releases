@@ -65,7 +65,6 @@ import org.openide.util.CharSequences;
 
 /**
  * help methods to create repository keys
- * @author Vladimir Voskresensky
  */
 public class KeyUtilities {
     

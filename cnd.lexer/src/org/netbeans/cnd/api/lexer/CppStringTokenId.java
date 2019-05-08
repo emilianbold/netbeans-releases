@@ -61,7 +61,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  *
  * based on JavaStringTokenId
  *
- * @author Vladimir Voskresenky
  * @version 1.00
  */
 public enum CppStringTokenId implements TokenId {

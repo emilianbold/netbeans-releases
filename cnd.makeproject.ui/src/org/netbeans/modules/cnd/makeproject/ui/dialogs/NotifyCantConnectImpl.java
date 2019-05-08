@@ -46,7 +46,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Alexander Simon
  */
 public class NotifyCantConnectImpl {
     @org.openide.util.lookup.ServiceProvider(service = NotifyCantConnectFactory.class)

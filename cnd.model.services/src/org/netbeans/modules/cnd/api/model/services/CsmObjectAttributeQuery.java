@@ -46,7 +46,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Egor Ushakov
  */
 public abstract class CsmObjectAttributeQuery {
     /** A dummy query that never returns any results.

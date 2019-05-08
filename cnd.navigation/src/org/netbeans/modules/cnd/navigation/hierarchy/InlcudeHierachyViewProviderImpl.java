@@ -49,7 +49,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 @ServiceProvider(service=CsmInlcudeHierachyViewProvider.class)
 public class InlcudeHierachyViewProviderImpl implements CsmInlcudeHierachyViewProvider {

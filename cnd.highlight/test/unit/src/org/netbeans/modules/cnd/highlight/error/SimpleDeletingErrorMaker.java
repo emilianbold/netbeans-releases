@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 /**
  * An ErrorMaker that searches for and deletes a string
  * (for example, ";" or "{")
- * @author Vladimir Kvashin
  */
 public abstract class SimpleDeletingErrorMaker extends BaseErrorMaker {
 

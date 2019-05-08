@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class DocumentModificationTest extends CndBaseTestSuite {
     public DocumentModificationTest() {

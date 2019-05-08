@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.class)
 public class CsmDocGeneratorProviderImpl extends CsmDocGeneratorProvider {

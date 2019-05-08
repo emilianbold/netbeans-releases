@@ -45,7 +45,6 @@ import java.util.Collection;
 
 /**
  *
- * @author Danila Sergeyev
  */
 public interface CodeAuditListFactory {
     // constant to be used for registration of provider

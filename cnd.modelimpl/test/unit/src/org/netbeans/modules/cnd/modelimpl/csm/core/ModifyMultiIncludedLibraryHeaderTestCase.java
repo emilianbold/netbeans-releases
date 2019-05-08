@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class ModifyMultiIncludedLibraryHeaderTestCase extends ModifyDocumentTestCaseBase {
     public ModifyMultiIncludedLibraryHeaderTestCase(String testName) {

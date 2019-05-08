@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class EditorOptionsPanelController extends OptionsPanelController implements PreviewProvider {
 

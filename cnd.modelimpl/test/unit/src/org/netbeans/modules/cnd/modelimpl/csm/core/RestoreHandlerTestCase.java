@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 
 /**
  *
- * @author vkvashin
  */
 public class RestoreHandlerTestCase extends ModifyDocumentTestCaseBase {
     private static final boolean TRACE = false;

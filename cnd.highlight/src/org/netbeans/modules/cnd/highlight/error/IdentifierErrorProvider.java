@@ -66,7 +66,6 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Provides information about unresolved identifiers.
  *
- * @author Alexey Vladykin
  */
 public final class IdentifierErrorProvider extends AbstractCodeAudit {
 

@@ -80,7 +80,6 @@ import org.openide.util.Lookup;
 /**
 * Provides a list of CsmReferences of the identifiers in the CsmFile
 *
-* @author Sergey Grinev
 */
 public abstract class CsmFileReferences {
    /**

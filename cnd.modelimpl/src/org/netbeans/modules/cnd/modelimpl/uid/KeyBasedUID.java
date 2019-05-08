@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * help class for CsmUID based on repository Key
- * @author Vladimir Voskresensky
  */
 public abstract class KeyBasedUID<T> implements CsmUID<T>, KeyHolder, SelfPersistent, Comparable<CsmUID<T>> {
 

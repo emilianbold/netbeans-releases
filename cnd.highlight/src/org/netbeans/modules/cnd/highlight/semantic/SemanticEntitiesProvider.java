@@ -72,7 +72,6 @@ import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author Sergey Grinev
  */
 public final class SemanticEntitiesProvider {
 

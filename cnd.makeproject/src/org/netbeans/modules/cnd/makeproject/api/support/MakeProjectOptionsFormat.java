@@ -43,7 +43,6 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Alexander Simon
  */
 public class MakeProjectOptionsFormat {
     

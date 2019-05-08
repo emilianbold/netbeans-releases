@@ -36,7 +36,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  * A wrapper used for tracin
- * @author Vladimir Kvashin
  */
 /* package-local */
 class TracingTypeDescriptor extends TypeDescriptor {

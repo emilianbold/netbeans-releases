@@ -39,7 +39,6 @@ import org.netbeans.modules.cnd.editor.options.EditorOptions;
  * Links point to java IZ.
  * C/C++ specific tests begin from testReformatSimpleClass
  *
- * @author Alexander Simon
  */
 public class FormatterTestCase extends EditorBase {
 

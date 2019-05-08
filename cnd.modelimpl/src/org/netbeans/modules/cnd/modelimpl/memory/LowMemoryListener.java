@@ -48,7 +48,6 @@ import java.util.EventListener;
 
 /**
  * Listener for low memory evenrts
- * @author Vladimir Kvashin
  */
 public interface LowMemoryListener extends EventListener {
     

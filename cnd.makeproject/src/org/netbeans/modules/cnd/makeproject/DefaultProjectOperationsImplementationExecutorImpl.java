@@ -68,7 +68,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author alsimon
  */
 public class DefaultProjectOperationsImplementationExecutorImpl implements DefaultProjectOperationsImplementationExecutor {
     private static final Logger LOG = Logger.getLogger(DefaultProjectOperationsImplementationExecutorImpl.class.getName());

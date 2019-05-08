@@ -62,7 +62,6 @@ import org.openide.awt.Mnemonics;
 
 /** A custom editor for array of Strings.
  *
- * @author  Ian Formanek
  * 
  * Improved to have isEmptyAllowed and default value 
  */

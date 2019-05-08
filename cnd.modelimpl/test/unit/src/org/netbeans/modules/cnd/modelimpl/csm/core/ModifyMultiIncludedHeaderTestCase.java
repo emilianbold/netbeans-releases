@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  *
- * @author vv159170
  */
 public class ModifyMultiIncludedHeaderTestCase extends ModifyDocumentTestCaseBase {
     public ModifyMultiIncludedHeaderTestCase(String testName) {

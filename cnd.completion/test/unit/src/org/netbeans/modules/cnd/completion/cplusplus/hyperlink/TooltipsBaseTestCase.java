@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 
 /**
  *
- *<petrk@netbeans.org>
  */
 public class TooltipsBaseTestCase extends HyperlinkBaseTestCase {
 

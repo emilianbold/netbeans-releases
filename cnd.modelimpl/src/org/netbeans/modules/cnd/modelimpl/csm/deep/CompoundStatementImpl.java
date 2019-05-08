@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Common ancestor for all ... statements
- * @author Vladimir Kvashin
  */
 public class CompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
 

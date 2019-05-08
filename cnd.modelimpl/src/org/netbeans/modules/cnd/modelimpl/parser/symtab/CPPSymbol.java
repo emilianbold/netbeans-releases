@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.parser.symtab;
 /**
  * based on CPPSymbol removed from cppparser.g
  *
- * @author Vladimir Voskresensky
  */
 class CPPSymbol extends DictionaryEntry {
 

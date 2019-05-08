@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
- * @author vk155633
  */
 public final class ParserThread implements Runnable {
 

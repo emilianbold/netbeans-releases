@@ -46,7 +46,6 @@ import java.util.EventObject;
 
 /**
  *
- * @author Alexander Simon
  */
 public class MakeProjectEvent extends EventObject {
 

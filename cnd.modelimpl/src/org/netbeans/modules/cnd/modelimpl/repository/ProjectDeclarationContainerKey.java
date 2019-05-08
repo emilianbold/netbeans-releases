@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  * Key for DeclarationContainer data
- * @author Vladimir Kvashin
  */
 public final class ProjectDeclarationContainerKey extends ProjectContainerKey {
 

@@ -55,7 +55,6 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author jec
  */
 public class CsmImageLoader implements CsmImageName {
     private static Map<String,ImageIcon> map = new HashMap<String,ImageIcon>();

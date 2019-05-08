@@ -45,7 +45,6 @@ import java.io.IOException;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CPPDictionary extends Dictionary {
 

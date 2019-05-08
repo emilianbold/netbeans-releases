@@ -52,7 +52,6 @@ import org.netbeans.junit.NbTestSuite;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CndLexerUnitTest extends NbTestSuite {
 

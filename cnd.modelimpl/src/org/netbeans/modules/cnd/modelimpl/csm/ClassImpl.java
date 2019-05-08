@@ -73,7 +73,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  * Implements CsmClass
- * @author Vladimir Kvashin
  */
 public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmTemplate, SelectImpl.FilterableMembers,
         DeclarationsContainer {

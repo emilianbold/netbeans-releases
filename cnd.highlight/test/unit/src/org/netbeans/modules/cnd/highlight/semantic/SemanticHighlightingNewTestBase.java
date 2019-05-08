@@ -57,7 +57,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 public class SemanticHighlightingNewTestBase extends ProjectBasedTestCase{
     

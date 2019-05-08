@@ -63,7 +63,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 /*package*/
 final class StopOnOffsetParseFileWalker extends APTParseFileWalker {

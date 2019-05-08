@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public interface CsmOverloadingResolverImplementation {
 

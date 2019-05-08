@@ -69,7 +69,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FileComponentMacros extends FileComponent {
 

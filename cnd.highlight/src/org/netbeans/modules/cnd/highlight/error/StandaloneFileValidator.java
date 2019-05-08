@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 
 /**
  * Disables error highlighting on standalone files.
- * @author Vladimir Voskresensky
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.RequestValidator.class)
 public class StandaloneFileValidator implements CsmErrorProvider.RequestValidator {

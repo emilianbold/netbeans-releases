@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * Implementation of CsmDeclarationStatement
- * @author Vladimir Kvashin
  */
 public final class DeclarationStatementImpl extends StatementBase implements CsmDeclarationStatement {
 

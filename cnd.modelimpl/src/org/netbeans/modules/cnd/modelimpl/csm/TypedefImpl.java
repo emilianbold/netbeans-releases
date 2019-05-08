@@ -69,7 +69,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Implements CsmTypedef
- * @author vk155633
  */
 public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implements CsmTypedef, CsmTemplate, Disposable, CsmScopeElement {
 

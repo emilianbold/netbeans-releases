@@ -58,7 +58,6 @@ import org.openide.util.actions.CallableSystemAction;
 /**
  * Action which shows Declaration component.
  *
- * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
  */
 @ActionID(id = "org.netbeans.modules.cnd.navigation.macroview.MacroExpansionAction", category = "Window")
 @ActionRegistration(lazy = true, displayName = "#CTL_MacroExpansionAction", iconBase=MacroExpansionTopComponent.ICON_PATH)

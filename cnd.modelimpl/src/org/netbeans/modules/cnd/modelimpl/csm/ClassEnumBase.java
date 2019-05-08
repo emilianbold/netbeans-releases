@@ -73,7 +73,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Common ancestor for ClassImpl and EnumImpl
- * @author Vladimir Kvashin
  */
 public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> implements CsmCompoundClassifier, CsmMember {
 

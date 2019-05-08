@@ -55,7 +55,6 @@ import org.openide.util.WeakSet;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class UIDManager {
 

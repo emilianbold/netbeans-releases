@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.editor.options;
 
 /**
  *
- * @author Alexander Simon
  */
 public class NewStyleName extends javax.swing.JPanel {
 

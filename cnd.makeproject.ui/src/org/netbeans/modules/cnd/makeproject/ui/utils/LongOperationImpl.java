@@ -47,7 +47,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service = LongOperation.class)
 public class LongOperationImpl extends LongOperation {

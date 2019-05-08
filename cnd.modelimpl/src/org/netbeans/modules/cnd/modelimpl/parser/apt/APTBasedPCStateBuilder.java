@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class APTBasedPCStateBuilder implements APTParseFileWalker.EvalCallback {
     private final SortedSet<int[]> blocks = new TreeSet<>(COMPARATOR);

@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 
 /**
  *
- * @author thp
  */
 public class ConfigurationWarningPanel extends javax.swing.JPanel {
 

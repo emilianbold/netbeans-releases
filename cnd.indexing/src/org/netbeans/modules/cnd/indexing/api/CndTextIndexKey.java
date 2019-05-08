@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.indexing.api;
 
 /**
  *
- * @author Egor Ushakov
  */
 public final class CndTextIndexKey {
     private final int unitId;

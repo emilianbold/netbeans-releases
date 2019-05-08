@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
 
 /**
  * A common base class for ParserErrorFilter implementations
- * @author Vladimir Kvashin
  */
 public abstract class BaseParserErrorFilter extends ParserErrorFilter {
 

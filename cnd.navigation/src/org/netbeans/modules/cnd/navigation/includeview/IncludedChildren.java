@@ -56,7 +56,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Alexander Simon
  */
 public class IncludedChildren extends Children.Keys<CsmFile> {
     private static final Comparator<CsmFile> COMARATOR = new MyComparator();

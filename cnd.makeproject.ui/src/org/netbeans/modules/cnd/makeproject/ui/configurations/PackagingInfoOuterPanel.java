@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.makeproject.ui.configurations;
 
 /**
  *
- * @author  thp
  */
 public class PackagingInfoOuterPanel extends javax.swing.JPanel {
 

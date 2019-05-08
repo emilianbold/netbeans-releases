@@ -59,7 +59,6 @@ import org.openide.util.Exceptions;
 
 /**
  * MirrorPathProvider implementation
- * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service=MirrorPathProvider.class, position=100)
 public class RemoteMirrorPathProvider implements MirrorPathProvider {

@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 /**
  * Common interface for all objects that have getRawName() function
- * @author vk155633
  */
 public interface RawNamable {
     CharSequence[] getRawName();

@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * CsmReturnStatement implementation
- * @author Vladimir Kvashin
  */
 public final class ReturnStatementImpl extends StatementBase implements CsmReturnStatement {
     

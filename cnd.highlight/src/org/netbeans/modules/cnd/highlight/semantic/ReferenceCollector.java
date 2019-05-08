@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
  * creates a list of references that satisfy some criteria.
  * A good example is unused variable finder.
  *
- * @author Alexey Vladykin
  */
 public interface ReferenceCollector {
 

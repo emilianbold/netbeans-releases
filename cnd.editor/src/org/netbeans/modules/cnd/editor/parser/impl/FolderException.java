@@ -46,7 +46,6 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 
 /**
  *
- * @author igromov
  */
 public class FolderException extends Exception{
 

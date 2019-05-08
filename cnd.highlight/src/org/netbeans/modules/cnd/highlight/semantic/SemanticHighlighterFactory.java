@@ -55,7 +55,6 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  *
- * @author Sergey Grinev
  */
 @MimeRegistrations({
     @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = TaskFactory.class),

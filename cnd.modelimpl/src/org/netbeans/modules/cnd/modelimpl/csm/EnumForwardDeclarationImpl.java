@@ -86,7 +86,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Vladimir Kvasihn
  */
 public class EnumForwardDeclarationImpl extends OffsetableDeclarationBase<CsmEnumForwardDeclaration>
                                          implements CsmEnumForwardDeclaration, CsmTemplate {

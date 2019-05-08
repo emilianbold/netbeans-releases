@@ -61,7 +61,6 @@ import org.openide.util.RequestProcessor;
 /**
  * For testing purposes, allow safe closing IDE at the time of parsing finish.
  *
- * @author Sergey Grinev
  */
 public class Terminator implements Runnable {
     

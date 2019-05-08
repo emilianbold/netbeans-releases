@@ -49,7 +49,6 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class TokenItem {
 

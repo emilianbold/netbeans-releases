@@ -60,7 +60,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author petrk
  */
 public class ExpandedExpressionBase extends ExpressionBase {
     

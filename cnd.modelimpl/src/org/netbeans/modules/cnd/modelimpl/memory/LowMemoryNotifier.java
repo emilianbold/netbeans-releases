@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.modelimpl.memory;
 /**
  * Allows to register listener that are notified in the case of low memory.
  * Singleton.
- * @author Vladimir Kvashin
  */
 public abstract class LowMemoryNotifier {
     

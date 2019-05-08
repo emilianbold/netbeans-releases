@@ -46,7 +46,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author inikiforov
  */
 public final class MakeProjectPublicUtils {
     

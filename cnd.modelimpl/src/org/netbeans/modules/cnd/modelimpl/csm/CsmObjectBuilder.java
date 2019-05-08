@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CsmObjectBuilder {
 }

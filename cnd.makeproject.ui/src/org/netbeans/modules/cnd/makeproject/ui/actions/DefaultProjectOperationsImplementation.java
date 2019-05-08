@@ -90,9 +90,7 @@ import org.openide.util.RequestProcessor;
  * Intention is to contribute it back as soon as it is adapted to remote environment.
  * Since we are planning to contribute it back,
  * NEVER use any remote or cnd stuff directly, but only via a well defined SPI
- * Vladimir Kvashin <vkvashin@netbeans.org>
  *
- * @author Jan Lahoda
  */
 @org.openide.util.lookup.ServiceProvider(service=DefaultProjectOperationsImplementationUI.class)
 public final class DefaultProjectOperationsImplementation extends DefaultProjectOperationsImplementationUI {

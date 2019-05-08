@@ -47,7 +47,7 @@
 #
 # - Names of authors whose changes should be transplanted
 #   varname: 		AUTHORS
-#   value_example: 	alexvsimon|akrasny|gorrus|igor_nikiforov|mromashova|nnnnnk|thp@netbeans.org|vkvashin|vv159170
+#   value_example: 	
 #
 # - Path to store revision to start searching for revisions from ...
 #   varname:		REVFILE

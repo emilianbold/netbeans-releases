@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.modelimpl.recovery.base.RecoveryTestCaseBase;
 
 /**
  *
- * @author Alexander Simon
  */
 //@RandomlyFails
 public class TemplateTestCase extends RecoveryTestCaseBase {

@@ -46,7 +46,6 @@ import org.openide.NotifyDescriptor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class AutoConfirmImpl implements AutoConfirm {
     @org.openide.util.lookup.ServiceProvider(service=AutoConfirmFactory.class)

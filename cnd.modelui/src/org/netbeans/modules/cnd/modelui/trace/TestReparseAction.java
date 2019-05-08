@@ -70,7 +70,6 @@ import org.openide.windows.OutputWriter;
  * A test action that reparses the given project 
  * and redirects error output to the output pane
  * 
- * @author Vladimir Kvashin
  */
 public class TestReparseAction extends TestProjectActionBase {
 

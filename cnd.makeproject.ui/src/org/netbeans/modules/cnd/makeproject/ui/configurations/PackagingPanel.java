@@ -61,7 +61,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  thp
  */
 public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
 

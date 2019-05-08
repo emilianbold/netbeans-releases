@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * Common ancestor for all ... statements
- * @author Vladimir Kvashin
  */
 public final class ExceptionHandlerImpl extends CompoundStatementImpl implements CsmExceptionHandler {
 

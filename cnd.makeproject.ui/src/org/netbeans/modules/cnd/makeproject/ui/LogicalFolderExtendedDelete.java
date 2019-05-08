@@ -50,7 +50,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author vkvashin
  */
 @org.openide.util.lookup.ServiceProvider(service = ExtendedDelete.class)
 public class LogicalFolderExtendedDelete implements ExtendedDelete {

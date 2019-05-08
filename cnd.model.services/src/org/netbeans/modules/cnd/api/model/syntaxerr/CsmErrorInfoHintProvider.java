@@ -50,7 +50,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author alsimon
  */
 public abstract class CsmErrorInfoHintProvider {
     private static final Default DEFAULT = new Default();

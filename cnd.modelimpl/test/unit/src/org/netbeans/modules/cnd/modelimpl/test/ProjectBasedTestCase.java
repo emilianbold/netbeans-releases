@@ -91,7 +91,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
  * test has possibility to copy project data into working test dir to prevent changes
  * in source folders when test makes any changes in content of files
  * 
- * @author Vladimir Voskresensky
  */
 public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
 

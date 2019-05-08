@@ -36,7 +36,6 @@ import javax.swing.Icon;
 
 /**
  * An empty icon
- * @author Vladimir Kvashin
  */
 public class EmptyIcon implements Icon {
 

@@ -68,7 +68,6 @@ import org.openide.util.Exceptions;
 
 /**
  * Implements 
- * @author Vladimir Kvashin
  */
 public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 

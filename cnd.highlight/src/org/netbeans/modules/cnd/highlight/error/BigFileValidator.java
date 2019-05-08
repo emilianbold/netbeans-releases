@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
 /**
  * Disables error highlighting on big files.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.RequestValidator.class)
 public class BigFileValidator implements CsmErrorProvider.RequestValidator {

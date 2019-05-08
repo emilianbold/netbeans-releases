@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.makeproject.uiapi.ConfirmSupport.ConfirmMimeExte
 
 /**
  *
- * @author Alexander Simon
  */
 public class ConfirmExtensionsImpl extends javax.swing.JPanel implements MimeExtensions {
     @org.openide.util.lookup.ServiceProvider(service=ConfirmMimeExtensionsFactory.class)

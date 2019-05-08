@@ -49,7 +49,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.openide.windows.InputOutput;
 
 /**
- * @author Alexey Vladykin
  */
 public interface ProjectActionHandler {
 

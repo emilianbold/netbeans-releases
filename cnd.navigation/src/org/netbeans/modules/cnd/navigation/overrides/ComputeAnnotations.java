@@ -74,7 +74,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 /**
  * A class that computes annotations -
  * extracted from OverridesTaskFactory for the sake of testability
- * @author Vladimir Kvashin
  */
 public class ComputeAnnotations {
 

@@ -54,7 +54,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service = BuildFileProvider.class, position = 4000)
 public class SconsScriptSupport implements BuildFileProvider {

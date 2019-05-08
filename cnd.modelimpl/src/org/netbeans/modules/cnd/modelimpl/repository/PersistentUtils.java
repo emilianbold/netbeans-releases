@@ -98,7 +98,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class PersistentUtils {
 

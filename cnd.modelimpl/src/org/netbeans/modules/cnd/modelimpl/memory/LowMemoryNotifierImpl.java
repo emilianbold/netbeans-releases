@@ -57,7 +57,6 @@ import javax.management.NotificationListener;
 
 /**
  * Implementation of LowMemoryNotifier.
- * @author Vladimir Kvashin
  */
 
 // package-local

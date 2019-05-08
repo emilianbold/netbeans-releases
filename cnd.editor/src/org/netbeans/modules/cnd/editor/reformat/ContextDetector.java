@@ -49,7 +49,6 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ContextDetector extends ExtendedTokenSequence {
     private final BracesStack braces;

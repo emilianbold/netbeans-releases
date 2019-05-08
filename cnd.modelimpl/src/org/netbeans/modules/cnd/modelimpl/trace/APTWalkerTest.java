@@ -65,7 +65,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  * simple test implementation of walker
- * @author Vladimir Voskresensky
  */
 public class APTWalkerTest extends APTAbstractWalker {
 

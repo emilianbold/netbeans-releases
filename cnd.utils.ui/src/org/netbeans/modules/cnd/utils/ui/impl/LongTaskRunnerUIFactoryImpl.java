@@ -47,7 +47,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author masha
  */
 @ServiceProvider(service = LongTaskRunnerFactory.class, position = 500)
 public class LongTaskRunnerUIFactoryImpl extends LongTaskRunnerFactory{

@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 
 /**
  * base class for modelimpl module tests
- * @author Vladimir Voskresensky
  */
 public abstract class ModelImplBaseTestCase extends ModelBasedTestCase {
     

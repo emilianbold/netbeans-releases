@@ -54,7 +54,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class PreprocLexer extends CndLexer {
     private static final int INIT               = 0;

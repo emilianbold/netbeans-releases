@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.*;
 
 /**
  * Used as return type for constructor and destructor
- * @author vk155633
  * 
  * TODO: replace implementations of all methods with throwing UnsupportedOperationException?
  */

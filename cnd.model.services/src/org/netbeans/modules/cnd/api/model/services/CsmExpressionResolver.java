@@ -63,7 +63,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author petrk
  */
 public final class CsmExpressionResolver {
     

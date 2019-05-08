@@ -46,7 +46,6 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author vkvashin
  */
 public interface TraceProjectLookupProvider {
 

@@ -67,7 +67,6 @@ import org.openide.util.Pair;
 /**
  * query to obtain information associated with CsmFile object
  * 
- * @author Vladimir Voskresensky
  */
 public abstract class CsmFileInfoQuery {
     /** A dummy resolver that never returns any results.

@@ -36,7 +36,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface IncludedModel extends HierarchyActions {
 

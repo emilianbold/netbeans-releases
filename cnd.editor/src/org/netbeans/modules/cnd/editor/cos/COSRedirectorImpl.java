@@ -88,7 +88,6 @@ import org.openide.windows.CloneableOpenSupportRedirector;
 
 /**
  *
- * @author inikiforov
  */
 @ServiceProvider(service = CloneableOpenSupportRedirector.class, position = 1000)
 public class COSRedirectorImpl extends CloneableOpenSupportRedirector {

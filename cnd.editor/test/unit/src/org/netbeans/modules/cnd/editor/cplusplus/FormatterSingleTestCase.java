@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 /**
  *
- * @author as204739
  */
 public class FormatterSingleTestCase extends EditorBase {
 

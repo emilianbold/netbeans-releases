@@ -57,7 +57,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public enum ConnectionHelper implements ConnectionListener {
     INSTANCE;

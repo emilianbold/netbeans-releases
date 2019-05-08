@@ -65,7 +65,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ManageStylesPanel extends javax.swing.JPanel
              implements ListSelectionListener, KeyListener, MouseListener {

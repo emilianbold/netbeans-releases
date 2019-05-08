@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 
 /**
  * For different kinds of statements, which doesn't return specific information - continue, break, etc
- * @author Vladimir Kvashin
  */
 public final class UniversalStatement extends StatementBase {
     

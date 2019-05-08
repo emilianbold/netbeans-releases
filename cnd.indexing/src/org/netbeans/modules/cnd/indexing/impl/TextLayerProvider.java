@@ -51,7 +51,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author akrasny
  */
 final class TextLayerProvider {
 

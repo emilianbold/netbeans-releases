@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.Sco
 
 /**
  * Implements condition of kind CsmCondition.Kind.DECLARATION
- * @author Vladimir Kvashin
  */
 public final class ConditionDeclarationImpl extends OffsetableBase implements CsmCondition {
     

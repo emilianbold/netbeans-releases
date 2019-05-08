@@ -78,7 +78,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author mtishkov
  */
 public final class LauncherExecutor {
 

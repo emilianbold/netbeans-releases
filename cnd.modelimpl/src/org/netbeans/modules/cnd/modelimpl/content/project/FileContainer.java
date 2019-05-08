@@ -93,7 +93,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  * Storage for files and states. Class was extracted from ProjectBase.
- * @author Alexander Simon
  */
 public class FileContainer extends ProjectComponent {
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);

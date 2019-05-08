@@ -69,7 +69,6 @@ import org.openide.util.CharSequences;
 /**
  * TODO: cache resolved type for last instantiations.
  * 
- * @author petrk
  */
 public class DeclTypeImpl extends TypeImpl {
         

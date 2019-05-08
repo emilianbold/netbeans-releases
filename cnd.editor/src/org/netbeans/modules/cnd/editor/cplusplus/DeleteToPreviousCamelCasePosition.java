@@ -50,8 +50,6 @@ import javax.swing.text.JTextComponent;
 
 /**
  *
- * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
- * @author Vladimir Voskresensky
  */
 /* package */ final class DeleteToPreviousCamelCasePosition extends PreviousCamelCasePosition {
 

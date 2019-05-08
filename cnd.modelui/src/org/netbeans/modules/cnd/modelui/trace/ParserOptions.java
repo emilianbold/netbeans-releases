@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author alsimon
  */
 public class ParserOptions extends javax.swing.JPanel {
     private static final String CND_MODELIMPL_EXCL_COMPOUND = "cnd.modelimpl.excl.compound"; // NOI18N

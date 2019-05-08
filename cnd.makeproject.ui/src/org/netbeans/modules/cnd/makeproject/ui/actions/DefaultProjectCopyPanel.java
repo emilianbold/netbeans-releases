@@ -67,7 +67,6 @@ import org.openide.util.NbBundle;
  * NEVER use any remote or cnd stuff directly, but only via a well defined SPI
  * Vladimir Kvashin <vkvashin@netbeans,org>
  *
- * @author Jan Lahoda
  */
 public class DefaultProjectCopyPanel extends javax.swing.JPanel implements DocumentListener, DefaultProjectOperationsImplementation.InvalidablePanel {
     

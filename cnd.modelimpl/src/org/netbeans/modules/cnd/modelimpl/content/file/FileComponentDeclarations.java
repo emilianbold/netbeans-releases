@@ -81,7 +81,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Alecander Simon
  */
 public class FileComponentDeclarations extends FileComponent {
 

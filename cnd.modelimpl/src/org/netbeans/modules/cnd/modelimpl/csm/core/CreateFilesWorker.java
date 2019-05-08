@@ -59,7 +59,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 final class CreateFilesWorker {
     private final ProjectBase project;

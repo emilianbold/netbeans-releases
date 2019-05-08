@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 /**
  * Container for template specialization parameters
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class SpecializationDescriptor {
     private final List<CsmSpecializationParameter> specializationParams;

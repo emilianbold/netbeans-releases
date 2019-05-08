@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CompileConfiguration implements Cloneable {
     private MakeConfiguration makeConfiguration;

@@ -59,7 +59,6 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
 /**
- * @author gordonp
  */
 public class RemoteCompilerSetProvider implements CompilerSetProvider {
 

@@ -58,7 +58,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteSyncFactoryNodeProp extends Node.Property<String> implements PropertyChangeListener {
 

@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.makeproject.api.ui.configurations;
  * A CustomizerNode with a priority. Used to help decide which of several debuggers should be
  * the default.
  *
- * @author gordonp
  */
 public interface PrioritizedCustomizerNode {
 

@@ -88,7 +88,6 @@ import org.openide.util.RequestProcessor;
  * inactive code due to preprocessor definitions and highlighting of unobvious
  * language elements.
  *
- * @author Sergey Grinev
  */
 public final class SemanticHighlighter extends HighlighterBase {
     private static final String SLOW_POSITION_BAG = "CndSemanticHighlighterSlow"; // NOI18N

@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class TestModelHelper implements TraceModel.ParsingTimeResultListener {
     private static final Object LOCK = new Object();

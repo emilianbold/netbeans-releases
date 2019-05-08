@@ -105,7 +105,6 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class MakeProjectHelperImpl implements MakeProjectHelper {
 

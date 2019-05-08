@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  * base class for modelimpl module tests suite
- * @author Vladimir Voskresensky
  */
 public class ModelImplBaseTestSuite extends CndBaseTestSuite {
     

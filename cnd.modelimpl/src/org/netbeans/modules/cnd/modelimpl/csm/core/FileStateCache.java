@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  *
- * @author Alexander Simon
  */
 /*package-local*/ class FileStateCache {
     private static final boolean TRACE = false;

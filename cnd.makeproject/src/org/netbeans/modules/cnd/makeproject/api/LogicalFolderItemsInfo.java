@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 /**
  *
- * @author thp
  */
 public interface LogicalFolderItemsInfo {
     public String getLogicalFolderName();

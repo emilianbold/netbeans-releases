@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface KeyHolder {
     Key getKey();

@@ -69,7 +69,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.CodeAssistance.class)
 public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressListener {

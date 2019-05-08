@@ -63,7 +63,6 @@ import org.openide.util.Exceptions;
 /**
  * Base class for MacroExpansionDocProviderImpl tests
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class MacroExpansionDocProviderImplBaseTestCase extends TraceModelTestBase {
 

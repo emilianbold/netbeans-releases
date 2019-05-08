@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.makeproject.uiapi;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface NodePesentation {
     void update();

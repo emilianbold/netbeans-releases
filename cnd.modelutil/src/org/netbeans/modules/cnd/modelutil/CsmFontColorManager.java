@@ -62,7 +62,6 @@ import org.openide.util.LookupListener;
 
 /**
  *
- * @author Sergey Grinev
  */
 public final class CsmFontColorManager {
 

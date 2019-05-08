@@ -55,7 +55,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service = BuildFileProvider.class, position = 5000)
 public class MakeScriptSupport implements BuildFileProvider {

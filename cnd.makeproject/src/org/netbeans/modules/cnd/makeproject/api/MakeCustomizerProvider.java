@@ -45,7 +45,6 @@ import java.awt.event.ActionListener;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface MakeCustomizerProvider {
     // from org.netbeans.spi.project.ui.CustomizerProvider

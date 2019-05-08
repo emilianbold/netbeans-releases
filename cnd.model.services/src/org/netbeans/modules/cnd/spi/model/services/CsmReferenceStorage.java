@@ -49,7 +49,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class CsmReferenceStorage {
     private static final CsmReferenceStorage DEFAULT = new Default();

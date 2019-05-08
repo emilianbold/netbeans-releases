@@ -47,7 +47,6 @@ import org.openide.NotifyDescriptor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ConfirmVersionImpl implements ConfirmSupport.ConfirmVersion {
 

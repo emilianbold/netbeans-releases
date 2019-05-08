@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * help class for CsmUID based on CsmObject
- * @author Vladimir Voskresensky
  */
 public abstract class ObjectBasedUID<T> implements CsmUID<T>, SelfPersistent {
 

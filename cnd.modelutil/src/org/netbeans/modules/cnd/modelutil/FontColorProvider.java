@@ -46,7 +46,6 @@ import javax.swing.text.AttributeSet;
 
 /**
  *
- * @author Sergey Grinev
  */
 public interface FontColorProvider {
     AttributeSet getColor(Entity color);

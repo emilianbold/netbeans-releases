@@ -51,7 +51,6 @@ import org.openide.util.SharedClassObject;
 
 /**
  *
- * @author Alexander Simon
  */
 public class TestRepositoryDistributionAction extends TestProjectActionBase {
 

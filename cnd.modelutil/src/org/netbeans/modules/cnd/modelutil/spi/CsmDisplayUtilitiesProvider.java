@@ -48,7 +48,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author petrk
  */
 public abstract class CsmDisplayUtilitiesProvider {
     

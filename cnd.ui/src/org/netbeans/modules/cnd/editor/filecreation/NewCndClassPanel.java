@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author sg155630
  */
 public class NewCndClassPanel extends CndPanel {
 

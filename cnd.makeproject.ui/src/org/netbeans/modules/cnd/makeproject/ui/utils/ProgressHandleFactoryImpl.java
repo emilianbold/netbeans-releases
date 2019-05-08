@@ -51,7 +51,6 @@ import org.openide.util.Cancellable;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=CancellableProgressHandleFactory.class)
 public class ProgressHandleFactoryImpl extends CancellableProgressHandleFactory {

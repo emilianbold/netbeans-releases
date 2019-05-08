@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.model.*;
  * class which implements CsmIdentifiable must return CsmUID<T> where T is
  * the same as implementation class or one of it's super types
  * @see CsmUID
- * @author Vladimir Voskresensky
  */
 public interface CsmIdentifiable extends CsmObject {
     

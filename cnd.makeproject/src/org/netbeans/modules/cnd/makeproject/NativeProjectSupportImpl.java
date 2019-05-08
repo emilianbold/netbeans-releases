@@ -52,7 +52,6 @@ import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 @ServiceProviders({
 @ServiceProvider(service=NativeProjectExecutionProvider.class, path=NativeProjectExecutionProvider.PATH, position=100),

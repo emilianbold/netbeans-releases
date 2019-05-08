@@ -62,7 +62,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ParsingProblemResolver extends javax.swing.JPanel {
 

@@ -57,7 +57,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Henk
  */
 public final class LaunchersRegistry {
 

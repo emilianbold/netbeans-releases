@@ -101,7 +101,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Nickolay Dalmatov
  */
 public class UIDObjectFactory extends AbstractObjectFactory {
 

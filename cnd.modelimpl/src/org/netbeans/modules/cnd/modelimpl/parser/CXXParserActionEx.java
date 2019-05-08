@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 
 /**
  *
- * @author nick
  */
 public interface CXXParserActionEx extends CXXParserAction, PreprocessorAction {
 }

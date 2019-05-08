@@ -61,7 +61,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author sg155630
  */
 public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
     

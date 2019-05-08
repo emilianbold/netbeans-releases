@@ -60,7 +60,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FakeRegistrationWorker {
     private final RequestProcessor FAKE_REGISTRATION_WORKER;

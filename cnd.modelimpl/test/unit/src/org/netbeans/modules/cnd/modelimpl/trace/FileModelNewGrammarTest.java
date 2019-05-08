@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 /**
  *
- * @author petrk
  */
 public class FileModelNewGrammarTest extends TraceModelTestBase {
     

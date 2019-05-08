@@ -54,7 +54,6 @@ import org.openide.filesystems.FileObject;
  * Represents the file state change event.
  * This event occurs when file is changed it's state
  * from saved to edited or vice versa.
- * @author Vladimir Kvashin
  */
 public interface FileBuffer extends APTFileBuffer {
 

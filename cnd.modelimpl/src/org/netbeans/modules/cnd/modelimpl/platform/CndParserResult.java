@@ -54,7 +54,6 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CndParserResult  extends Result implements TokenHierarchyListener {
 

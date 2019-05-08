@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  * And they do not have container that will dispose then on reparse action.
  * So this container is created to solve this issue.
  *
- * @author Nikolay Krasilnikov(nnnnnk@netbeans.org)
  */
 public class FileComponentInstantiations extends FileComponent {
 

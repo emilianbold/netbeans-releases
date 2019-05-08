@@ -89,7 +89,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class SelectModePanel extends javax.swing.JPanel {
     private static final int VERIFY_DELAY = 300;

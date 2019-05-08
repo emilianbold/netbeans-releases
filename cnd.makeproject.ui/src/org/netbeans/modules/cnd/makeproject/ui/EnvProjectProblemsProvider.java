@@ -79,7 +79,6 @@ import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 
 /**
  *
- * @author vkvashin
  */
 public final class EnvProjectProblemsProvider {
 

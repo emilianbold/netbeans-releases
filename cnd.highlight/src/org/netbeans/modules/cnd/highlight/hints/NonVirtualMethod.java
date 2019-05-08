@@ -74,7 +74,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 class NonVirtualMethod extends AbstractCodeAudit {
     private NonVirtualMethod(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {

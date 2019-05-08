@@ -76,7 +76,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CMakeAction extends AbstractExecutorRunAction {
 

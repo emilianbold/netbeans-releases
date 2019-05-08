@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
  *
- * @author nick
  */
 public class CXXParserEx extends CXXParser {
     

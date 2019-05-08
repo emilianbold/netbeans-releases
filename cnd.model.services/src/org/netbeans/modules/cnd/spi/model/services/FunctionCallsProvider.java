@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 
 /**
  *
- * @author Egor Ushakov
  */
 public interface FunctionCallsProvider {
     List<CsmReference> getFunctionCalls(final StyledDocument document, int line);

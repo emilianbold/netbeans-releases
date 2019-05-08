@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  * Key for FileContainer data
- * @author Vladimir Kvashin
  */
 public final class FileContainerKey extends ProjectContainerKey {
 

@@ -64,7 +64,6 @@ import org.openide.util.NbBundle.Messages;
  * Copied from org.netbeans.spi.project.support.ant.ui.LicenseHeadersPanel
  * See bug #257920
  * 
- * @author mkleint
  */
 public class LicenseHeadersPanel extends javax.swing.JPanel {
 

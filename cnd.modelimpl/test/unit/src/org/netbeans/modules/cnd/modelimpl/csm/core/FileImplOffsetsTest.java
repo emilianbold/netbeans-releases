@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  * test for line-col/offset converting
- * @author Vladimir Voskresensky
  */
 public class FileImplOffsetsTest extends TraceModelTestBase {
 

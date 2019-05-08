@@ -45,7 +45,6 @@ import java.util.HashMap;
 import java.util.Map;
 /**
  *
- * @author vkvashin
  */
 public abstract class StopWatch {
 

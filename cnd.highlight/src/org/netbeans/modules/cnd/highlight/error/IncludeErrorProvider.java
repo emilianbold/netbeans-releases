@@ -66,7 +66,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public final class IncludeErrorProvider extends AbstractCodeAudit {
     private static final int UNRESOLVED = 1;

@@ -72,7 +72,6 @@ import org.openide.util.Exceptions;
 /**
  * Lazy statements
  *
- * @author Vladimir Kvashin, Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 abstract public class LazyStatementImpl extends StatementBase implements CsmScope {
     

@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 /**
  * Template specialization parameter based on type implementation.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class TypeBasedSpecializationParameterImpl extends OffsetableBase implements CsmTypeBasedSpecializationParameter, SelfPersistent {
     

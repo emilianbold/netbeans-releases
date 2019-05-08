@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  * A class for "temporary" tests that are to be moved to SmartParseHeaderTest
- * @author Vladimir Kvashin
  */
 public class SmartParseHeaderTestFailed extends CndBaseTestSuite {
     

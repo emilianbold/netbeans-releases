@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author thp
  */
 public class ZipPackager implements PackagerDescriptor {
 

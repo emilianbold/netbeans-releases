@@ -49,7 +49,6 @@ import org.openide.util.CharSequences;
 
 /**
  * help class to share deserialized project names
- * @author Vladimir Voskresensky
  */
 public class QualifiedNameCache extends APTStringManager {
     private static final APTStringManager manager = new QualifiedNameCache();

@@ -54,7 +54,6 @@ import org.openide.util.Lookup;
 /**
  * Service that provides macro expansions.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class CsmMacroExpansion {
 

@@ -58,7 +58,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 public class RunCommandTest extends CndBaseTestCase{
     public RunCommandTest(String testName) {

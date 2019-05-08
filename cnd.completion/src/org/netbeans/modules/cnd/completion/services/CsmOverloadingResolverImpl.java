@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.spi.model.services.CsmOverloadingResolverImpleme
 
 /**
  *
- *<petrk@netbeans.org>
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmOverloadingResolverImplementation.class)
 public class CsmOverloadingResolverImpl implements CsmOverloadingResolverImplementation {

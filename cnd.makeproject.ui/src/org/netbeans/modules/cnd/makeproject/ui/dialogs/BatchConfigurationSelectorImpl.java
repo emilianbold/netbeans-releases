@@ -58,7 +58,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author alsimon
  */
 public class BatchConfigurationSelectorImpl implements BatchConfigurationSelector, ActionListener {
     @org.openide.util.lookup.ServiceProvider(service = BatchConfigurationSelectorFactory.class)

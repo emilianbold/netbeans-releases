@@ -48,7 +48,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author vv159170
  */
 public class CndFileUtilsTest extends NbTestCase {
 

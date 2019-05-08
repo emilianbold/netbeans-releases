@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter.Diff;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FortranPreprocessorFormatter {
     private final FortranReformatterImpl context;

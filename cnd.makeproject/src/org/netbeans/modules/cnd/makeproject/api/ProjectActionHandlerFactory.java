@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.openide.util.Lookup;
 
 /**
- * @author Alexey Vladykin
  */
 public interface ProjectActionHandlerFactory {
 

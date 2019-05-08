@@ -84,7 +84,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author eu155513
  */
 public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T> implements CsmClassifierBasedTemplateParameter, CsmTemplate, SelfPersistent {
     private final CharSequence name;

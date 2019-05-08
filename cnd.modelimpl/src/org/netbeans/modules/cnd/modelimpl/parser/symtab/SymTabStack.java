@@ -46,8 +46,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Vladimir Voskresensky
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class SymTabStack {
     private final ArrayList<SymTab> stack = new ArrayList<>();

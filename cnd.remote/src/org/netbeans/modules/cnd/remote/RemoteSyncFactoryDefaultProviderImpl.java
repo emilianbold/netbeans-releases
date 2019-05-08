@@ -51,7 +51,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @ServiceProvider(service=RemoteSyncFactoryDefaultProvider.class, position=100)
 public class RemoteSyncFactoryDefaultProviderImpl implements RemoteSyncFactoryDefaultProvider {

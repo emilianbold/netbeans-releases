@@ -53,7 +53,6 @@ import org.openide.util.Lookup;
 
 /**
  * entry point to resolve usages of include directives
- * @author Alexander Simon
  */
 public abstract class CsmIncludeHierarchyResolver {
     /** A dummy resolver that never returns any results.

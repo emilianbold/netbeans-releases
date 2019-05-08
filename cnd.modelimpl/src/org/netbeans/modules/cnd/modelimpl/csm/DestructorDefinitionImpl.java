@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.openide.util.CharSequences;
 
 /**
- * @author Vladimir Kvashin
  */
 public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFunctionDefinition> {
 

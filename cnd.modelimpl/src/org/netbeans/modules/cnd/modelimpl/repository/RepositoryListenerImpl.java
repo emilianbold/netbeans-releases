@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * Watches implicit and explicit opening of units;
  * ensures that implicitly opened units are closed 
  * after the specified interval has passed
- * @author Vladimir Kvashin
  */
 public class RepositoryListenerImpl implements RepositoryListener, RepositoryExceptionListener {
 

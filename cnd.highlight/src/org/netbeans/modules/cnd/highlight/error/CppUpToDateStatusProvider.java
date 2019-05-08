@@ -50,7 +50,6 @@ import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
 
 /**
  *org.netbeans.modules.cnd.highlight.CppUpToDateStatusProvider
- * @author Alexander Simon
  */
 public class CppUpToDateStatusProvider extends UpToDateStatusProvider {
 

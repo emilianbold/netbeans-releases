@@ -94,7 +94,6 @@ import org.openide.util.Union2;
  * Then it can be compared with other content to decide if signature of file
  * was changed significantly or not. If not then full reparse is not needed and 
  * this content can be used as new file content
- * @author Vladimir Voskresensky
  */
 public final class FileContent implements MutableDeclarationsContainer {
 

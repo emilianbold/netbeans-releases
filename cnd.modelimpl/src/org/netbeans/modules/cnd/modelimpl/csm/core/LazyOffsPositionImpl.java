@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 /**
  * offset based CsmOffsetable.Position implementation
  * do not keep reference to this object for a long time to prevent memory leaks
- * @author Vladimir Voskresensky
  */
 public final class LazyOffsPositionImpl implements CsmOffsetable.Position {
     private int line = -1;

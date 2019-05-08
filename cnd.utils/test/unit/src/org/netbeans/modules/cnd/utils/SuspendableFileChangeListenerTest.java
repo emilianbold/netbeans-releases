@@ -60,8 +60,6 @@ import org.openide.filesystems.FileLock;
 
 /**
  *
- * @author Vladimir Voskresensky
- * @author Vladimir Kvashin
  */
 public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCase {
     private static final boolean TRACE = false;

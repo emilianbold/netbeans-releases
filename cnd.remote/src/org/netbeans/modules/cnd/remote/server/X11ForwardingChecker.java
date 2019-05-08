@@ -56,7 +56,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
 /**
  * Checks whether X11 forwarding from remote host to local one is possible
- * @author Vladimir Kvashin
  */
 public class X11ForwardingChecker {
 

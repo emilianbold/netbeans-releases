@@ -53,7 +53,6 @@ import org.openide.windows.OutputWriter;
 /**
  * A test action that dump graph container for the given project
  * 
- * @author Vladimir Voskrsensky
  */
 public class TestGraphContainerAction extends TestProjectActionBase {
 

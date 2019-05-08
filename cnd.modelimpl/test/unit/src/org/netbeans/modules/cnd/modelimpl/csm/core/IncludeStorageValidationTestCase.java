@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class IncludeStorageValidationTestCase  extends ModifyDocumentTestCaseBase {
     public IncludeStorageValidationTestCase(String testName) {

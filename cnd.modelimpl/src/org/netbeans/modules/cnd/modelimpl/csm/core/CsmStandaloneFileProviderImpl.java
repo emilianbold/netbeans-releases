@@ -100,7 +100,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Leonid Mesnik
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider.class)
 public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {

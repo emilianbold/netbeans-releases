@@ -47,7 +47,6 @@ import org.junit.Test;
 
 /**
  *
- * @author Alexander Simon
  */
 public class MyCharSequenceTest {
     @Test

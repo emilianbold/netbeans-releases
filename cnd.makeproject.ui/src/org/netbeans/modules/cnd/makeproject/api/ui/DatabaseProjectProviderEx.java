@@ -45,7 +45,6 @@ import org.openide.WizardDescriptor;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface DatabaseProjectProviderEx extends DatabaseProjectProvider {
     void setupAdditionalWizardPanels(List<WizardDescriptor.Panel<WizardDescriptor>> panels);   

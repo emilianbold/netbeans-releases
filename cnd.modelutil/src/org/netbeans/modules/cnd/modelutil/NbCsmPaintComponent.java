@@ -50,7 +50,6 @@ import javax.swing.Icon;
 /**
  * container of paint components
  * manager of icons
- * @author  Vladimir Voskresensky
  */
 public abstract class NbCsmPaintComponent extends CsmPaintComponent {
 

@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.indexing.impl.CndTextIndexImpl;
 
 /**
  *
- * @author Egor Ushakov <gorrus@netbeans.org>
  */
 public final class CndTextIndex {
 

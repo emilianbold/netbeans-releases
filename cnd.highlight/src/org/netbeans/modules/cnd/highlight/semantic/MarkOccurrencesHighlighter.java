@@ -96,7 +96,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Sergey Grinev
  */
 public final class MarkOccurrencesHighlighter extends HighlighterBase {
     private static final String POSITION_BAG = "CndMarkOccurrencesHighlighter"; // NOI18N

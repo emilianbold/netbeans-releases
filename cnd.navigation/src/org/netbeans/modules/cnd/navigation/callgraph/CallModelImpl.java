@@ -90,7 +90,6 @@ import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CallModelImpl implements CallModel {
     private final CsmReferenceRepository repository;

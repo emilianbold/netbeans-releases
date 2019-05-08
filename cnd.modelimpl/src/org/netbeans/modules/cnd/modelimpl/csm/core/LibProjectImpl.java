@@ -62,7 +62,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
 /**
- * @author Vladimir Kvasihn
  */
 public final class LibProjectImpl extends ProjectBaseWithEditing {
 

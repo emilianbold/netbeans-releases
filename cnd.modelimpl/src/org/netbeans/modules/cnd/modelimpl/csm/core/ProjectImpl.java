@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Project implementation
- * @author Vladimir Kvashin
  */
 public final class ProjectImpl extends ProjectBaseWithEditing {
 

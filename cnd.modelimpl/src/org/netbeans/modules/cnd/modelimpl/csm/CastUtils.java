@@ -55,7 +55,6 @@ import org.openide.util.CharSequences;
 /**
  * Utility class used for user cast operators processing.
  *
- * @author Vladimir Kvashin
  */
 public class CastUtils {
     

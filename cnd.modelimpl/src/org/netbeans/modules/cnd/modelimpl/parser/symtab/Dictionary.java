@@ -48,7 +48,6 @@ import org.openide.util.Exceptions;
 /**
  * based on Dictionary removed from cppparser.g
  *
- * @author Vladimir Voskresensky
  */
 public class Dictionary {
 

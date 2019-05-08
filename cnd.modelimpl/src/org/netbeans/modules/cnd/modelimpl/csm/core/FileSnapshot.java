@@ -55,7 +55,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FileSnapshot implements CsmFile {
     private final CharSequence absPath;

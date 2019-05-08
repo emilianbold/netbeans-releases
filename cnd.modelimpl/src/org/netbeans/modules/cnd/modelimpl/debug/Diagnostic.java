@@ -79,7 +79,6 @@ import org.openide.util.Exceptions;
  * ...
  * Diagnostic.dumpFileStatistics(dumpFile);
  *
- * @author Vladimir Kvashin, Vladimir Voskresensky
  */
 public class Diagnostic {
 

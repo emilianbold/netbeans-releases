@@ -34,7 +34,6 @@ import javax.swing.Action;
 
 /**
  *
- * @author as204739
  */
 public interface HierarchyActions {
 

@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
- * @author Sergey Grinev
  */
 public class ModelUtils {
 

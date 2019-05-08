@@ -47,7 +47,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author vk155633
  */
 @ServiceProvider(service = CndParserImplementation.class)
 public class CndParserImpl implements CndParserImplementation {

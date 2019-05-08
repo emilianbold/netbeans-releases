@@ -62,7 +62,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class EventsProcessorActionsImpl extends EventsProcessorActions {
     

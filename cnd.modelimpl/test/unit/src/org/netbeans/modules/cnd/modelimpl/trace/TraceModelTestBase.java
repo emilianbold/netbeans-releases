@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class TraceModelTestBase extends ModelImplBaseTestCase {
 

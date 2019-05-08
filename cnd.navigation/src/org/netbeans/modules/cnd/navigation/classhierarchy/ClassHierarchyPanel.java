@@ -81,7 +81,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
     public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/classhierarchy/resources/subtypehierarchy.gif"; // NOI18N

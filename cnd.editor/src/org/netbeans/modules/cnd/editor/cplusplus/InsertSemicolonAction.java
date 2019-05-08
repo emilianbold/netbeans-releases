@@ -45,7 +45,6 @@ import org.openide.util.NbBundle;
  * Action which inserts an appropriate character at line-end without moving
  * the caret.
  *
- * @author Tim Boudreau
  */
 public final class InsertSemicolonAction extends BaseAction {
     private final boolean withNewline;

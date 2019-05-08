@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CodeAssistanceConfiguration implements Cloneable {
     private MakeConfiguration makeConfiguration;

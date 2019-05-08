@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class CodeStyleWrapper {
     

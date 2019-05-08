@@ -89,7 +89,6 @@ import org.openide.windows.OutputWriter;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CodeModelDiagnosticAction extends ProjectActionBase {
     private final static Logger LOG = Logger.getLogger("CodeModelDiagnosticAction"); // NOI18N

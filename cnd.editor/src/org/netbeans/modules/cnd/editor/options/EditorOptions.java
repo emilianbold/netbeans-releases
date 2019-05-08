@@ -64,7 +64,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class EditorOptions {
     public static CodeStyleFactory codeStyleFactory;

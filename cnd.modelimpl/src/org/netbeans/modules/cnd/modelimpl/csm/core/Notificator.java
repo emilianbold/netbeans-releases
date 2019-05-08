@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 /**
  * Coordiates all change notifications.
  * Singleton.
- * @author vk155633
  */
 public class Notificator {
 

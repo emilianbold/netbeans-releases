@@ -47,7 +47,6 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author vkvashin
  */
 public class RemoteLogger {
 

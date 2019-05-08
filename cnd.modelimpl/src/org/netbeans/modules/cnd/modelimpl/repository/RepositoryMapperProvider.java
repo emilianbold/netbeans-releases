@@ -57,7 +57,6 @@ import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author mtishkov
  */
 @ServiceProviders({
     @ServiceProvider(service = UnitDescriptorsMatcherImplementation.class, position = 100),

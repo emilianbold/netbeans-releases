@@ -48,7 +48,6 @@ import org.netbeans.api.project.Project;
 
 /**
  *
- * @author akrasny
  */
 final class BrokenViewItemRefreshSupport {
 

@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  *
- * @author Nickolay Dalmatov
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.repository.support.KeyFactory.class)
 public class KeyObjectFactory extends KeyFactory {

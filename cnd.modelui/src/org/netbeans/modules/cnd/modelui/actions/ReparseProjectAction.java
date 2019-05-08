@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.openide.util.NbBundle;
 
 /**
- * @author Vladimir Voskresensky
  */
 public final class ReparseProjectAction extends ProjectActionBase {
 

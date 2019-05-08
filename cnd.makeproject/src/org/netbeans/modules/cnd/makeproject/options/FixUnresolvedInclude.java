@@ -47,7 +47,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(path=NamedOption.OTHER_CATEGORY, service=NamedOption.class, position=800)
 public class FixUnresolvedInclude extends NamedOption {

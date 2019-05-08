@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * base walker to visit project files based APTs
- * @author Vladimir Voskresensky
  */
 public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     private final FileImpl file;

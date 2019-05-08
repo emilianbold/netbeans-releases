@@ -49,7 +49,6 @@ import org.openide.util.Lookup;
 
 /**
  * entry point to resolve usages of types
- * @author Alexander Simon
  */
 public abstract class CsmTypeHierarchyResolver {
     /** A dummy resolver that never returns any results.

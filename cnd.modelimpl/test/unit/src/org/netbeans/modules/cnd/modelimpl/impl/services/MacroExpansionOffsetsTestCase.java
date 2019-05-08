@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 /**
  * Class for MacroExpansionDocProviderImpl tests for offsets transformations
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class MacroExpansionOffsetsTestCase extends MacroExpansionDocProviderImplBaseTestCase {
 

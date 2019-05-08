@@ -72,7 +72,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * @author Vladimir Kvashin
  */
 public abstract class BaseAnnotation extends Annotation {
 

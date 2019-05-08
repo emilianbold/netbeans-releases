@@ -49,7 +49,6 @@ import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FmtTabsIndents extends JPanel {
     public static final String PROP_FREE_FORMAT_FORTRAN = "freeFormatFortran"; // NOI18N

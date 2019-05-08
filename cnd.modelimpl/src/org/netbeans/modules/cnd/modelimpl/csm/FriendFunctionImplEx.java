@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class FriendFunctionImplEx extends FunctionImplEx<CsmFriendFunction> implements CsmFriendFunction {
     private final CsmUID<CsmClass> friendClassUID;

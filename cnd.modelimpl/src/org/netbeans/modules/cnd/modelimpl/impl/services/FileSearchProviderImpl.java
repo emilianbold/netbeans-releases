@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.apt.support.spi.APTProjectFileSearchProvider.class, position=1000)
 public class FileSearchProviderImpl implements APTProjectFileSearchProvider {

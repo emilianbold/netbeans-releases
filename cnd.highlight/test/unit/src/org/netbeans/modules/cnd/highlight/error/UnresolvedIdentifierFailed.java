@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  * A class for "temporary" tests that are to be moved to the main suite
- * @author Vladimir Kvashin
  */
 public class UnresolvedIdentifierFailed extends CndBaseTestSuite {
 

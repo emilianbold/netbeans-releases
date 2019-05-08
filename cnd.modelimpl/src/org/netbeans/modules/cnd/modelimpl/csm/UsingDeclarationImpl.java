@@ -79,7 +79,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Implements CsmUsingDeclaration
- * @author Vladimir Kvasihn
  */
 public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDeclaration>
         implements CsmUsingDeclaration, CsmMember, RawNamable, Disposable {

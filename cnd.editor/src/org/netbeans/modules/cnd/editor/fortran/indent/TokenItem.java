@@ -48,7 +48,6 @@ import static org.netbeans.cnd.api.lexer.FortranTokenId.*;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class TokenItem {
 

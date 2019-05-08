@@ -55,7 +55,6 @@ import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 
 /** 
  * 
- * @author Alexander Simon
  */
 public final class FortranCodeStyle {
     

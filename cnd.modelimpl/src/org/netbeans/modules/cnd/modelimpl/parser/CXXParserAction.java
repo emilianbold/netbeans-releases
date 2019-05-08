@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
  *
- * @author nick
  */
 public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     

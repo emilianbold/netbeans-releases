@@ -43,8 +43,6 @@ package org.netbeans.modules.cnd.modelimpl.parser.symtab;
 
 /**
  * key to access sym tab entry attributes. Usually implemented as java enumerator.
- * @author Vladimir Voskresensky
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface SymTabEntryKey {
     

@@ -87,8 +87,6 @@ import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
- * @author Vladimir Voskresensky
  */
 public final class NewTestActionFactory {
 

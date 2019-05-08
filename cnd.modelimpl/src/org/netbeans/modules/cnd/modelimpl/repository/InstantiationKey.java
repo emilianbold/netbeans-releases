@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 /**
  * A key for CsmInstantiation
  * 
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 /*package*/ final class InstantiationKey extends OffsetableKey {
     

@@ -55,7 +55,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author nk220367
  */
 public class CsmExpressionEvaluator {
 

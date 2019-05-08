@@ -80,7 +80,6 @@ import org.openide.util.Parameters;
  * Manage auto created libraries (artificial libraries) for included files.
  *
  *
- * @author Alexander Simon
  */
 public final class LibraryManager {
 

@@ -50,7 +50,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 9100)
 public final class FixProvider extends CsmErrorInfoHintProvider {

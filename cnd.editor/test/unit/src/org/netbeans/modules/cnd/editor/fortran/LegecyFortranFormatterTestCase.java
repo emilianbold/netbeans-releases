@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.editor.fortran;
 
 /**
  *
- * @author Alexander Simon
  */
 public class LegecyFortranFormatterTestCase extends FortranEditorBase {
 

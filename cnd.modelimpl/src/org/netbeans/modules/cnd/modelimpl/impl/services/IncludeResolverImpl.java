@@ -76,7 +76,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver.class)
 public final class IncludeResolverImpl extends CsmIncludeResolver {

@@ -62,7 +62,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service = PreBuildArtifactProvider.class, position = 3000)
 public class CmakeScriptSupport implements PreBuildArtifactProvider {

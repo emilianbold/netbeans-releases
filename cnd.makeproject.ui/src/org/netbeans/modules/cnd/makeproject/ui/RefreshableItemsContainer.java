@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 
 /**
  *
- * @author Alexander Simon
  */
 interface RefreshableItemsContainer {
 

@@ -51,8 +51,6 @@ import org.openide.util.WeakSet;
 
 /**
  *
- * @author Vladimir Voskresensky
- * @author Alexander Simon
  */
 public class KeyManager {
 

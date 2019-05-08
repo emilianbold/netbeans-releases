@@ -54,7 +54,6 @@ import org.openide.text.NbDocument;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 public class TestSemanticHighlighting {
     private static final String MIME_TYPE = "text/x-c++"; // NOI18N

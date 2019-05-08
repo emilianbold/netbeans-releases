@@ -65,7 +65,6 @@ import org.openide.util.ChangeSupport;
 /**
  * SourcesHelper does not work with pure FileObjects, it demands that FileUtil.toFile() is not null.
  * So we have to create an implementation of our own
- * @author Vladimir Kvashin
  */
 public class FileObjectBasedSources implements Sources, FileChangeListener {
 

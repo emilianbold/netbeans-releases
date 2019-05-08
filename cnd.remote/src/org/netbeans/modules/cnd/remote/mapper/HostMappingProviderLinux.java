@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 
 /**
  *
- * @author Sergey Grinev
  */
 /*package*/final class HostMappingProviderLinux extends HostMappingProviderUnixAbstract {
 

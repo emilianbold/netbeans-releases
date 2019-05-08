@@ -67,7 +67,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Base class for CsmOffsetable
- * @author Vladimir Kvashin
  */
 public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmValidable {
     private final CsmFile fileRef;// we keep ref to file, because it owns disposing flag from project

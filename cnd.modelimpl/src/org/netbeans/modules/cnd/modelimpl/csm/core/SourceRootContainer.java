@@ -58,7 +58,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Alexander Simon
  */
 public class SourceRootContainer {
     private final Map<CharSequence,Integer> projectRoots = new ConcurrentHashMap<>();

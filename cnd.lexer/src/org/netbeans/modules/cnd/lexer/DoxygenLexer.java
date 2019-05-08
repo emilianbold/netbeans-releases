@@ -56,7 +56,6 @@ import org.netbeans.spi.lexer.TokenFactory;
  * Lexical analyzer for doxygen language.
  * based on JavadocLexer
  * 
- * @author Vladimir Voskresensky
  * @version 1.00
  */
 

@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.modelimpl.accessors.CsmPackageAccessor;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 final class AccessorImpl extends CsmPackageAccessor {
     

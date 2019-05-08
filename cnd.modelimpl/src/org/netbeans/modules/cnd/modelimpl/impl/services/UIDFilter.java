@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface UIDFilter {
     boolean accept(CsmUID<?> uid);

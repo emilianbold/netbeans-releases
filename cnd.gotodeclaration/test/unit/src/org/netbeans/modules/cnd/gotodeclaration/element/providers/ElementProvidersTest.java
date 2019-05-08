@@ -46,7 +46,6 @@ import junit.framework.Test;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class ElementProvidersTest  extends CndBaseTestSuite  {
 

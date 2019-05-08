@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 /**
  * Tests for IncludeResolver
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class IncludeResolverImplTestCase extends TraceModelTestBase {
     

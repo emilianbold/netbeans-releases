@@ -56,7 +56,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Fake AST managing type
- * @author Vladimir Kvasihn
  */
 public class FakeAST extends BaseAST implements Serializable {
     private static final long serialVersionUID = -1975495157952844447L;

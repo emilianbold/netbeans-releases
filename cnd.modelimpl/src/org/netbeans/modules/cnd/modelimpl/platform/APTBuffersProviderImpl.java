@@ -52,7 +52,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * @author vkvashin
  */
 @ServiceProvider(service = APTBufferProvider.class)
 public class APTBuffersProviderImpl implements APTBufferProvider {

@@ -64,7 +64,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Egor Ushakov <gorrus@netbeans.org>
  */
 @ServiceProvider(service=PushTaskScanner.class, path="TaskList/Scanners")
 public class CndTodoScanner extends PushTaskScanner {

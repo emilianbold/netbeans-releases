@@ -86,7 +86,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
- * @author Vladimir Kvasihn
  */
 public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmFunctionDefinition {
 

@@ -76,7 +76,6 @@ import org.netbeans.modules.cnd.spi.editor.CsmCodeBlockProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.editor.CsmCodeBlockProvider.class)
 public class CsmCodeBlockProviderImpl extends CsmCodeBlockProvider {

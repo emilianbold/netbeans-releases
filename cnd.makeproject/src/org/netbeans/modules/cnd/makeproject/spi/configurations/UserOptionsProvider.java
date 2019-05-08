@@ -57,7 +57,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * Convert `pkg-config --cflags gtk-2.0` to list of paths and macros
  * Convert -xopenmp to _OPENMP macro
  * 
- * @author Alexander Simon
  */
 public interface UserOptionsProvider {
     List<IncludePath> getItemUserIncludePaths(List<IncludePath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);

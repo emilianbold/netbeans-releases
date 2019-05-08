@@ -58,7 +58,6 @@ import org.openide.util.NbBundle;
 /**
  * start/stop csm model support.
  *
- * @author Vladimir Voskresensky
  */
 public final class Installer {
     @OnStart

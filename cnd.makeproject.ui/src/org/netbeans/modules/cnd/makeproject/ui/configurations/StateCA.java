@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public enum StateCA {
     ParsedSource, ExtraParsedSource, ParsedOrphanHeader, IncludedHeader, ExcludedSource, ExcludedHeader, NotYetParsed;

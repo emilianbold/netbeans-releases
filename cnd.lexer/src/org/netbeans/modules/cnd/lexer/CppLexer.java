@@ -53,7 +53,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CppLexer extends CndLexer {
 

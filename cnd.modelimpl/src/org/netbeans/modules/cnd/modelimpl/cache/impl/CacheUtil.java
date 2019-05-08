@@ -51,7 +51,6 @@ import java.io.ObjectOutputStream;
 
 /**
  * Misc. static cache-related utilitiy finctions
- * @author Vladimir Kvasihn
  */
 public class CacheUtil {
 

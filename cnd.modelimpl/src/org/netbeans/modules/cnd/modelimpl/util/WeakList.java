@@ -48,7 +48,6 @@ import java.util.*;
 
 /**
  * A list that keeps weak references to its elements
- * @author Vladimir Kvashin
  */
 public class WeakList<T> implements Iterable<T> {
 

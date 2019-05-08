@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
 
 /**
  *
- * @author alsimon
  */
 final class MakeProjectSearchInfo extends SearchInfoDefinition {
     @ServiceProvider(service = MakeProjectLookupProvider.class)

@@ -78,7 +78,6 @@ import org.openide.util.Exceptions;
 /**
  * Template function specialization container.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class ClassImplFunctionSpecialization extends ClassImplSpecialization implements CsmTemplate {
 

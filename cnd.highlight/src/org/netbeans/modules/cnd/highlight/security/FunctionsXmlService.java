@@ -61,7 +61,6 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Danila Sergeyev
  */
 public class FunctionsXmlService {
     private static final String LEVEL_TAG_NAME = "level"; // NOI18N

@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.model.tasks;
 
 /**
  *
- * @author vk155633
  */
 public interface CndParserImplementation {
     void firePropertyChanged();

@@ -46,7 +46,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class CancellableProgressHandleFactory {
     public abstract ProgressHandle createProgressHandle(IOTabsController.InputOutputTab ioTab, ProjectActionHandler handlerToUse, EventsProcessorActions epa);

@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfigurat
 
 /**
  * node property to treat 'true' as 'false' and vice versa
- * @author Vladimir Voskresensky
  */
 public class BooleanReverseNodeProp extends PropertySupport<Boolean> {
     private final BooleanConfiguration booleanConfiguration;

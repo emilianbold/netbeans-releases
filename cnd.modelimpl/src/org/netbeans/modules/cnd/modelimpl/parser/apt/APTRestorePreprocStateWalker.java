@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
 /**
  * special walker to restore preprocessor state from include stack
- * @author Vladimir Voskresensky
  */
 public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
     private final String interestedFile;

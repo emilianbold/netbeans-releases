@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.antlr.Token;
 /**
  * Represents a buffer of tokens.
  * Error filters need this for their smart (sometimes weird :-)) logic
- * @author Vladimir Kvashin
  */
 public interface ReadOnlyTokenBuffer {
     int LA(int i);

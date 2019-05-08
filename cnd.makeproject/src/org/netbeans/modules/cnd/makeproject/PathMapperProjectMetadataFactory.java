@@ -54,7 +54,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author mtishkov
  */
 @ServiceProvider(service = ProjectMetadataFactory.class, path = "Projects/org-netbeans-modules-cnd-makeproject/" + ProjectMetadataFactory.LAYER_PATH, position = 90)
 public class PathMapperProjectMetadataFactory implements ProjectMetadataFactory {

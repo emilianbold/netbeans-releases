@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 
 /**
  *
- * @author Alexander Simon
  */
 public class Line2Offset {
 

@@ -69,7 +69,6 @@ import org.netbeans.modules.cnd.api.model.*;
  * #include MACRO(file.h)
  * what are the references and owners?
  *
- * @author Vladimir Voskresensky
  */
 public interface CsmReference extends CsmOffsetable {
     /**

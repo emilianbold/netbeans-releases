@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.repository.spi.Key;
  * 
  * Use via DiagnosticExceptoins.registerIllegalRepositoryStateException()
  * 
- * @author Vladimir Kvashin
  */
 public class IllegalRepositoryStateException extends IllegalStateException {
 

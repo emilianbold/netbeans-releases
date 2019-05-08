@@ -68,7 +68,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class HierarchyChildren extends Children.Keys<HierarchyModel.Node> {
     private static final Comparator<HierarchyModel.Node> COMARATOR = new MyComparator();

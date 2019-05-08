@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 
 /**
  * SPI used by CsmSelect
- * @author Vladimir Kvashin
  */
 public interface CsmSelectProvider {
 

@@ -64,7 +64,6 @@ import org.openide.loaders.DataObject;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class FormattingSupport {
 

@@ -100,7 +100,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Alexander Simon
  */
 public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, MakeContext.Savable {
 

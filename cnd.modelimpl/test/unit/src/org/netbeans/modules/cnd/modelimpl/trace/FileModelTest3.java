@@ -50,7 +50,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class FileModelTest3 extends TraceModelTestBase {
 

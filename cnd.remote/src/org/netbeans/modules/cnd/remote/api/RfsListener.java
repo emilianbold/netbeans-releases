@@ -47,7 +47,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author vk155633
  */
 public interface RfsListener {
     public void fileChanged(ExecutionEnvironment execEnv, File localFile, String remotePath);

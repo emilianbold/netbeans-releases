@@ -58,7 +58,6 @@ import org.openide.util.Lookup;
 
 /**
  * entry point to search references in files
- * @author Vladimir Voskresensky
  */
 public abstract class CsmReferenceResolver {
     /** A default resolver that combines all results.

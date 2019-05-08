@@ -70,7 +70,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  * #define MACRO VALUE
  * #define MACRO
  *
- * @author Vladimir Voskresensky
  */
 public final class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements CsmMacro {
     

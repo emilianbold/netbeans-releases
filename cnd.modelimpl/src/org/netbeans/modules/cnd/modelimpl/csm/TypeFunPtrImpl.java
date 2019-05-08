@@ -75,7 +75,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Represent pointer to function type
- * @author Vladimir Kvashin
  */
 public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
 

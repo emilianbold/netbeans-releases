@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 /**
  *
- * @author petrk
  */
 public class FileModelCpp14Test extends TraceModelTestBase {
 

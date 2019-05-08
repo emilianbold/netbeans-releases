@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Alexander Simon
  */
 public class BracePlacementProperty extends PropertySupport.ReadWrite<CodeStyle.BracePlacement> {
 

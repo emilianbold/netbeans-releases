@@ -60,7 +60,6 @@ import org.netbeans.junit.NbModuleSuite;
 /**
  * CND commit validation suite.
  *
- * @author ap153252
  */
 public class CNDValidation extends JellyTestCase {
 

@@ -48,7 +48,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author mtishkov
  */
 public class MakeProjectConfigurationAction extends ContextAwareWrapperAction {
     

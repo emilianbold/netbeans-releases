@@ -58,7 +58,6 @@ import org.openide.windows.TopComponent;
 /**
  * Top component which displays macro expansion view.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class MacroExpansionTopComponent extends TopComponent {
 

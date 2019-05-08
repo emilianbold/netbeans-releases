@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.debug.CndTraceFlags;
  * map-based implementation for CsmCacheManager.CsmCacheEntry.
  * TimeThreshold parameter allows to keep only values which took big creation time and skip 
  * caching fast calculated values.
- * @author Vladimir Voskresensky
  */
 public final class CsmCacheMap implements CsmCacheManager.CsmClientCache {
     private final long initTime;

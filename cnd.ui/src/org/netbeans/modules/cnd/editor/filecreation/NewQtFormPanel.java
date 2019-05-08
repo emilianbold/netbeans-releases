@@ -54,7 +54,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 /**
- * @author Alexey Vladykin
  */
 public class NewQtFormPanel extends CndPanel {
 

@@ -54,7 +54,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service = CodeStylePreferences.Provider.class)
 public class CodeStylePreferencesProvider implements CodeStylePreferences.Provider {

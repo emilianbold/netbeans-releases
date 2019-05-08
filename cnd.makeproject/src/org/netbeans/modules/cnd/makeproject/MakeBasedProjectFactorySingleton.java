@@ -73,7 +73,6 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service=ProjectFactory.class, position=144)
 public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {

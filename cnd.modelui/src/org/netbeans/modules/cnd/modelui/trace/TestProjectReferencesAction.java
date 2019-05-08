@@ -70,7 +70,6 @@ import org.openide.windows.OutputWriter;
 
 /**
  *
- * @author Vladirmir Voskresensky
  */
 public class TestProjectReferencesAction extends TestProjectActionBase {
 

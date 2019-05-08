@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuil
 
 /**
  * Implements CsmExpressionStatement
- * @author Vladimir Kvashin
  */
 public final class ExpressionStatementImpl extends StatementBase implements CsmExpressionStatement {
     

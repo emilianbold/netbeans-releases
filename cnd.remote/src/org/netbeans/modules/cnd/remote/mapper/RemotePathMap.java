@@ -80,7 +80,6 @@ import org.openide.util.Utilities;
 /**
  * An implementation of PathMap which returns remote path information.
  *
- * @author gordonp
  */
 public abstract class RemotePathMap extends PathMap {
 

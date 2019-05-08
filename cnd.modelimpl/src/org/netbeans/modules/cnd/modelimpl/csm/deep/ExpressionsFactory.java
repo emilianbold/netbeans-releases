@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  *
- * @author petrk
  */
 public final class ExpressionsFactory {
     

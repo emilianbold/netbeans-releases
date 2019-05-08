@@ -84,7 +84,6 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author Danila Sergeyev
  */
 class NoMatchingConstructor extends AbstractCodeAudit {    
     private NoMatchingConstructor(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {

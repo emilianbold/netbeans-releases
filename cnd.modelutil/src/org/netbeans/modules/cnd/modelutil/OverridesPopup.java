@@ -82,7 +82,6 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 
 public class OverridesPopup extends JPanel implements FocusListener {

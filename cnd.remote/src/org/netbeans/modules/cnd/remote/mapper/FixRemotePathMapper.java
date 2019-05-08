@@ -49,7 +49,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author masha
  */
 abstract public  class FixRemotePathMapper {
     private static final FixRemotePathMapper DEFAULT = new FixRemotePathMapperDefault();

@@ -63,7 +63,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Masha
  */
 public class WindowsSupport {
     /*package*/ static final String NFS_NETWORK_PROVIDER_NAME = "NFS Network";//NOI18N

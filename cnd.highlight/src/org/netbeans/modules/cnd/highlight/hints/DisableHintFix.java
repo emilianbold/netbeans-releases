@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class DisableHintFix implements EnhancedFix {
     private final CodeAuditInfo info;

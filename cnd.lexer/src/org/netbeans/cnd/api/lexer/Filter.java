@@ -50,7 +50,6 @@ import org.netbeans.api.lexer.TokenId;
 /**
  * help class to match known text with existing token ids.
  * Can be used to match identifiers which are keywords
- * @author Vladimir Voskresensky
  * @param <T> token ID type
  */
 public final class Filter<T extends TokenId> {

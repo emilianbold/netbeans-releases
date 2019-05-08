@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.utils.ui;
 
 /**
  * Utility class with some UI constants
- * @author Vladimir Voskresensky
  */
 public final class CndUIConstants {
 

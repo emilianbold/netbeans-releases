@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  *
- * @author vv159170
  */
 public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTestCase {
     private static final String PROJECT_FIRST = "project_first";

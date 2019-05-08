@@ -42,9 +42,7 @@
 
 /**
  * Original C++ grammar.
- * @author Fedor Sergeev
  * C++ grammar. C++11 standard extensions.
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 
 parser grammar CXXParser;

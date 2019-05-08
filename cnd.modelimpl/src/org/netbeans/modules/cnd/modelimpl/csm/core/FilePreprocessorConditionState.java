@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * A class that tracks states of the preprocessor conditionals within file
- * @author Vladimir Voskresenskky
  */
 public final class FilePreprocessorConditionState {
     public static final int ERROR_DIRECTIVE_MARKER = Integer.MAX_VALUE;

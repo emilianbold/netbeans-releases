@@ -58,7 +58,6 @@ import org.openide.text.PositionBounds;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CallImpl implements Call {
     

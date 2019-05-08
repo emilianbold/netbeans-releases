@@ -58,7 +58,6 @@ import org.openide.util.actions.Presenter;
 
 /**
  *
- * @author mtishkov
  */
 
 public class MoreBuildActionsAction extends MakeProjectContextAwareAction implements Presenter.Menu, Presenter.Popup {

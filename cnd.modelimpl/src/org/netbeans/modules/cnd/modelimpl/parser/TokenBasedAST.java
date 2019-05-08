@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.antlr.Token;
 
 /**
  * 
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  * 
  * TODO: it is better to extend TokenBasedAST from AST, not from OffsetableAST
  */

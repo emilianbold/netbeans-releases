@@ -56,7 +56,6 @@ import org.openide.util.Lookup;
 
 /**
  * entry point to resolve using directives and using declarations
- * @author Vladimir Voskresensky
  */
 public abstract class CsmUsingResolver {
     /** A dummy resolver that never returns any results.

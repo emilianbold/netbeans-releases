@@ -55,7 +55,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.NbBundle;
 
 /**
- * @author gordonp
  */
 public class DevelopmentHostConfiguration implements Cloneable {
 

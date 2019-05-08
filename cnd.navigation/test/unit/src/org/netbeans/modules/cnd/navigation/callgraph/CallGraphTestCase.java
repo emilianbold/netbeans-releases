@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 
 /**
  *
- * @author Alexamder Simon
  */
 public class CallGraphTestCase extends ProjectBasedTestCase {
 

@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class SwitchIndexAction extends NodeAction {
     public static final String CND_MODEL_INDEX_ENABLED_PROPERTY = "cnd.model.index.enabled"; // NOI18N

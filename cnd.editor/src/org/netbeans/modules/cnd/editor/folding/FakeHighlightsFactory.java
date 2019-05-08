@@ -59,7 +59,6 @@ import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
  * controls right after it's opened. Without the listener, code folding
  * controls used to appear only after editing a file.
  *
- * @author Alexey Vladykin
  */
 public final class FakeHighlightsFactory implements HighlightsLayerFactory, PropertyChangeListener {
 

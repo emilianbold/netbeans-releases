@@ -48,7 +48,6 @@ import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
- * @author vk155633
  */
 public class FileBufferSnapshot2 extends AbstractFileBuffer {
 

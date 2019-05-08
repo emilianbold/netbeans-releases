@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
  * compilation unit description
- * @author Vladimir Voskresensky
  */
 public final class CsmCompilationUnit {
     private final CharSequence startPath;

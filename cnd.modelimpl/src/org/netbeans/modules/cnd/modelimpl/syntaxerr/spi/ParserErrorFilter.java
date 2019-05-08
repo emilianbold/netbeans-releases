@@ -57,7 +57,6 @@ import org.openide.util.Lookup;
  * - filter out some particular sort of errors
  * - convert messages / info into human understandable format
  * 
- * @author Vladimir Kvashin
  */
 public abstract class ParserErrorFilter {
 

@@ -61,7 +61,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Miscellaneous AST-related static utility functions
- * @author Vladimir Kvashin
  */
 public class AstUtil {
 

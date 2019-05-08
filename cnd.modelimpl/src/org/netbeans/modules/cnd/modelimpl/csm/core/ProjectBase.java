@@ -175,8 +175,6 @@ import org.openide.util.Parameters;
 
 /**
  * Base class for CsmProject implementation
- * @author Dmitry Ivanov
- * @author Vladimir Kvashin
  */
 public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent, CsmIdentifiable,
         CndFileSystemProvider.CndFileSystemProblemListener {

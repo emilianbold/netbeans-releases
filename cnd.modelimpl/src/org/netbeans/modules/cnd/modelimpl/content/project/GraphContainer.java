@@ -73,7 +73,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * Storage for include graph.
- * @author Alexander Simon
  */
 public class GraphContainer extends ProjectComponent implements CsmProgressListener {
 

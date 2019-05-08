@@ -65,7 +65,6 @@ import org.netbeans.lib.lexer.test.ModificationTextDocument;
  * mainly because it's easy to run profiler over it.
  *
  * based on JavaLexerPerformanceTest
- * @author Vladimir Voskresensky
  */
 public class FortranLexerPerformanceTestCase extends NbTestCase {
 

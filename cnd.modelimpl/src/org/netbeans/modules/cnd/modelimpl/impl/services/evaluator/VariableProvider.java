@@ -94,7 +94,6 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
  *
- * @author nk220367
  */
 public class VariableProvider {
     private static final Logger LOG = Logger.getLogger(VariableProvider.class.getSimpleName());

@@ -56,7 +56,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  * 
- * @author Vladimir Voskresensky
  */
 public class ModelImplTest extends ModelImplBaseTestCase {
 

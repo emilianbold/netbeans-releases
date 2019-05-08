@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 
 /**
  *
- * @author Alexander Simon
  */
 final class MacroDeclarationReference extends OffsetableBase implements CsmReference {
     private final CsmMacro referencedMacro;

@@ -64,7 +64,6 @@ import org.openide.util.lookup.ServiceProvider;
  * project1.dest_name=/export/home/masha/ssd/llvm/LLVM33
  * project1.source_root=/export1/tmp/LLVM33
  * project1.dest_root=/export/home/masha/ssd/llvm/LLVM33
- * @author mtishkov
  */
 @ServiceProvider(service = NativeProjectRelocationMapperProvider.class, position = 100)
 public class NativeProjectRelocationMapperProviderImpl implements NativeProjectRelocationMapperProvider{

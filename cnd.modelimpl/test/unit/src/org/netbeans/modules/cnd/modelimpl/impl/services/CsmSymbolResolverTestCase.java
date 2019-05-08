@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.FileModelCpp14Test;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public class CsmSymbolResolverTestCase extends SelectTestBase {
     

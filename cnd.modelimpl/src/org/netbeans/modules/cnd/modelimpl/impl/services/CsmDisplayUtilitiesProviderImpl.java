@@ -89,7 +89,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author petrk
  */
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.modelutil.spi.CsmDisplayUtilitiesProvider.class)

@@ -55,7 +55,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author alsimon
  */
 @org.openide.util.lookup.ServiceProvider(service=ResolveBuildToolsFactory.class)
 public class ResolveBuildToolsFactoryImpl implements ResolveBuildToolsFactory {

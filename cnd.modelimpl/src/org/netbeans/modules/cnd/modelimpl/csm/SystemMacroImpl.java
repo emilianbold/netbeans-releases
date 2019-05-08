@@ -70,7 +70,6 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
 /**
  * Implementation of system macros and user-defined (in project properties) ones.
  *
- * @author Sergey Grinev
  */
 public final class SystemMacroImpl implements CsmMacro, CsmIdentifiable {
     

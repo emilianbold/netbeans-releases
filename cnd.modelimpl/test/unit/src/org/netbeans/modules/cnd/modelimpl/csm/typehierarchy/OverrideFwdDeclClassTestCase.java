@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
  *
- * @author ilia
  */
 public class OverrideFwdDeclClassTestCase extends TraceModelTestBase {
 

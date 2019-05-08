@@ -50,7 +50,6 @@ import org.openide.util.actions.Presenter;
 
 /**
  *
- * @author mtishkov
  */
 abstract public class ContextAwareWrapperAction extends MakeProjectContextAwareAction implements Presenter.Menu, Presenter.Popup{
     

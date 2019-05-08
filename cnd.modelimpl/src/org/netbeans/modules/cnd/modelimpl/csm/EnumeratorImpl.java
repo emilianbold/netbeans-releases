@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  * CsmEnumerator implementation
- * @author Vladimir Kvashin
  */
 public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerator> implements CsmEnumerator {
     private final CharSequence name;

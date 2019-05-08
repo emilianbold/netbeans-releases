@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter.Diff;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FortranReformatterImpl {
     /*package local*/ final FortranContextDetector ts;

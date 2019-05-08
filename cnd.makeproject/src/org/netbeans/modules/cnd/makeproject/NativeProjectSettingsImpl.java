@@ -59,7 +59,6 @@ import org.w3c.dom.NodeList;
 
 /**
  *
- * @author Sergey Grinev
  */
 public final class NativeProjectSettingsImpl implements NativeProjectSettings {
 

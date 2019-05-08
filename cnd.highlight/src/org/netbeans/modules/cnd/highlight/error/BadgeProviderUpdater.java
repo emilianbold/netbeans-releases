@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 
 /**
  *
- * @author Alexander Simon
  */
 public class BadgeProviderUpdater implements CsmModelListener, CsmProgressListener {
 

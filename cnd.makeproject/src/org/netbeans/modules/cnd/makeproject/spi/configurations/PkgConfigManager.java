@@ -50,7 +50,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class PkgConfigManager {
     private static final PkgConfigManager DEFAULT = new Default();

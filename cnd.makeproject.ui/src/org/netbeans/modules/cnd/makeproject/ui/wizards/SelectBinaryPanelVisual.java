@@ -126,7 +126,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class SelectBinaryPanelVisual extends javax.swing.JPanel {
 

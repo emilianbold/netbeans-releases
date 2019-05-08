@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 /**
  * Allows view provider to update view
  * 
- * @author Alexander
  */
 public interface MakeLogicalViewModel {
     /**

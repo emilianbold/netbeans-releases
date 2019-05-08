@@ -50,7 +50,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author alsimon
  */
 public class FormattingCustomizerNode extends CustomizerNode {
 

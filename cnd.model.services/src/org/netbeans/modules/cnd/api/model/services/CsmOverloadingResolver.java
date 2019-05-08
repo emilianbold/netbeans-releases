@@ -52,7 +52,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public final class CsmOverloadingResolver {
     

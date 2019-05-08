@@ -46,7 +46,6 @@ import org.openide.util.Cancellable;
 
 /**
  *
- * @author AlexanderSimon
  */
 public class InterrupterImpl implements Interrupter, Cancellable {
 

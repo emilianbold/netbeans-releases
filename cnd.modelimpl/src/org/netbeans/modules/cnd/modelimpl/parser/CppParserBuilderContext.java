@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceB
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.SimpleDeclarationBuilder;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class CppParserBuilderContext {
     

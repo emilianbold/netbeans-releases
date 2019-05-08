@@ -59,7 +59,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class FolderSearchInfo extends SearchInfoDefinition {
 

@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class LambdaFunction<T> extends FunctionDDImpl<T> {
     

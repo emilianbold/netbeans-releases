@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public interface CsmSymbolResolverImplementation {
     

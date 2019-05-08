@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  *
- * @author vv159170
  */
 public class ModifyUndoRedo190950TestCase extends ModifyDocumentTestCaseBase {
     public ModifyUndoRedo190950TestCase(String testName) {

@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.repository.spi.KeyPresentationFactory;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.repository.spi.KeyPresentationFactory.class)
 public class KeyPresentationFactoryImpl implements KeyPresentationFactory {

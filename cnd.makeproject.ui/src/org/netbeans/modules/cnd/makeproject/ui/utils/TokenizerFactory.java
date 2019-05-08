@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.utils.CndPathUtilities;
 /**
  * list <--> converter
  *
- * @author Alexander Simon
  */
 public final class TokenizerFactory {
 

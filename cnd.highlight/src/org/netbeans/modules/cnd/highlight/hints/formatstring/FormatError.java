@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.highlight.hints.formatstring;
 
 /**
  *
- * @author Danila Sergeyev
  */
 class FormatError {
     private final FormatErrorType type;

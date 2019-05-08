@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
  * A common base class for guard based tests
- * @author Vladimir Kvashin
  */
 public class GuardTestBase  extends TraceModelTestBase {
 

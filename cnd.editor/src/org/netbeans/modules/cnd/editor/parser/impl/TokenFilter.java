@@ -48,7 +48,6 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 
 /**
  *
- * @author igromov
  */
 public interface TokenFilter {
 

@@ -52,7 +52,6 @@ import org.netbeans.spi.lexer.LanguageEmbedding;
 /**
  * Provider for language embedding for CndLexer.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CndLexerLanguageEmbeddingProvider {
     // constant to be used for registration of provider

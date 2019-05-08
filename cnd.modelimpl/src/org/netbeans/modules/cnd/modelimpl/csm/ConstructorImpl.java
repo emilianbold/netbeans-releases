@@ -67,7 +67,6 @@ import org.openide.util.CharSequences;
 
 /**
  * CsmConstructor implementation
- * @author Vladimir Kvasihn
  */
 public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements CsmConstructor {
 

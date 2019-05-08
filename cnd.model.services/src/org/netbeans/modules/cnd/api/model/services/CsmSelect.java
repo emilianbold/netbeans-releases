@@ -76,7 +76,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CsmSelect {
     private static final Logger LOG = Logger.getLogger(CsmSelect.class.getSimpleName());

@@ -63,7 +63,6 @@ import org.openide.util.Lookup;
 
 /**
  * entry point to search references of model object in projects
- * @author Vladimir Voskresensky
  */
 public abstract class CsmReferenceRepository {
     /** A dummy Repository that never returns any results.

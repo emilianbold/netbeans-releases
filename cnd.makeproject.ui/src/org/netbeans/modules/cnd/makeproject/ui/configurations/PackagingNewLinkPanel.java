@@ -49,7 +49,6 @@ import org.openide.DialogDescriptor;
 
 /**
  *
- * @author  thp
  */
 public class PackagingNewLinkPanel extends javax.swing.JPanel {
 

@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.highlight.error;
 
 /**
  * Error highlighting test case for missing semicolons
- * @author Vladimir Kvashin
  */
 public class MissedSemicolonsTestCase extends ErrorHighlightingBaseTestCase {
 

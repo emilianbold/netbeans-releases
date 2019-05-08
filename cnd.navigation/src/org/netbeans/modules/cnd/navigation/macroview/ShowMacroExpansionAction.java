@@ -61,7 +61,6 @@ import org.openide.util.actions.CookieAction;
 /**
  * Context menu action that opens Macro Expansion View panel
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @ActionID(id = "org.netbeans.modules.cnd.navigation.macroview.ShowMacroExpansionAction", category = "Edit")
 @ActionRegistration(lazy = true, displayName = "#CTL_ShowMacroExpansionAction")

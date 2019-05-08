@@ -49,7 +49,6 @@ import org.openide.nodes.Node;
 /**
  * Retrieves list of targets from a makefile.
  *
- * @author Alexey Vladykin
  */
 public interface MakefileTargetProvider extends Node.Cookie {
 

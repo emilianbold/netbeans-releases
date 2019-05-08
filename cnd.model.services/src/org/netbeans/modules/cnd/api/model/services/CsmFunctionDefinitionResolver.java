@@ -51,7 +51,6 @@ import org.openide.util.Lookup;
 
 /**
  * entry point to resolve function definition
- * @author Alexander Simon
  */
 public abstract class CsmFunctionDefinitionResolver {
     private static final CsmFunctionDefinitionResolver DEFAULT = new Default();

@@ -88,7 +88,6 @@ import org.openide.util.Exceptions;
  * }
  * </pre>
  *
- * @author Vladimir Voskresensky
  */
 public final class CsmCacheManager {
 

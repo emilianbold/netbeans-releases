@@ -54,7 +54,6 @@ import org.openide.util.Utilities;
 
 /**
  * dummy tests
- * @author vv159170
  */
 public class IOTestCase extends ModelImplBaseTestCase {
 

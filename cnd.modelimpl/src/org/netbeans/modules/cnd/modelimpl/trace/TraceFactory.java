@@ -73,7 +73,6 @@ import org.openide.windows.OutputWriter;
 
 /**
  *
- * @author Alexander Simon
  */
 public class TraceFactory {
 

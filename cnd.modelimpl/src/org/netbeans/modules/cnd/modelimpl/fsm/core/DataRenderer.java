@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
  *
- * @author nk220367
  */
 public class DataRenderer {
 

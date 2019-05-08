@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
  * Base class for ErrorMaker implementations
- * @author Vladimir Kvashin
  */
 public abstract class BaseErrorMaker implements ErrorMaker  {
 

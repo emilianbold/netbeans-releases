@@ -67,7 +67,6 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author Alexander Simon
  */
 final class NodeActionFactory {
     private static final boolean DOWNLOAD_ACTION = Boolean.getBoolean("cnd.remote.download.project.action"); // NOI18N

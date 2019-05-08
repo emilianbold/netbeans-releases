@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FriendTest extends CndBaseTestSuite {
     

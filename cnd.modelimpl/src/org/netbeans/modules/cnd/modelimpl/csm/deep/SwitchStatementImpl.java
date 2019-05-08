@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * CsmSwitchStatement implementation
- * @author Vladimir Kvashin
  */
 public final class SwitchStatementImpl extends StatementBase implements CsmSwitchStatement {
 

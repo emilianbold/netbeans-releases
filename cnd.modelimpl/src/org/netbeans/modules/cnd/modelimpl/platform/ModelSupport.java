@@ -99,7 +99,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class ModelSupport implements PropertyChangeListener {
 

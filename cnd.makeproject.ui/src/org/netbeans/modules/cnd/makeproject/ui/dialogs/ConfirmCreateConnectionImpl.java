@@ -46,7 +46,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ConfirmCreateConnectionImpl {
     @org.openide.util.lookup.ServiceProvider(service = ConfirmCreateConnectionFactory.class)

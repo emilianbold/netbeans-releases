@@ -47,12 +47,10 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
  *
- * @author petrk
  */
 
 /**
  * Represents a point in file
- * @author petrk
  */
 public final class CsmResolveContext {
     

@@ -66,7 +66,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver.class)
 public final class LabelResolverImpl extends CsmLabelResolver {

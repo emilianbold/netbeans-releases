@@ -46,7 +46,6 @@ import org.openide.util.NbBundle;
 /**
  * 
  * Implementation of type descriptor for "Jump to Type" for C/C++
- * @author Vladimir Kvashin
  */
 /* package-local */
 final class CppTypeDescriptor extends TypeDescriptor {

@@ -46,8 +46,6 @@ import java.util.TreeMap;
 
 /**
  *
- * @author Vladimir Voskresensky
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class SymTabEntry {
     private final Map<SymTabEntryKey, Object> attributes = new TreeMap<>();

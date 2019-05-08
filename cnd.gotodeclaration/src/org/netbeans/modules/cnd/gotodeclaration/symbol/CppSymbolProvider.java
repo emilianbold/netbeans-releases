@@ -88,7 +88,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  * SymbolProvider for C/C++ implementation
- * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.symbol.SymbolProvider.class)
 public class CppSymbolProvider implements SymbolProvider {

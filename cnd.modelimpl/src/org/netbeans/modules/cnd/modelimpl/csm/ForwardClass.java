@@ -67,7 +67,6 @@ import org.openide.util.CharSequences;
  * class N::Outer::InnerFwd2 {
  *      int var;
  * }
- * @author Vladimir Kvashin
  */
 public final class ForwardClass extends ClassImpl {
 

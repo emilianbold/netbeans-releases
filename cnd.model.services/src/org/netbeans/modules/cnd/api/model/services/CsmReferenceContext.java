@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 /**
  * Represents a reference with its lexical context.
  *
- * @author Alexey Vladykin
  */
 public interface CsmReferenceContext {
 

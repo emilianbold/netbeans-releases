@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 /**
  * Lazy try-catch statements
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class LazyTryCatchStatementImpl extends LazyStatementImpl implements CsmCompoundStatement {
 

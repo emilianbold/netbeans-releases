@@ -67,7 +67,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 /*package*/final class ExternalUpdateListener extends FileChangeAdapter implements Runnable {
     /*package*/static final Logger LOG = Logger.getLogger("ExternalUpdateListener"); // NOI18N

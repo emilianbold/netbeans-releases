@@ -50,7 +50,6 @@ import org.openide.nodes.Sheet;
 
 /**
  *
- * @author thp
  */
 public abstract class MakeProjectCustomizerAdaptor implements MakeProjectCustomizerEx {
 

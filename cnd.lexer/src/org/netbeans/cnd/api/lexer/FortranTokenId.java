@@ -62,7 +62,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 /**
  * Token ids of Fortran language defined as enum.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public enum FortranTokenId implements TokenId {
 

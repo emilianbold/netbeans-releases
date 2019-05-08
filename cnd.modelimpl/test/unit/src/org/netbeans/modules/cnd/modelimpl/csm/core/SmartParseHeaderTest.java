@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
  * A suite for testing smart header parsing (iz #142107)
- * @author Vladimir Kvashin
  */
 public class SmartParseHeaderTest extends TraceModelTestBase {
 

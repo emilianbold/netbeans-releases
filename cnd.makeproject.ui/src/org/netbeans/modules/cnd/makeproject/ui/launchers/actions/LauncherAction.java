@@ -66,7 +66,6 @@ import org.openide.util.actions.Presenter;
 
 /**
  *
- * @author Henk
  */
 public class LauncherAction extends AbstractAction implements ContextAwareAction, Presenter.Menu, Presenter.Popup{
 

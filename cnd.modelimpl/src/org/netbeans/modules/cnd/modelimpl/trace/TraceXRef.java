@@ -114,7 +114,6 @@ import org.openide.windows.OutputWriter;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class TraceXRef extends TraceModel {
 

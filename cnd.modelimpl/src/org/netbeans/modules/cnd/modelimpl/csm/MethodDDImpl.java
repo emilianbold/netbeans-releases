@@ -80,7 +80,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Method, which contains it's body right at throws POD (point of declaration)
- * @author Vladimir Kvasihn
  */
 public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinition {
 

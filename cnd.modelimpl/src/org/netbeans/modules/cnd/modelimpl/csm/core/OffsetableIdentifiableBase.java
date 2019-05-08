@@ -68,7 +68,6 @@ import org.openide.util.CharSequences;
  * unique ID is used to long-time stored references on Csm Objects
  * 
  * @see CsmUID
- * @author Vladimir Voskresensky
  */
 public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase implements CsmIdentifiable, Persistent, SelfPersistent {
     

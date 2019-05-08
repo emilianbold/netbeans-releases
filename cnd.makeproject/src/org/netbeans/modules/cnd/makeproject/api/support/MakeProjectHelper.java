@@ -52,7 +52,6 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface MakeProjectHelper {
 

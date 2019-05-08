@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  *
- * @author petrk
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.TypesProvider.class)
 public class TypesProviderImpl implements TypesProvider {

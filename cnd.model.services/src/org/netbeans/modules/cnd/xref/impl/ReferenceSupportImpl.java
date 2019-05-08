@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class ReferenceSupportImpl {
     public CsmReference createObjectReference(CsmOffsetable obj) {

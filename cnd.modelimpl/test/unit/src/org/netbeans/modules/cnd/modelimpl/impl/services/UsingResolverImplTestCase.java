@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class UsingResolverImplTestCase extends TraceModelTestBase {
     

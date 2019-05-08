@@ -79,7 +79,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class TestSimpleIterator extends AbstractUnitTestIterator {
     private WizardDescriptor.Panel<WizardDescriptor> targetChooserDescriptorPanel;

@@ -50,7 +50,6 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class EscapeLineTestCase extends TestCase {
 

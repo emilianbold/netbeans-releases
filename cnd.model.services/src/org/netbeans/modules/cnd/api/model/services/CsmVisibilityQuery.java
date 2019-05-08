@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.spi.model.services.CsmVisibilityQueryProvider;
 import org.openide.util.Lookup;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class CsmVisibilityQuery {
 

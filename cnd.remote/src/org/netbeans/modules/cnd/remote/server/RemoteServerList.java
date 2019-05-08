@@ -80,7 +80,6 @@ import org.openide.util.WeakListeners;
 /**
  * The cnd.remote implementation of ServerList.
  *
- * @author gordonp
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerListImplementation.class)
 public class RemoteServerList implements ServerListImplementation, ConnectionListener {

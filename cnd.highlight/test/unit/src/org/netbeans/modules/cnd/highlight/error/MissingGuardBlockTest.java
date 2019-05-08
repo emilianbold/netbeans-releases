@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.highlight.error;
 
 /**
  *
- * @author petrk
  */
 public class MissingGuardBlockTest extends ErrorHighlightingBaseTestCase {
     

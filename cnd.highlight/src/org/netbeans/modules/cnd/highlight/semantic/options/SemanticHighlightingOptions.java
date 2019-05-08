@@ -53,7 +53,6 @@ import org.openide.util.WeakSet;
 
 /**
  *
- * @author Sergey Grinev
  */
 public final class SemanticHighlightingOptions {
 

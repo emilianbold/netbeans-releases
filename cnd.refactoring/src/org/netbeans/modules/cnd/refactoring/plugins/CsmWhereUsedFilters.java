@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 /**
  * Filters used by Csm Find Usages plugins.
  *
- * @author Egor Ushakov <gorrus@netbeans.org>
  */
 public enum CsmWhereUsedFilters {
     COMMENTS("filter-comments"), // NOI18N

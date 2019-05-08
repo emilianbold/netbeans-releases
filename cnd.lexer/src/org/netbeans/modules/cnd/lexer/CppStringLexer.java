@@ -57,7 +57,6 @@ import org.netbeans.spi.lexer.TokenFactory;
  * Lexical analyzer for C/C++ string language.
  * based on JavaStringLexer
  *
- * @author Vladimir Voskeresensky
  * @version 1.00
  */
 

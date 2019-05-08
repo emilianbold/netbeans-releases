@@ -59,7 +59,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author vk155633
  */
 @ServiceProvider(service = LayerDescriptorProvider.class, position = 500, supersedes = "org.netbeans.modules.cnd.repository.impl.util.DefaultLayerDescriptorProvider")
 public class LayerDescriptorProviderImpl implements LayerDescriptorProvider {

@@ -60,7 +60,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Alexander Simon
  */
 public class LaunchersConfig {
 

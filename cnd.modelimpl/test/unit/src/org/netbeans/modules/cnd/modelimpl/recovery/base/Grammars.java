@@ -48,7 +48,6 @@ import java.lang.annotation.Target;
 
 /**
  *
- * @author Alexander Simon
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

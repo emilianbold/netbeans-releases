@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 
 /**
  *
- * @author vkvashin
  */
 /*package*/ class ClankTokenStreamProducerParameters {
 

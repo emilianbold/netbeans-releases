@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.utils.CndLanguageStandards.CndLanguageStandard;
 /**
  * Test several lexer inputs.
  *
- * @author Vladimir Voskresensky
  */
 public class CppLexerBatchTestCase extends TestCase {
 

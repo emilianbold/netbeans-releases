@@ -59,7 +59,6 @@ import org.openide.util.actions.NodeAction;
 
 /**
  * A common abstract parent for  test actions on projects
- * @author Vladimir Kvashin
  */
 public abstract class ProjectActionBase extends NodeAction {
 

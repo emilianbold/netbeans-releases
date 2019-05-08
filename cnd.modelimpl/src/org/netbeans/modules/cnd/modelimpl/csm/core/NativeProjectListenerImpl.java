@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Implementation of the NativeProjectItemsListener interface
- * @author Vladimir Kvashin
  */
 // package-local
 class NativeProjectListenerImpl implements NativeProjectItemsListener {

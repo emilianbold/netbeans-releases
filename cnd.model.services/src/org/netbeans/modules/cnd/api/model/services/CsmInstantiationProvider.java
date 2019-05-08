@@ -68,7 +68,6 @@ import org.openide.util.Lookup;
 /**
  * Service that provides template instantiations
  * 
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public abstract class CsmInstantiationProvider {
     

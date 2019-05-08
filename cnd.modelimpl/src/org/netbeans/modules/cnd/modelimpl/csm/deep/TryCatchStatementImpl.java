@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * CsmTryCatchStatement implementation
- * @author Vladimir Kvashin
  */
 public final class TryCatchStatementImpl extends StatementBase implements CsmTryCatchStatement, CsmScope {
 

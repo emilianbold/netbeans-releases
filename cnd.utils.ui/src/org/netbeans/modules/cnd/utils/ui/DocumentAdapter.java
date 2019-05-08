@@ -49,7 +49,6 @@ import javax.swing.event.DocumentListener;
  * Catches a very common pattern, when all the three DocumentListener methods
  * call a single one that performs all work
  * 
- * @author Vladimir Kvashin
  */
 public abstract class DocumentAdapter implements DocumentListener {
 

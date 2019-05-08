@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 
 /**
  * pre-integration tests for parser
- * @author Vladimir Voskresensky
  */
 public class FileModelTest extends TraceModelTestBase {
 

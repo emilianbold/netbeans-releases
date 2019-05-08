@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.api.project.NativeProjectType;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface MakeProjectType extends NativeProjectType {
 

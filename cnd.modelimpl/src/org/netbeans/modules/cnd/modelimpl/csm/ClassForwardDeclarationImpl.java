@@ -88,7 +88,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Vladimir Kvasihn
  */
 public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmClassForwardDeclaration> 
                                          implements CsmClassForwardDeclaration, CsmTemplate {

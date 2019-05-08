@@ -56,7 +56,6 @@ import org.openide.util.Lookup;
 
 /**
  * some help methods to support CsmReference objects
- * @author Vladimir Voskresensky
  */
 public final class CsmReferenceSupport {
     

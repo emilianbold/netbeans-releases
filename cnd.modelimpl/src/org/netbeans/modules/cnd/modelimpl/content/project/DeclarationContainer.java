@@ -80,7 +80,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  * Storage for project or namespace declarations.
- * @author Alexander Simon
  */
 public abstract class DeclarationContainer extends ProjectComponent {
 

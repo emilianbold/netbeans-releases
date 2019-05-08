@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 /**
  * Test that goes forever
  * (Created for the sake of investigation IZ #106124)
- * @author Vladimir Kvashin
  */
 public class TestEndless extends CndBaseTestSuite {
 

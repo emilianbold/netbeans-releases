@@ -46,7 +46,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class LongOperation {
     public static final class CanceledState {

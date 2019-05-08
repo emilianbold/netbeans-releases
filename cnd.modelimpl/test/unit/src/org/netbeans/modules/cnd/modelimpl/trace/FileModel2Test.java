@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 /**
  * Just a continuation of the FileModelTest
  * (which became too large)
- * @author Vladimir Kvashin
  */
 public class FileModel2Test extends TraceModelTestBase {
 

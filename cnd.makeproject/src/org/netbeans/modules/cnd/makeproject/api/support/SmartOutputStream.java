@@ -69,7 +69,6 @@ import org.openide.filesystems.FileUtil;
  * 
  * TODO: make project system smart enough to understand whether we need to write project metadata
  * 
- * @author vk155633
  */
 public class SmartOutputStream extends OutputStream {
 

@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * Implements CsmForStatement statements
- * @author Vladimir Kvashin
  */
 public final class ForStatementImpl extends StatementBase implements CsmForStatement, CsmRangeForStatement {
 

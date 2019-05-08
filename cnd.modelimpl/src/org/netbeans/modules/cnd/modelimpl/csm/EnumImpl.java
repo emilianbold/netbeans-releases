@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Implements CsmEnum
- * @author Vladimir Kvashin
  */
 public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum, SelectImpl.FilterableEnumerators {
     private final boolean stronglyTyped;

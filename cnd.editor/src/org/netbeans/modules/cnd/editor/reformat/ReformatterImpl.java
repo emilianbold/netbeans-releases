@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ReformatterImpl {
     /*package local*/ final ContextDetector ts;

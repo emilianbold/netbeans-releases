@@ -71,7 +71,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  * Class for types B and C in the compound type A::B::C
- * @author eu155513
  */
 public final class NestedType extends TypeImpl {
     private final CsmType parentType;

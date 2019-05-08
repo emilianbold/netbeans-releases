@@ -35,7 +35,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
  * Utility class with methods that returns context information
- * @author Vladimir Kvashin
  */
 public class ContextUtil {
 

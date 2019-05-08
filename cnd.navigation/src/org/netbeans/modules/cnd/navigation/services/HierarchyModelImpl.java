@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 
 /**
  *
- * @author Alexander Simon
  */
 /*package-local*/ class HierarchyModelImpl implements HierarchyModel {
     private Map<CsmClass,Set<CsmClass>> myMap;

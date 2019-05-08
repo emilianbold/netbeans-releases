@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * CsmInheritance implementation
- * @author Vladimir Kvashin
  */
 public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInheritance> implements CsmInheritance {
 

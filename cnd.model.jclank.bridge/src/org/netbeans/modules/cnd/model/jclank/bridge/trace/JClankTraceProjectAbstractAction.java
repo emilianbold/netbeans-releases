@@ -62,7 +62,6 @@ import org.openide.windows.OutputWriter;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public abstract class JClankTraceProjectAbstractAction extends NodeAction {
 

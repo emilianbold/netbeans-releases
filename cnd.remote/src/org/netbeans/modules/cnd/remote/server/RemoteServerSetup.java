@@ -62,7 +62,6 @@ import org.openide.util.NbBundle;
 
 /**
  * NB: the class is not thread safe!
- * @author gordonp
  */
 public class RemoteServerSetup {
 

@@ -68,7 +68,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Sergey Grinev
  */
 @MimeRegistrations({
     @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = TaskFactory.class),

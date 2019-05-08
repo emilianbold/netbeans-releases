@@ -54,7 +54,6 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Factory for TestRunnerActionHandler.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @ServiceProvider(service=ProjectActionHandlerFactory.class, position=5000)
 public class TestRunnerActionHandlerFactory implements ProjectActionHandlerFactory {

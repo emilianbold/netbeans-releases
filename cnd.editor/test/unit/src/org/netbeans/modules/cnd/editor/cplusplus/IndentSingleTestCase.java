@@ -36,7 +36,6 @@ import org.netbeans.modules.cnd.editor.options.EditorOptions;
 
 /**
  * Place holder for single test
- * @author Alexander Simon
  */
 public class IndentSingleTestCase extends EditorBase {
 

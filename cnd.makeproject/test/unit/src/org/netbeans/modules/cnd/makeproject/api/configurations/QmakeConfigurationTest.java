@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
- * @author Alexey Vladykin
  */
 public class QmakeConfigurationTest extends CndBaseTestCase {
 

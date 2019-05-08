@@ -57,7 +57,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 abstract class BaseMakeViewChildren extends Children.Keys<Object>
         implements ChangeListener, RefreshableItemsContainer {

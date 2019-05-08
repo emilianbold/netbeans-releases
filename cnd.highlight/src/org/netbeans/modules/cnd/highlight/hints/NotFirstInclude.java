@@ -67,7 +67,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 public class NotFirstInclude extends AbstractCodeAudit {
     private final String message;

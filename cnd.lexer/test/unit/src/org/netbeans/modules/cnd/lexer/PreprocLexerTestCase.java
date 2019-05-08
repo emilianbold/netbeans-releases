@@ -52,7 +52,6 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
 /**
  * tests for preprocessor directive lexer
  *
- * @author Vladimir Voskresensky
  */
 public class PreprocLexerTestCase extends NbTestCase {
 

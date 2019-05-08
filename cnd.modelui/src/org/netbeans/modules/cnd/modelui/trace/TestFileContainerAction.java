@@ -53,7 +53,6 @@ import org.openide.windows.OutputWriter;
 /**
  * A test action that dump file container the given project
  * 
- * @author Alexander Simon
  */
 public class TestFileContainerAction extends TestProjectActionBase {
 

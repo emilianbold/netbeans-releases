@@ -52,7 +52,6 @@ import org.openide.nodes.PropertySupport;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class StateCANodeProp extends PropertySupport<StateCA> {
     private static final JCheckBox checkBox = new JCheckBox();

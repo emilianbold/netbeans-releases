@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author mtishkov
  */
 public class MakeProjectActionsSupport {
     private static final ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);

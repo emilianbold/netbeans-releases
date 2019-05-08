@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
  *
- * @author vk155633
  */
 public class DiagnosticUnresolved {
 

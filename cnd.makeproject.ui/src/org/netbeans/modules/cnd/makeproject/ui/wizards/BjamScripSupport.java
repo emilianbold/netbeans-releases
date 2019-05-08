@@ -55,7 +55,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service = BuildFileProvider.class, position = 3000)
 public class BjamScripSupport implements BuildFileProvider {

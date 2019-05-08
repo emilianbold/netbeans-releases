@@ -45,7 +45,6 @@ import org.netbeans.spi.project.ActionProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface MakeActionProvider extends ActionProvider {
 

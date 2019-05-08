@@ -44,7 +44,6 @@ import org.junit.Test;
 
 /**
  *
- * @author petrk
  */
 public class FilePreprocessorConditionStateTest {
     @Test

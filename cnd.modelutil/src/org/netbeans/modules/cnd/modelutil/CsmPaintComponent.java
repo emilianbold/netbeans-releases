@@ -65,7 +65,6 @@ import org.netbeans.swing.plaf.LFCustoms;
 
 /**
  *
- * @author  Vladimir Voskresensky
  * after JCPaintComponent
  */
 

@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
 
 /**
  *
- * @author akrasny
  */
 public interface TextIndexLayerFactory {
 

@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.editor.api.CodeStyle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class PreviewPreferencesModel {
 

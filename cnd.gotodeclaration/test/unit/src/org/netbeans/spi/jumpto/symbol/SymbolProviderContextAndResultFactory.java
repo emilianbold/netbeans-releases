@@ -49,7 +49,6 @@ import org.netbeans.spi.jumpto.type.SearchType;
 /**
  * A factory to create SymbolProvider.Context
  * (for test purposes only)
- * @author Vladimir Kvashin
  */
 public class SymbolProviderContextAndResultFactory {
 

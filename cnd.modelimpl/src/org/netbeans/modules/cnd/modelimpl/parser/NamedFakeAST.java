@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 /**
  * Fake AST managing text
- * @author Vladimir Voskresensky
  */
 public final class NamedFakeAST extends FakeAST implements Serializable {
     private static final long serialVersionUID = 3949611279758335361L;

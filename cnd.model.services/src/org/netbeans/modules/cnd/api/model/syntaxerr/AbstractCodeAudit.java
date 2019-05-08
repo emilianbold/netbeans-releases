@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.EditorEvent
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class AbstractCodeAudit implements CodeAudit {
     private final String id;

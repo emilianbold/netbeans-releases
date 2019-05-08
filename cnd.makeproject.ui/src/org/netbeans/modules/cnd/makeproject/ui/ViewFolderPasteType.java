@@ -59,7 +59,6 @@ import org.openide.util.datatransfer.PasteType;
 
 /**
  *
- * @author Alexander Simon
  */
 final class ViewFolderPasteType  extends PasteType {
 

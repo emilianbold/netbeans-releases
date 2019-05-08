@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 /**
  * Provider for expression evaluator.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CsmExpressionEvaluatorProvider {
 

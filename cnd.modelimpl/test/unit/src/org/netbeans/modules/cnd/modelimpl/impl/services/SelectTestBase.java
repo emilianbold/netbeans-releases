@@ -69,7 +69,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 
 /**
  * Common base class for CsmSelect unit tests
- * @author Vladimir Kvashin
  */
 public abstract class SelectTestBase extends ModelImplBaseTestCase {
     private static final boolean TRACE = false;

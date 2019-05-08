@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
  *
  * Support for creation of unit tests working with document.
  *
- * @author Miloslav Metelka
  */
 public abstract class BaseDocumentUnitTestCase extends CndBaseTestCase {
     

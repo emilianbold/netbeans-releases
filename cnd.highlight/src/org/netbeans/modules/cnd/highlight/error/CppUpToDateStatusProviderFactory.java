@@ -51,7 +51,6 @@ import org.netbeans.spi.editor.errorstripe.UpToDateStatusProviderFactory;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CppUpToDateStatusProviderFactory implements UpToDateStatusProviderFactory {
     /** Creates a new instance of CppUpToDateStatusProviderFactory */

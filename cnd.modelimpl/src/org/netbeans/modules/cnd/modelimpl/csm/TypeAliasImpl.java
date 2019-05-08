@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
- * @author petrk
  */
 public class TypeAliasImpl extends TypedefImpl implements CsmTypeAlias, CsmScopeElement, Disposable {
     

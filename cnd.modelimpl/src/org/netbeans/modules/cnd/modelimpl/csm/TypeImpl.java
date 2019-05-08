@@ -102,7 +102,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBasedProvider {
     private static final CharSequence NON_INITIALIZED_CLASSIFIER_TEXT = CharSequences.empty();

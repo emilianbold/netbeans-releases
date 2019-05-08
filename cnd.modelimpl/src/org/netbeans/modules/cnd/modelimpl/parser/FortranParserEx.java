@@ -63,7 +63,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author nk220367
  */
 public class FortranParserEx {
 

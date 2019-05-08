@@ -62,7 +62,6 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Test for IdentifierErrorProvider.
  *
- * @author Alexey Vladykin
  */
 public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase {
 

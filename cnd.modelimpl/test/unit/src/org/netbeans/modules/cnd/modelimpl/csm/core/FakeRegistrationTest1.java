@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 
 /**
  * Test for #131967
- * @author Vladimir Kvashin
  */
 public class FakeRegistrationTest1 extends ModelImplBaseTestCase  {
 

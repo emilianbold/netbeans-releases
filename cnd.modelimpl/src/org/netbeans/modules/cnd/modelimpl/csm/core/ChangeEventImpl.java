@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 
 /**
  * CsmChangeEvent implementation
- * @author vk155633
  */
 public class ChangeEventImpl extends CsmChangeEvent {
 

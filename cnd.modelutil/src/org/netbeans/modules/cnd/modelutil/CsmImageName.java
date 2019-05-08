@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.modelutil;
 
 /**
  *
- * @author jec
  */
 public interface CsmImageName {
     static final String RESOURCE_BASE = "org/netbeans/modules/cnd/modelutil/resources/types16x16/"; // NOI18N

@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  * enum class N::Outer::InnerFwd2 {
  *      E1, E2
  * }
- * @author Vladimir Voskresensky
  */
 public final class ForwardEnum extends EnumImpl {
 

@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Trivial CsmOffsetable implementation
- * @author Vladimir Kvashin
  */
 public class SimpleOffsetableImpl implements CsmOffsetable {
     

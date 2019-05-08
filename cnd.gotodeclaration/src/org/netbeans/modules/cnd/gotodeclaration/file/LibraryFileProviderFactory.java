@@ -69,7 +69,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author vv159170
  */
 // we use position less than MakeProjectFileProviderFactory to be called by infrastructure
 // and have a chance to contribute libraries even if MakeProjectFileProviderFactory consumes src root

@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.completion;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
- *(nnnnnk@netbeans.org)
  */
 public class TemplateCompletionTestCase extends CompletionBaseTestCase  {
 

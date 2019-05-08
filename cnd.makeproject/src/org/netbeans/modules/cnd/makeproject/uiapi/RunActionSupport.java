@@ -43,7 +43,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class RunActionSupport {
     public abstract boolean canRun(Lookup context);

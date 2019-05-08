@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.highlight.error;
 /**
  * Test for syntax errors.
  *
- * @author Alexey Vladykin
  */
 public class UnexpectedTokenTest extends ErrorHighlightingBaseTestCase {
 

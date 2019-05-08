@@ -50,7 +50,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class FileBufferSnapshot implements APTFileBuffer {
     

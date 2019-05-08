@@ -70,7 +70,6 @@ import org.openide.util.Lookup;
 
 /**
  * Misc project related utility functions
- * @author Vladimir Kvashin
  */
 public class RemoteProjectSupport {
 

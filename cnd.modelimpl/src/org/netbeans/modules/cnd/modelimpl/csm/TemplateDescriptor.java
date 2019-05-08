@@ -71,7 +71,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author eu155513
  */
 public final class TemplateDescriptor {
     private final Collection<CsmUID<CsmTemplateParameter>> templateParams;

@@ -66,8 +66,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Egor Ushakov <gorrus@netbeans.org>
- * @author Vladimir Voskresensky
  */
 public final class DiskTextIndexLayer implements TextIndexLayer {
     private static final boolean CHECK_KEY;

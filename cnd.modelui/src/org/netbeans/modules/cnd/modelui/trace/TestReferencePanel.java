@@ -50,7 +50,6 @@ package org.netbeans.modules.cnd.modelui.trace;
 
 /**
  *
- * @author vv159170
  */
 public class TestReferencePanel extends javax.swing.JPanel {
 

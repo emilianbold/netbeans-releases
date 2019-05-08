@@ -51,7 +51,6 @@ import org.openide.filesystems.FileObject;
 /**
  * Combines file events (as in FileChangeListener)
  * and native project item events (as in NativeProjectListener)
- * @author Vladimir Kvashin
  */
 /*package*/ class CsmEvent {
 

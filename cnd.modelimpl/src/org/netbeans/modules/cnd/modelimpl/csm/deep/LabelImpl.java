@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * Implements ... statement
- * @author Vladimir Kvashin
  */
 public final class LabelImpl extends StatementBase implements CsmStatement, CsmLabel {
 

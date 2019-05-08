@@ -46,7 +46,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author mtishkov
  */
 public interface ProjectMetadataFactory {
     

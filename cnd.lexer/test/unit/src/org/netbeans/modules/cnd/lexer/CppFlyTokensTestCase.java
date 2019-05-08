@@ -60,7 +60,6 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
  * Test how many flyweight tokens gets created over a typical system headers
  * (copy of <istream> and <stdio.h> are used).
  *
- * @author Vladimir Voskresensky
  */
 public class CppFlyTokensTestCase extends NbTestCase {
     private static final boolean TRACE = false;

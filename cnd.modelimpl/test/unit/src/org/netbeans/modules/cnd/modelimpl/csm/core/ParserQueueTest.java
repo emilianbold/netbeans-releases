@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  *
- * @author Alexey Vladykin
  */
 public class ParserQueueTest extends CndBaseTestCase {
 

@@ -63,7 +63,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service = PreBuildArtifactProvider.class, position = 1000)
 public final class ConfigureScriptSupport implements PreBuildArtifactProvider {

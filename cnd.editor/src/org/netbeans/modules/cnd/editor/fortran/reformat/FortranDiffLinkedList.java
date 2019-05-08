@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter.Diff;
 
 /**
  *
- * @author Alexander Simon
  */
 /*package local*/ class FortranDiffLinkedList {
     private final LinkedList<Diff> storage = new LinkedList<Diff>();

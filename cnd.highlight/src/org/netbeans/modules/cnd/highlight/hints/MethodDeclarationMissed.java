@@ -63,7 +63,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 public class MethodDeclarationMissed extends AbstractCodeAudit {
     private MethodDeclarationMissed(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {

@@ -88,7 +88,6 @@ import org.openide.util.CharSequences;
 /**
  *
  * @param T 
- * @author Dmitriy Ivanov
  */
 public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements CsmVariable, CsmTemplate, Disposable {
 

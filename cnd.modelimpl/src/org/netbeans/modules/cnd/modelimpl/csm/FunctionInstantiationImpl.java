@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<CsmFunctionInstantiation> implements CsmFunctionInstantiation {
 

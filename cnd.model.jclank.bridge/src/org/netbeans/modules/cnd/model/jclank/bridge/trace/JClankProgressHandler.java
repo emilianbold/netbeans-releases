@@ -46,7 +46,6 @@ import org.netbeans.api.progress.ProgressHandle;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class JClankProgressHandler implements ClankProgressHandler {
 

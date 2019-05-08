@@ -53,7 +53,6 @@ import org.openide.util.CharSequences;
 
 /**
  * A key for CsmParameterList objects (file and offset -based)
- * @author Vladimir Voskresensky
  */
 /*package*/ final class ParamListKey extends OffsetableKey {
     ParamListKey(CsmParameterList obj) {

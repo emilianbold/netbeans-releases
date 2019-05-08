@@ -83,7 +83,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class ClankTokenStreamProducer extends TokenStreamProducer {
 

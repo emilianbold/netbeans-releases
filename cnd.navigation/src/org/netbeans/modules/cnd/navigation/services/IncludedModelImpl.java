@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 
 /**
  *
- * @author Alexander Simon
  */
 /*package-local*/ class IncludedModelImpl implements IncludedModel {
     private Map<CsmFile,Set<CsmFile>> map;

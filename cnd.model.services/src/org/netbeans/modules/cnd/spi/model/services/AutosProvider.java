@@ -47,7 +47,6 @@ import javax.swing.text.StyledDocument;
 
 /**
  *
- * @author Egor Ushakov
  */
 public interface AutosProvider {
     /**

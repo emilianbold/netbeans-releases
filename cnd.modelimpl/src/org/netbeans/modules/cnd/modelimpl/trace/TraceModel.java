@@ -103,7 +103,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Tracer for model
- * @author Vladimir Kvasihn
  */
 public class TraceModel extends TraceModelBase {
 

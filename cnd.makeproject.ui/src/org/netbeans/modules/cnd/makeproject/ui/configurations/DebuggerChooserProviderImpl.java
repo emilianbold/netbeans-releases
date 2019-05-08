@@ -51,7 +51,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=DebuggerChooserProvider.class)
 public class DebuggerChooserProviderImpl extends DebuggerChooserProvider {

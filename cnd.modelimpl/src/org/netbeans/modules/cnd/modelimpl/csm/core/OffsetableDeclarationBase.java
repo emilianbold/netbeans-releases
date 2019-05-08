@@ -85,7 +85,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiableBase<T> implements CsmOffsetableDeclaration {
     

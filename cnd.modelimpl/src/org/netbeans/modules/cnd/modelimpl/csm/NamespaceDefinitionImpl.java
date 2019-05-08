@@ -68,7 +68,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Implements CsmNamespaceDefinition
- * @author Vladimir Kvasihn
  */
 public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<CsmNamespaceDefinition>
     implements CsmNamespaceDefinition, MutableDeclarationsContainer, Disposable {

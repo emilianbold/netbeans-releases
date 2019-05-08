@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 /**
  * A trivial implementation of the filter 
  * that just creates an error for each RecognitionException
- * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ParserErrorFilter.class)
 public class TransparentParserErrorFilter extends BaseParserErrorFilter {

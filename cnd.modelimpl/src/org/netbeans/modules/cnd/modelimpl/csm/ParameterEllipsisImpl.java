@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Implements CsmParameter
- * @author Vladimir Kvashin
  */
 public final class ParameterEllipsisImpl extends ParameterImpl {
 

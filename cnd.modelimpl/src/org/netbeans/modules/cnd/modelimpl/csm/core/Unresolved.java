@@ -71,7 +71,6 @@ import org.openide.util.CharSequences;
 /**
  * Container for all unresolved stuff in the project
  *
- * @author Vladimir Kvasihn
  */
 public final class Unresolved implements Disposable {
 

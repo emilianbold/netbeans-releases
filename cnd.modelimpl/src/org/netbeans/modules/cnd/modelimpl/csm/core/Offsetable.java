@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
  *
- * @author nick
  */
 public class Offsetable extends OffsetableBase {
 

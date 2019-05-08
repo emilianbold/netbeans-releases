@@ -56,7 +56,6 @@ import org.netbeans.api.lexer.TokenSequence;
 
 /**
  *
- * @author Vladirmir Voskresensky
  */
 public class CndTokenUtilities {
 

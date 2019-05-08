@@ -48,7 +48,6 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
  *
- * @author Alexander Simon
  */
 class StackEntry {
     public enum LikeTo {

@@ -45,7 +45,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class DefaultProjectOperationsImplementationUI {
     public abstract void deleteProject(MakeProject project, DefaultProjectOperationsImplementationExecutor executor);

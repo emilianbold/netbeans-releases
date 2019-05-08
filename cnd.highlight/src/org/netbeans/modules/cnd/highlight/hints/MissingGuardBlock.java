@@ -75,7 +75,6 @@ import org.openide.text.CloneableEditorSupport;
 
 /**
  *
- * @author Danila Sergeyev
  */
 
 public class MissingGuardBlock extends AbstractCodeAudit {

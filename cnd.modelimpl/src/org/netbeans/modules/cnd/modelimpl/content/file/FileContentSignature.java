@@ -69,7 +69,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class FileContentSignature {
 

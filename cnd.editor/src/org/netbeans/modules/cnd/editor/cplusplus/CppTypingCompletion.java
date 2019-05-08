@@ -55,7 +55,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CppTypingCompletion {
     private static final String EMPTY_RAW_STRING = "\"()\""; // NOI18N

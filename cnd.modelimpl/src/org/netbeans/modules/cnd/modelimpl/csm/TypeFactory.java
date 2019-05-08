@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class TypeFactory {
 

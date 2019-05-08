@@ -55,7 +55,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Alexander Simon
  */
 final class ExternalFilesNode extends AbstractNode {
 

@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * implementation of offsetable object to represent functions' parameters
- * @author Vladimir Voskresensky
  */
 public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableBase implements CsmParameterList<K> {
 

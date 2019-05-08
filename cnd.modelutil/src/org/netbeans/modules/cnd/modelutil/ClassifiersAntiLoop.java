@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
  * Analog of Set<CsmClass> used for anti loop checks
- * @author Vladimir Kvashin
  */
 public class ClassifiersAntiLoop {
     

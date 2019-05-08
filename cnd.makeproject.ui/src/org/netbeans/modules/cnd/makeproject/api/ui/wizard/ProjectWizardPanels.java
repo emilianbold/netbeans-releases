@@ -48,7 +48,6 @@ import org.openide.WizardDescriptor;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class ProjectWizardPanels {
 

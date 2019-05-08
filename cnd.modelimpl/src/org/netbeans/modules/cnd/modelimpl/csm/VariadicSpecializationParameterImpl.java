@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.utils.CndCollectionUtils;
 
 /**
  *
- * @author nick
  */
 public class VariadicSpecializationParameterImpl extends OffsetableBase implements CsmVariadicSpecializationParameter, SelfPersistent, Persistent {
     

@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.highlight.semantic.MarkOccurrencesTest;
 
 /**
  *
-* @author Sergey Grinev
  */
 public class HighlightingTests extends CndBaseTestSuite {
     

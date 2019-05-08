@@ -45,7 +45,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface DefaultProjectOperationsImplementationExecutor {
     void doDeleteProject(Project project, boolean onlyMetadata, ProgressHandle handle) throws Exception;

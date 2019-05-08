@@ -66,7 +66,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  * SymbolDescriptor implementation for C/C++
- * @author Vladimir Kvashin
  */
 public class CppSymbolDescriptor extends SymbolDescriptor implements Runnable {
 

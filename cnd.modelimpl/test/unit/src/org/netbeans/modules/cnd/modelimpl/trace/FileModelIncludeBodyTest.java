@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class FileModelIncludeBodyTest extends TraceModelTestBase {
 

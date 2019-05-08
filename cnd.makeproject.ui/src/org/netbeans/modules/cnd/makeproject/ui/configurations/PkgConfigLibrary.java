@@ -77,7 +77,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class PkgConfigLibrary extends javax.swing.JPanel {
     private final MyListCellRenderer myListCellRenderer = new MyListCellRenderer();

@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public interface FullRemoteExtensionProvider {
     boolean configurationSaving(MakeConfigurationDescriptor makeConfigurationDescriptor);

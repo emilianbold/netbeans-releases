@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class ClassifierContainerKey extends ProjectContainerKey {
 

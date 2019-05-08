@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 /**
  * Key for FileComponentInstantiationReferences.
  *
- * @author Nikolay Krasilnikov(nnnnnk@netbeans.org)
  */
 public final class FileInstantiationsKey extends ProjectFileNameBasedKey {
 

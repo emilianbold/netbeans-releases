@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 /**
  * Service that provides macro expansions.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CsmMacroExpansionDocProvider {
     /**

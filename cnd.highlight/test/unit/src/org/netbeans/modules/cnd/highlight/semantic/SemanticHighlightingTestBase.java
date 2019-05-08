@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 
 /**
  *
- * @author sg155630
  */
 public abstract class SemanticHighlightingTestBase  extends ProjectBasedTestCase {
     

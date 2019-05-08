@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 /**
  *
- * @author Vladimir Kvashin
  */
 public final class SwitchProjectAction extends NodeAction {
     

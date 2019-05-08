@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 
 /**
  * Misc trace-related utilities
- * @author Vladimir Kvasihn
  */
 public class TraceUtils {
 

@@ -52,7 +52,6 @@ import static org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver.
 
 /**
  *
- * @author petrk
  */
 public interface CsmExpressionResolverImplementation {
     

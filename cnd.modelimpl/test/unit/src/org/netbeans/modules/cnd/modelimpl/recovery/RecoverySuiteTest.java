@@ -47,7 +47,6 @@ import junit.framework.TestSuite;
 
 /**
  *
- * @author Alexander Simon
  */
 public class RecoverySuiteTest extends RecoverySuiteTestBase {
 

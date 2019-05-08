@@ -118,7 +118,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     private static final boolean TRACE_ERROR_STATISTIC = Boolean.getBoolean("cnd.highlight.trace.statistic"); // NOI18N

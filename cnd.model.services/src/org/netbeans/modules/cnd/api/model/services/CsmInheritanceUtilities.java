@@ -69,7 +69,6 @@ import org.netbeans.modules.cnd.utils.Antiloop;
 
 /**
  * utilities to merge/get inheritance information
- * @author Vladimir Voskresensky
  */
 public final class CsmInheritanceUtilities {
     

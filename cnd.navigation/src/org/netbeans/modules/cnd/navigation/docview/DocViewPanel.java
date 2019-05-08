@@ -45,7 +45,6 @@ import javax.swing.JTextPane;
 
 /**
  *
- * @author alsimon
  */
 public class DocViewPanel extends javax.swing.JPanel {
 

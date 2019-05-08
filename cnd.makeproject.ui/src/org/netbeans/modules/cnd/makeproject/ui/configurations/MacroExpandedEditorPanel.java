@@ -51,7 +51,6 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
  *
- * @author alsimon
  */
 public class MacroExpandedEditorPanel extends javax.swing.JPanel implements PropertyChangeListener {
     private final PropertyEditorSupport editor;

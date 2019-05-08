@@ -73,7 +73,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePanel<WizardDescriptor>, NamedPanel, ChangeListener {
 

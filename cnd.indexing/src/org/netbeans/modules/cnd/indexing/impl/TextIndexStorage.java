@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 
 /**
  *
- * @author akrasny
  */
 public final class TextIndexStorage implements LayerListener{
 

@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 /**
  * base class for guard block tests
  *
- * @author Alexander Simon
  */
 public class GuardNotDefTestCase extends GuardTestBase {
     

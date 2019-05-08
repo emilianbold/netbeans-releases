@@ -60,7 +60,6 @@ import org.openide.util.Exceptions;
 
 /**
  * Utility class for misc make project related functions
- * @author Vladimir Kvashin
  */
 public class MakeProjectUtils {
 

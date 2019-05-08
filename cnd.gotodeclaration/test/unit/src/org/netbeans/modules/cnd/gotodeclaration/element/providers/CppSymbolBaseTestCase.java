@@ -60,7 +60,6 @@ import org.netbeans.spi.jumpto.type.SearchType;
 
 /**
  * Common base for test CppSymbolProvider cases
- * @author Vladimir Kvashin
  */
 public class CppSymbolBaseTestCase extends ProjectBasedTestCase {
 

@@ -51,7 +51,6 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author vkvashin
  */
 public abstract class FileProxy {
 

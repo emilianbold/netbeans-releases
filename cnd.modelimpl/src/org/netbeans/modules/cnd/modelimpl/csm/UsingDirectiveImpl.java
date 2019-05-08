@@ -68,7 +68,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Implements CsmUsingDirective
- * @author Vladimir Kvasihn
  */
 public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirective> implements CsmUsingDirective, RawNamable {
 

@@ -54,7 +54,6 @@ import org.openide.windows.InputOutput;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 
 @ServiceProvider(service = ProjectActionHandlerFactory.class, position = 0)

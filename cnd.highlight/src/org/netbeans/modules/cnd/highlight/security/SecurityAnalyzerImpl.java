@@ -68,7 +68,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 public class SecurityAnalyzerImpl extends AbstractAnalyzer {
     private static final String PREFIX = "cnd-"; //NOI18N

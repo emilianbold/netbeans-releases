@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.spi.model.services.CodeModelProblemResolver;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=CodeModelProblemResolver.class)
 public class CodeModelProblemResolverImpl extends CodeModelProblemResolver {

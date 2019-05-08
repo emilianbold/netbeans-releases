@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 /**
  * Provider for visibility query.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CsmVisibilityQueryProvider {
 

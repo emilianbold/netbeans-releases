@@ -55,7 +55,6 @@ import org.openide.util.Lookup;
  * and return CsmFile for it. This 'dummy' project could be removed
  * if corresponding file is included in the model as a part of any usual project.
  * 
- * @author Leonid Mesnik
  */
 public abstract class CsmStandaloneFileProvider {
 

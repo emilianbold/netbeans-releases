@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class WeakContainer<T> {
 

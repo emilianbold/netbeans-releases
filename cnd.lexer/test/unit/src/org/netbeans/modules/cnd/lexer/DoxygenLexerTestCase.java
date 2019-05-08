@@ -51,7 +51,6 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 /**
  * based on JavadocLexerTest
- * @author Vladimir Voskresensky
  */
 public class DoxygenLexerTestCase extends NbTestCase {
 

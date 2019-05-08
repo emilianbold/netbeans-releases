@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface CppParserActionEx extends CppParserAction, PreprocessorAction {
     

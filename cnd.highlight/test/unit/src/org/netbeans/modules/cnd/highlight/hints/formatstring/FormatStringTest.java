@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.highlight.error.ErrorHighlightingBaseTestCase;
 
 /**
  * Tests for the format string checks
- * @author Danila Sergeyev
  */
 public class FormatStringTest extends ErrorHighlightingBaseTestCase {
     

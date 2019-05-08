@@ -50,7 +50,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author vita
  */
 @ServiceProvider(service=org.netbeans.modules.parsing.spi.indexing.PathRecognizer.class)
 public class MakeProjectPaths extends PathRecognizer {

@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuil
 
 /**
  * Implements condition of kind CsmCondition.Kind.EXPRESSION
- * @author Vladimir Kvashin
  */
 public final class ConditionExpressionImpl extends OffsetableBase implements CsmCondition {
     

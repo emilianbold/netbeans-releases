@@ -43,7 +43,6 @@ import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface MakeSharabilityQuery extends SharabilityQueryImplementation2 {
     void update();

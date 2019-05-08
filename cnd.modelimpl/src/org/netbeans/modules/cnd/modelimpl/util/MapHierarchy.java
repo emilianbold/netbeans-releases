@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 
 /**
  *
- * @author petrk
  */
 public final class MapHierarchy<K, V> {
     

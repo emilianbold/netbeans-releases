@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  *
- * @author Alexander Simon
  */
 public class GuardBlockWalker extends APTWalker {
     

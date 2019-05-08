@@ -59,7 +59,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author  Sergey Grinev
  */
 public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel implements ActionListener {
 

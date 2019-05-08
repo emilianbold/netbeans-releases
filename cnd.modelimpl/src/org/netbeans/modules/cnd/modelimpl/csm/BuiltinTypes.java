@@ -66,7 +66,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Implementation for built-in types
- * @author Vladimir Kvasihn
  */
 public class BuiltinTypes {
     static {

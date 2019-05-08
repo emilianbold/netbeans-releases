@@ -75,7 +75,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class DocViewCaretAwareFactory extends IndexingAwareParserResultTask<Parser.Result> {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N

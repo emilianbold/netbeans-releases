@@ -63,7 +63,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Alexander Simon
  */
 public class RecoverySuiteTestBase extends NbTestSuite {
     private final AtomicInteger newGrammar = new AtomicInteger(0);

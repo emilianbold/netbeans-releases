@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class FileReferencesKey extends ProjectFileNameBasedKey {
 

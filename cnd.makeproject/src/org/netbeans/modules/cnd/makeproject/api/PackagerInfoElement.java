@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 /**
  *
- * @author thp
  */
 public class PackagerInfoElement {
     private String packager;

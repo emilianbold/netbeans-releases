@@ -49,7 +49,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author alsimon
  */
 final class CndDocumentCodeStyleProviderImpl implements CndDocumentCodeStyleProvider {
     

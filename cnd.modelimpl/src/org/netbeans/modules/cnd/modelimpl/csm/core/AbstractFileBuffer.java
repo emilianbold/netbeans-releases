@@ -66,7 +66,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;

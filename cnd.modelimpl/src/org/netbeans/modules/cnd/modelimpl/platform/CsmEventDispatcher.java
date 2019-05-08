@@ -82,7 +82,6 @@ import org.openide.util.RequestProcessor;
  *  2) NativeProjectItemsListener 
  *  3) CndIndexer
  * 
- * @author Vladimir Kvashin
  */
 public final class CsmEventDispatcher {
     

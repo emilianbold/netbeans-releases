@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.makeproject.api.ui.configurations;
 
 /**
  *
- * @author Egor Ushakov
  */
 public interface DebuggerCustomizerNode {
     String getFamily();

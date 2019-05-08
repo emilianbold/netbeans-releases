@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.BaseUtilitiesProviderImp
 
 /**
  *
- * @author Alexander Simon
  */
 public class Context {
     private final CsmFile file;

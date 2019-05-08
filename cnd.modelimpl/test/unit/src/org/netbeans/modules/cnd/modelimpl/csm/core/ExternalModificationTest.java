@@ -56,7 +56,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  * Test for reaction for external modifications
- * @author Vladimir Kvashin
  */
 public class ExternalModificationTest extends ModelImplBaseTestCase {
 

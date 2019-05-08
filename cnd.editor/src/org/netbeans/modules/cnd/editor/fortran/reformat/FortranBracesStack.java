@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 
 /**
  *
- * @author Alexander Simon
  */
 class FortranBracesStack implements Cloneable {
     private static final boolean TRACE_STACK = false;

@@ -53,7 +53,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 abstract class JClankDiagnosticAbstractProvider implements CndDiagnosticProvider {
 

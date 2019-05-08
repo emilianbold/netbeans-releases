@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 /**
  *
- * @author Alexander Simon
  */
 public class InheritedBooleanConfiguration extends BooleanConfiguration implements Cloneable {
 

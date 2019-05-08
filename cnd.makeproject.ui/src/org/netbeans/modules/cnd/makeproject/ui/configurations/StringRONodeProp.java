@@ -45,7 +45,6 @@ import org.openide.nodes.PropertySupport;
 
 /**
  *
- * @author alsimon
  */
 public class StringRONodeProp extends PropertySupport<String> {
 

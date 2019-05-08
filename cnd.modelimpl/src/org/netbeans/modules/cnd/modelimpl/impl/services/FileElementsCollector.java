@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class FileElementsCollector {
     // use big negative instead of 0 as minimal start file offset

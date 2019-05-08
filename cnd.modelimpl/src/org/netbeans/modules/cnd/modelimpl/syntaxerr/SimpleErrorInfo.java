@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 
 /**
  * A trivial CsmErrorInfo implementation
- * @author Vladimir Kvashin
  */
 public class SimpleErrorInfo implements CsmErrorInfo {
 

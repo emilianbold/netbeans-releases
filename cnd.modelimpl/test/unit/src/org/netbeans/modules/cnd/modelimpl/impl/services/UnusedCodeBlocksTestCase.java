@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  * Tests for CsmFileInfoQuery.getUnusedCodeBlocks()
- * @author Vladimir Kvashin
  */
 public class UnusedCodeBlocksTestCase extends TraceModelTestBase {
 

@@ -49,7 +49,6 @@ import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class FortranFileModelTest extends TraceModelTestBase {
     public FortranFileModelTest(String testName) {

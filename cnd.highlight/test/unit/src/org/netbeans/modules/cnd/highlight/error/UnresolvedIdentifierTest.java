@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 /**
  * Test for IdentifierErrorProvider.
  *
- * @author Alexey Vladykin
  */
 public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
 

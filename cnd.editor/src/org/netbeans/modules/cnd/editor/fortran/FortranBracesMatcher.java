@@ -60,7 +60,6 @@ import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
  * This is the org.netbeans.modules.editor.java.JavaBracesMatcher
  * with IZ118206 fixed to have consistency with Java matcher.
  *
- * @author sg155630
  */
 public class FortranBracesMatcher implements BracesMatcher, BracesMatcherFactory {
 

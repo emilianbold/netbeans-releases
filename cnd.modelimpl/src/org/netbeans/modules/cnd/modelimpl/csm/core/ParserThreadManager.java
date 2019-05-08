@@ -53,7 +53,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public final class ParserThreadManager {
 

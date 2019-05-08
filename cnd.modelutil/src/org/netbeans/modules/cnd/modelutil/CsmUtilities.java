@@ -115,7 +115,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CsmUtilities {
     public static final String CND_REFACTORING_MARKER = "cnd.refactoring.modification.event"; // NOI18N

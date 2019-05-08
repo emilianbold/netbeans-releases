@@ -76,7 +76,6 @@ import org.openide.filesystems.FileObject;
 /**
  * Updates information in macro expansion view if caret position of main document changes and vice versa.
  *
- * @author Nick Ktasilnikov
  */
 public final class MacroExpansionCaretAwareFactory extends IndexingAwareParserResultTask<Parser.Result> {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N

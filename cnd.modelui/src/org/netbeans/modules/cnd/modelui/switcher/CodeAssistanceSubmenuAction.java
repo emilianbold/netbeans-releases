@@ -47,7 +47,6 @@ import org.openide.util.actions.Presenter;
 
 /**
  *
- * @author Alexander Simon, Vladimir Voskresensky
  */
 public class CodeAssistanceSubmenuAction extends NodeAction {
 

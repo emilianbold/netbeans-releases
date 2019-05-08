@@ -53,7 +53,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author alsimon
  */
 public class ConfigurationDescriptorProviderImpl extends ConfigurationDescriptorProvider{
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);

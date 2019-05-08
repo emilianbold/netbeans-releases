@@ -53,8 +53,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
 /**
  *
- * @author gordonp
- * @author Sergey Grinev
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.HostInfoProviderFactory.class)
 public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {

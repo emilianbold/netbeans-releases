@@ -47,7 +47,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Alexander Simon
  */
 public class DefaultCache extends APTStringManager {
     private static final APTStringManager manager = new DefaultCache();

@@ -64,7 +64,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FunctionUsedBeforDeclaration extends AbstractCodeAudit {
     

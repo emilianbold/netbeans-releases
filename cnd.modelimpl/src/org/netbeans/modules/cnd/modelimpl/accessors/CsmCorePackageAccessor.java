@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public abstract class CsmCorePackageAccessor {
     private static CsmCorePackageAccessor INSTANCE;

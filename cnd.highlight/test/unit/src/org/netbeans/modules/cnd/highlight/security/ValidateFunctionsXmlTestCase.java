@@ -57,7 +57,6 @@ import org.xml.sax.SAXParseException;
 
 /**
  *
- * @author Danila Sergeyev
  */
 public class ValidateFunctionsXmlTestCase extends NbTestCase {
     

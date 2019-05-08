@@ -69,7 +69,6 @@ import org.openide.windows.OutputWriter;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 public class TestSemanticHighlightingAction extends TestProjectActionBase{
 

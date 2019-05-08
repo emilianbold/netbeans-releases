@@ -50,7 +50,6 @@ import org.openide.nodes.Sheet;
 
 /**
  *
- * @author thp
  */
 public interface MakeProjectCustomizerEx extends MakeProjectCustomizer {
     public Action[] getActions(Project project, List<Action> actions);

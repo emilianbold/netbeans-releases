@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
  * Detector of parsing problems. Class watches used memory while project parsing.
  * If algorithm detects slowdown parsing speed class shows alert message with advice to increase java heap size.
  * 
- * @author Alexander Simon
  */
 public class ParsingProblemDetectorImpl implements ParsingProblemDetector {
 

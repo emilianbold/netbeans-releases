@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author alsimon
  */
 public class RerunArguments extends javax.swing.JPanel {
     private final ProjectActionEvent[] paes;

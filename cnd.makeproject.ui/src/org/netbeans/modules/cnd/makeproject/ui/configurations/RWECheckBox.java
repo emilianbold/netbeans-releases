@@ -47,7 +47,6 @@ import javax.swing.JCheckBox;
 
 /**
  *
- * @author thp
  */
 public class RWECheckBox extends JCheckBox {
     private int val = 0;

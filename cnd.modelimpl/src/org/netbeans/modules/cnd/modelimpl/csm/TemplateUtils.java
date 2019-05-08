@@ -70,7 +70,6 @@ import org.openide.util.CharSequences;
  * Common functions related with templates.
  * Typically used by CsmClass ans CsmFunction, which has to implement CsmTemplate,
  * but 
- * @author Vladimir Kvashin
  */
 public class TemplateUtils {
     

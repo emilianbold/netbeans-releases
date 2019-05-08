@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.highlight.semantic;
 
 /**
  *
- * @author Sergey Grinev
  */
 public class TypedefTest extends SemanticHighlightingNewTestBase {
 

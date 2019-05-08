@@ -46,7 +46,6 @@ import java.io.File;
 import org.netbeans.spi.jumpto.type.SearchType;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class FuncVarElementProviderTestCase extends CppSymbolBaseTestCase {
 

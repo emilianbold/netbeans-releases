@@ -78,7 +78,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Common base for all expression implementations
- * @author Vladimir Kvashin
  */
 public class ExpressionBase extends OffsetableBase implements CsmExpression {
 

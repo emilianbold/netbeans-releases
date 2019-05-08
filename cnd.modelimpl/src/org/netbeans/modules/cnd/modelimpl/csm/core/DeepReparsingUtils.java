@@ -74,7 +74,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Reparse dependant files.
- * @author Alexander Simon
  */
 public final class DeepReparsingUtils {
     private static final Logger LOG = Logger.getLogger("DeepReparsingUtils"); // NOI18N

@@ -51,7 +51,6 @@ import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class SwitchTraceGramaRulesAction extends NodeAction {
     

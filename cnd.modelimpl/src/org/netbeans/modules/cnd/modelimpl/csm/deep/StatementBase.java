@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Common ancestor for all statements
- * @author Vladimir Kvashin
  */
 public abstract class StatementBase extends OffsetableBase implements CsmStatement {
 

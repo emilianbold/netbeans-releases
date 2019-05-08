@@ -56,7 +56,6 @@ import org.openide.windows.OutputWriter;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class CsmJClankSerivicesImpl {
 

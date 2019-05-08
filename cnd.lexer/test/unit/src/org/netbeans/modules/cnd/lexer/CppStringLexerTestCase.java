@@ -52,7 +52,6 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
 /**
  * based on JavaStringLexerText
  * 
- * @author Vladimir Voskresensky
  */
 public class CppStringLexerTestCase extends NbTestCase {
 

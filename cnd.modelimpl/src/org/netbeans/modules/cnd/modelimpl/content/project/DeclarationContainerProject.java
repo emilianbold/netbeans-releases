@@ -77,7 +77,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Alexander Simon
  */
 public class DeclarationContainerProject extends DeclarationContainer {
     private final ReadWriteLock friendsLock = new ReentrantReadWriteLock();

@@ -69,7 +69,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author vkvashin
  */
 @ServiceProvider(service = NativeProjectLayerDescriptorProvider.class, position = 1000)
 public final class MakeProjectLayerDescriptorProvider implements NativeProjectLayerDescriptorProvider {

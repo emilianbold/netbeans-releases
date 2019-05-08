@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 /**
  * Lazy compound statements
  * 
- * @author Vladimir Kvashin
  */
 public final class LazyCompoundStatementImpl extends LazyStatementImpl implements CsmCompoundStatement {
 

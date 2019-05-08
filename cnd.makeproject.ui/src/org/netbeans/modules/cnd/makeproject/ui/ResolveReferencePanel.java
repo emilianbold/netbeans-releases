@@ -62,7 +62,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ResolveReferencePanel extends javax.swing.JPanel implements ActionListener {
     private final List<BrokenLink> brokenLinks;

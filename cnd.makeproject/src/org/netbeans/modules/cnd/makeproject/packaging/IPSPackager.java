@@ -58,7 +58,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author thp
  */
 public class IPSPackager implements PackagerDescriptor {
 

@@ -54,7 +54,6 @@ import org.openide.loaders.DataFolder;
 
 /**
  *
- * @author sg155630
  */
 public class NewCndFilePanel extends CndPanel {
     private final NewCndClassPanelGUI.Kind kind;

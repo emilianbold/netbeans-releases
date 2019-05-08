@@ -53,7 +53,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service=ActionProvider.class)
 public class StandAloneFileActionProvider implements ActionProvider {

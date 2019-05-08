@@ -61,7 +61,6 @@ import org.openide.util.Utilities;
 
 /**
  * Teste for #198129 - Error opening a project created with NB 6.5
- * @author vk155633
  */
 public class Project_65_Test extends CndBaseTestCase {
 

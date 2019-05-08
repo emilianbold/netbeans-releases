@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
  *
- * @author Sergey Grinev
  */
 public class CppSwitchTest extends TraceModelTestBase {
 

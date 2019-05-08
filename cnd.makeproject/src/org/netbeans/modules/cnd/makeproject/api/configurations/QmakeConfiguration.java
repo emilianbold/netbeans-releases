@@ -45,7 +45,6 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 /**
- * @author Alexey Vladykin
  */
 public class QmakeConfiguration implements Cloneable {
 

@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * A queue that hold a list of files to parse.
- * @author Vladimir Kvashin
  */
 public final class ParserQueue {
 

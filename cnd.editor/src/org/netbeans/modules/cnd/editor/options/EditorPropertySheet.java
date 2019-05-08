@@ -83,7 +83,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * @author  as204739
  */
 public class EditorPropertySheet extends javax.swing.JPanel
         implements ActionListener, PropertyChangeListener, PreferenceChangeListener {

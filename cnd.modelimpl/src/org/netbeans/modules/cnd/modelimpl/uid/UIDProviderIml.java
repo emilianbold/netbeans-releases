@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.model.UIDProvider.class)
 public final class UIDProviderIml implements UIDProvider {

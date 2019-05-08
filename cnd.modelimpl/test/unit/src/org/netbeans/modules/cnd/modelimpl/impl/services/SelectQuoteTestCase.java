@@ -46,7 +46,6 @@ import java.io.File;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class SelectQuoteTestCase extends SelectTestBase {
 

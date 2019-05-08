@@ -70,7 +70,6 @@ import org.openide.util.Lookup.Provider;
  * FileOwnerQuery dealing with files that are not in the project directory.
  * A typical situation for CND project created from existing sources.
  *
- * @author Alexey Vladykin
  */
 public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
     private static final String PATH_SEPARATOR = "/"; //NOI18N

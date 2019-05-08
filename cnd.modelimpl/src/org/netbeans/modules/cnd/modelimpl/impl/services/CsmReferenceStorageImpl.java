@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmReferenceStorage.class)
 public class CsmReferenceStorageImpl extends CsmReferenceStorage {

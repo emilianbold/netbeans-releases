@@ -103,8 +103,6 @@ import org.openide.filesystems.FileSystem;
 /**
  * Walker to find macros used in file for semantic highlighting
  *
- * @author Sergey Grinev
- * @author Vladimir Voskresensky
  */
 /*package*/ final class APTFindMacrosWalker extends APTSelfWalker {
     private final List<CsmReference> references = new ArrayList<>();

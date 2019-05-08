@@ -49,7 +49,6 @@ import org.openide.util.CharSequences;
 
 /**
  * help class to share file names for #include directives
- * @author Vladimir Voskresensky
  */
 public class FileNameCache extends APTStringManager {
     private static final APTStringManager manager = new FileNameCache();

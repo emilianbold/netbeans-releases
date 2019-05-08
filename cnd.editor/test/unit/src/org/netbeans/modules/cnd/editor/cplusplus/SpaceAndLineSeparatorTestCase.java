@@ -48,7 +48,6 @@ import junit.framework.TestCase;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class SpaceAndLineSeparatorTestCase extends TestCase {
     

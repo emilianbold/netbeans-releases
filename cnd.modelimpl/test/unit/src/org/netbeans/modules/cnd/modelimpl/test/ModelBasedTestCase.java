@@ -73,7 +73,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class ModelBasedTestCase extends CndBaseTestCase {
 

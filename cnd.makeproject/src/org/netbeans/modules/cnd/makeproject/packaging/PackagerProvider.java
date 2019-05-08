@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptorProvider;
 
 /**
  *
- * @author thp
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.PackagerDescriptorProvider.class)
 public class PackagerProvider implements PackagerDescriptorProvider {

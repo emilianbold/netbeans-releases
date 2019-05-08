@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface CsmInlcudeHierachyViewProvider {
     void showIncludeHierachyView(CsmFile file);

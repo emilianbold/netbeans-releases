@@ -59,8 +59,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
- * @author Vladimir Voskresensky
  */
 /* package */ abstract class AbstractCamelCasePosition extends BaseAction {
 

@@ -50,7 +50,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Alexander Simon
  */
 final class ExternalFilesChildren extends BaseMakeViewChildren {
 

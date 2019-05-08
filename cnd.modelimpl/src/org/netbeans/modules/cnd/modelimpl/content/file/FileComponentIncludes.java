@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FileComponentIncludes extends FileComponent {
     private Set<CsmUID<CsmInclude>> includes = createIncludes();

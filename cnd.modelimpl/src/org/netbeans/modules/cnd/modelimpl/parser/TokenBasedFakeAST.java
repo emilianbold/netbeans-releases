@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public final class TokenBasedFakeAST extends OffsetableFakeAST implements TokenBasedAST {
     

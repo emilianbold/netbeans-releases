@@ -90,7 +90,6 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * implementation of walker used when parse files/collect macromap
- * @author Vladimir Voskresensky
  */
 public class APTParseFileWalker extends APTProjectFileBasedWalker {
 

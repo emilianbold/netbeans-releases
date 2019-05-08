@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
  * Makes an error in a document that contain source code.
  * It can be called several times on a document:
  * for example, each time it finds a ";" and deletes it
- * @author Vladimir Kvashin
  */
 public interface ErrorMaker {
     

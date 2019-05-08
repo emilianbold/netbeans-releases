@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * It similar to Identifiable, but doesn't involve UIDs:
  * UIDs are unnecessary for such internal components as different project parts.
  *
- * @author Vladimir Kvashin
  */
 public abstract class ProjectComponent implements Persistent, SelfPersistent {
 

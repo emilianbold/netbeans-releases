@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
 
 /**
  *
- * @author akrasny
  */
 public class CndTextIndexImpl {
 

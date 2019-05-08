@@ -64,7 +64,6 @@ import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author Danila Sergeyev
  */
 @ServiceProviders({
     @ServiceProvider(service = CsmErrorProvider.class, position = 1200),

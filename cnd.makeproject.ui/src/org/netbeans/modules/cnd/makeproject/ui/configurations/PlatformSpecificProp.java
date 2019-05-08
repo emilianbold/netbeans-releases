@@ -61,7 +61,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class PlatformSpecificProp extends BooleanNodeProp  implements PropertyChangeListener{
     private PropertyEditor editor;

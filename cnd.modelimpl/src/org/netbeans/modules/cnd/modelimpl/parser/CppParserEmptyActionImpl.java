@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
- * @author nick
  */
 public class CppParserEmptyActionImpl implements CppParserActionEx {
     private final Deque<CsmFile> files;

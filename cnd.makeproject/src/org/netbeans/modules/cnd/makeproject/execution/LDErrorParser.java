@@ -65,7 +65,6 @@ import org.openide.windows.OutputListener;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
 

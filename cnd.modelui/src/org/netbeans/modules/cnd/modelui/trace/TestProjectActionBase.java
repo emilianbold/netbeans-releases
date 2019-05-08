@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.modelui.actions.ProjectActionBase;
 
 /**
  * A common abstract parent for  test actions on projects
- * @author Vladimir Kvashin
  */
 public abstract class TestProjectActionBase extends ProjectActionBase {
 

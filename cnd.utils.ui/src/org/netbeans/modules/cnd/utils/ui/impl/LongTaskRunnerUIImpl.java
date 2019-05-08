@@ -50,7 +50,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author masha
  */
 public class LongTaskRunnerUIImpl extends LongTaskRunner {
 

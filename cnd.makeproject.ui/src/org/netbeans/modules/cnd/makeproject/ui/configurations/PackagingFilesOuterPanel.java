@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 
 /**
  *
- * @author  thp
  */
 public class PackagingFilesOuterPanel extends javax.swing.JPanel {
     private final PackagingConfiguration packagingConfiguration;

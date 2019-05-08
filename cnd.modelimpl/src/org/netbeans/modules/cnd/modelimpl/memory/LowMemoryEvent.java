@@ -48,7 +48,6 @@ import java.util.EventObject;
 
 /**
  * Event for low memory notification
- * @author Vladimir Kvashin
  */
 public class LowMemoryEvent extends EventObject  {
     

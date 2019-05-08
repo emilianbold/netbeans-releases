@@ -131,7 +131,6 @@ import org.netbeans.modules.cnd.utils.Antiloop;
 /**
  * Service that provides template instantiations
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.class)
 public final class InstantiationProviderImpl extends CsmInstantiationProvider {

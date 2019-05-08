@@ -48,7 +48,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 //@ServiceProvider(path=NamedOption.OTHER_CATEGORY, service=NamedOption.class, position=700)
 public class FullFileIndexer extends NamedOption {

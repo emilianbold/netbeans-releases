@@ -50,7 +50,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class PreBuildConfiguration implements Cloneable {
 

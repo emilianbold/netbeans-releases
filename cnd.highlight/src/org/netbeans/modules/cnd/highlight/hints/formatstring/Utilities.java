@@ -55,7 +55,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Danila Sergeyev
  */
 class Utilities {    
     // check if object is a function which accepts format string

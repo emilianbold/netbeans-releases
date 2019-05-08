@@ -54,7 +54,6 @@ import static org.netbeans.cnd.api.lexer.FortranTokenId.*;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FortranExtendedTokenSequence {
     private final TokenSequence<FortranTokenId> ts;

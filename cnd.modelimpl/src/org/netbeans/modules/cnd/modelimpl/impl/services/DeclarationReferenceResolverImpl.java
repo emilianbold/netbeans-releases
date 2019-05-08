@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver.class,  position = 100)
 public class DeclarationReferenceResolverImpl extends CsmReferenceResolver {

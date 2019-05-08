@@ -111,7 +111,6 @@ import org.openide.util.CharSequences;
 /**
  *
  * @param T
- * @author Dmitriy Ivanov, Vladimir Kvashin
  */
 public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         implements CsmFunction, Disposable, RawNamable, CsmTemplate {

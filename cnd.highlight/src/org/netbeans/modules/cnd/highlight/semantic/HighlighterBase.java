@@ -51,7 +51,6 @@ import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 
 /**
  *
- * @author Sergey Grinev
  */
 public abstract class HighlighterBase extends IndexingAwareParserResultTask<Parser.Result> implements CsmFontColorManager.FontColorChangeListener {
 

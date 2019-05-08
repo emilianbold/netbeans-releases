@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 /**
  * reference on object (has owner and target as passed object)
- * @author Vladimir Voskresenky
  */
 /*package*/ class ObjectReferenceImpl implements CsmReference {
 

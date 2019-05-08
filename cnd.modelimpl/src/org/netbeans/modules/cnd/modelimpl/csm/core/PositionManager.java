@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class PositionManager {
     private enum Impl {

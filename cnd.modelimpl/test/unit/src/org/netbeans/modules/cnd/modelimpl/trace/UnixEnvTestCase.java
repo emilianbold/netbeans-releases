@@ -50,7 +50,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class UnixEnvTestCase extends ModelImplBaseTestCase {
     

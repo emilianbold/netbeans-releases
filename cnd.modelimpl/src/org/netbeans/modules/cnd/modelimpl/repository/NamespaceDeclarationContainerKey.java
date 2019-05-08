@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class NamespaceDeclarationContainerKey extends NamespaceBaseKey {
 

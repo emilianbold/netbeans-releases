@@ -68,7 +68,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Danila Sergeyev
  */
 public class FunctionUsageAudit extends AbstractCodeAudit {
     private final FunctionsXmlService.Level level;

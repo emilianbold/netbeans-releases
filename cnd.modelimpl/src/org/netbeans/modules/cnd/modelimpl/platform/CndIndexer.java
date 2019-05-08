@@ -53,7 +53,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Egor Ushakov <gorrus@netbeans.org>
  */
 public class CndIndexer extends CustomIndexer {
     

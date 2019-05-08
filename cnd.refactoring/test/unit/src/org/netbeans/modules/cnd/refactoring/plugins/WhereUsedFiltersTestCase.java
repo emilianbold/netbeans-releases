@@ -48,7 +48,6 @@ import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 
 /**
  *
- * @author Egor Ushakov <gorrus@netbeans.org>
  */
 public class WhereUsedFiltersTestCase extends CsmWhereUsedQueryPluginTestCaseBase {
     public WhereUsedFiltersTestCase(String testName) {

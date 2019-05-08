@@ -50,7 +50,6 @@ import org.openide.util.SharedClassObject;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class TraceAPTDiagnosticAction extends TestProjectActionBase {
 

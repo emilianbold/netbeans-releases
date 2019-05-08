@@ -80,7 +80,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class APTTokenStreamProducer extends TokenStreamProducer {
     private final APTFile fullAPT;

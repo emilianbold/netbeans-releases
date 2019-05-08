@@ -35,7 +35,6 @@ package org.netbeans.modules.cnd.editor.cplusplus;
  * Class was taken from java
  * Links point to java IZ.
  * C/C++ specific tests begin from testSystemInclude
- * @author Alexander Simon
  */
 public class BracketCompletionSingleTestCase extends EditorBase  {
 

@@ -48,7 +48,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface MakeCommandFlagsProviderFactory {
     boolean canHandle(String commandID, Lookup context, MakeConfiguration conf);

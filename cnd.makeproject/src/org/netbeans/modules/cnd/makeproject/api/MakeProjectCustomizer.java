@@ -45,7 +45,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author thp
  */
 public interface MakeProjectCustomizer {
     public String getCustomizerId();

@@ -77,7 +77,6 @@ import org.openide.util.Utilities;
  * - create CsmModel
  * - create NativeProject and CsmProject
  *   according to parameters (file names, -I and -D options)
- * @author Vladimir Kvashin
  */
 public class TraceModelBase {
 

@@ -94,7 +94,6 @@ import org.openide.util.Pair;
 /**
  * Instantiations.
  *
- * @author eu155513, Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends OffsetableIdentifiableBase<CsmInstantiation> implements CsmOffsetableDeclaration, CsmInstantiation, CsmIdentifiable {
     

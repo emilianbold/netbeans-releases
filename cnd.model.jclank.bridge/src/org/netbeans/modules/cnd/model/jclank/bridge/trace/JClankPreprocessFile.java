@@ -52,7 +52,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public abstract class JClankPreprocessFile extends JClankDiagnosticAbstractProvider {
 

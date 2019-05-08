@@ -78,7 +78,6 @@ import org.openide.util.NbCollections;
 
 /**
  *
- * @author  phrebejk
  */
 public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager.Provider {
     

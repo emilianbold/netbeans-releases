@@ -49,8 +49,6 @@ import org.netbeans.modules.editor.indent.api.Reformat;
 
 /**
  * base class to run tests around editor. Like typing, formatting, indenting
- * @author Alexander Simon
- * @author Vladimir Voskresensky
  */
 public class EditorBase extends BaseDocumentUnitTestCase {
     private boolean isCPP = true;

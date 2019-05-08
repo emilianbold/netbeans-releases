@@ -67,7 +67,6 @@ import org.openide.util.lookup.Lookups;
 /**
  * Token ids of C/C++ languages defined as enum.
  *
- * @author Vladimir Voskresensky
  * @version 1.00
  */
 public enum CppTokenId implements TokenId {

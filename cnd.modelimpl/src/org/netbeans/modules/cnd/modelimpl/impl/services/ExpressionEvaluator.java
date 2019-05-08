@@ -83,7 +83,6 @@ import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvide
 /**
  * Expression evaluator servise implementation.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider.class)
 public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {

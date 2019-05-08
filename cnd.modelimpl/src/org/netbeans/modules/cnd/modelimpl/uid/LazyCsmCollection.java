@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.UIDFilter;
  * So Tuid is an interface (CsmFile) type, 
  * while Tfact is implementation (FileImpl) type.
  *  
- * @author Alexander Simon
  */
 public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<Tfact> {
 

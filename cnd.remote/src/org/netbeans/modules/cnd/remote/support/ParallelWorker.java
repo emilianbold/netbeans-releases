@@ -45,7 +45,6 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  *
- * @author vkvashin
  */
 public abstract class ParallelWorker implements Runnable {
     

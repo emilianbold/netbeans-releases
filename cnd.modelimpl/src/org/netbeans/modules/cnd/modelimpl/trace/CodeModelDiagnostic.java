@@ -79,7 +79,6 @@ import static org.netbeans.modules.cnd.modelimpl.trace.Bundle.*;
 
 /**
  *
- * @author vv159170
  */
 
 public final class CodeModelDiagnostic {

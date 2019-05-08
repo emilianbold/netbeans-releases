@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class DummyParametersListImpl extends ParameterListImpl<DummyParametersListImpl, CsmParameter> {
 

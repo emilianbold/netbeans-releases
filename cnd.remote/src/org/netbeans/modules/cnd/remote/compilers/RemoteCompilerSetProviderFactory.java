@@ -48,7 +48,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * CompilerSetProviderFactory implementation
- * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.toolchain.CompilerSetProviderFactory.class)
 public class RemoteCompilerSetProviderFactory implements CompilerSetProviderFactory {

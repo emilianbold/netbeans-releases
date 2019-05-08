@@ -60,7 +60,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Sergey Grinev
  */
 public class SemanticUtils {
 

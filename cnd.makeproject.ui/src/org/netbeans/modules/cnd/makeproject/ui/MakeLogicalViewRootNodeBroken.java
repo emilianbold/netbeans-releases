@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 
 /**
  *
- * @author Alexander Simon
  */
 final class MakeLogicalViewRootNodeBroken extends AbstractNode {
 

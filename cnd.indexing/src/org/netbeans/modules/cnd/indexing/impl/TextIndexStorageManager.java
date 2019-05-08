@@ -54,7 +54,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Egor Ushakov <gorrus@netbeans.org>
  */
 @ServiceProvider(path=LayerListener.PATH, service=org.netbeans.modules.cnd.repository.impl.spi.LayerListener.class)
 public final class TextIndexStorageManager implements LayerListener{

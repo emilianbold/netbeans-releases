@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author sg155630
  */
 public class CndFilePlusWizardIterator extends CCFSrcFileIterator {
 

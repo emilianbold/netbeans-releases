@@ -81,7 +81,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Storage for project classifiers. Class was extracted from ProjectBase.
- * @author Alexander Simon
  */
 public class ClassifierContainer extends ProjectComponent {
 

@@ -53,7 +53,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Alexander Simon
  */
 @MimeRegistration(mimeType = MIMENames.FORTRAN_MIME_TYPE, service = TypedTextInterceptor.Factory.class)
 public class FortranTTIFactory implements TypedTextInterceptor.Factory {

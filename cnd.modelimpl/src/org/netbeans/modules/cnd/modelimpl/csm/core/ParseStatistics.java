@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
  * Gathers parse statistics.
  * The idea is not to place statistics data into FilImpl,
  * since in this case we have to persist it.
- * @author Vladimir Kvashin
  */
 public class ParseStatistics {
 

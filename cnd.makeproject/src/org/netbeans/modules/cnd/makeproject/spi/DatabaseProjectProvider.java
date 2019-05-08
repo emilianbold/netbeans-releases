@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 
 /**
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface DatabaseProjectProvider {
 

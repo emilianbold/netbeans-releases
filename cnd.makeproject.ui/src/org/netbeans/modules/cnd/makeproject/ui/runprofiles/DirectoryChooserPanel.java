@@ -55,7 +55,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  thp
  */
 /*package*/final class DirectoryChooserPanel extends javax.swing.JPanel implements PropertyChangeListener {
     private final PropertyEditorSupport editor;

@@ -48,7 +48,6 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 /**
  *
- * @author alsimon
  */
 @org.openide.util.lookup.ServiceProvider(service=DefaultMakeProjectLocationProvider.class)
 public class DefaultMakeProjectLocationProviderImpl extends DefaultMakeProjectLocationProvider {

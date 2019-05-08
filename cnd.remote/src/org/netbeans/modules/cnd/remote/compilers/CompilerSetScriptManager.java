@@ -62,7 +62,6 @@ import org.openide.util.Exceptions;
 /**
  * Manage the getCompilerSets script.
  *
- * @author gordonp
  */
 /*package-local*/ class CompilerSetScriptManager extends RemoteConnectionSupport {
 

@@ -79,7 +79,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class CompileRunActionBase extends AbstractExecutorRunAction {
 

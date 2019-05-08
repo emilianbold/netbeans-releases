@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class FileComponent implements Persistent, SelfPersistent {
     private final Key key;

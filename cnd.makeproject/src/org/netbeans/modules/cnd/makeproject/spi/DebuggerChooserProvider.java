@@ -44,7 +44,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alecander Simon
  */
 public abstract class DebuggerChooserProvider {
     

@@ -54,7 +54,6 @@ import org.openide.util.Exceptions;
 /**
  * Simple parser for *.ini style configuration files
  *
- * @author Sergey Grinev
  */
 public class SimpleConfigParser {
 

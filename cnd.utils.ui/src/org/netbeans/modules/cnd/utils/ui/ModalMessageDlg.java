@@ -55,7 +55,6 @@ import org.openide.util.Cancellable;
  *
  * Deprecated. See {@link org.netbeans.api.progress.ProgressUtils}
  *
- * @author Vladimir Voskresensky
  */
 @Deprecated
 public final class ModalMessageDlg {

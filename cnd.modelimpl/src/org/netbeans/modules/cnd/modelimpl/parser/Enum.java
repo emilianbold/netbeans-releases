@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 
 /**
  * Typesafe enumeration
- * @author Vladimir Kvashin
  */
 public class Enum {
 

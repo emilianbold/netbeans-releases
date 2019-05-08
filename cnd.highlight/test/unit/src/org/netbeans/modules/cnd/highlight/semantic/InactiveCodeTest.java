@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.highlight.semantic;
 
 /**
  *
- * @author Sergey Grinev
  */
 public class InactiveCodeTest extends SemanticHighlightingNewTestBase {
 

@@ -60,7 +60,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author as204739
  */
 public final class CommonUtilities {
     /**

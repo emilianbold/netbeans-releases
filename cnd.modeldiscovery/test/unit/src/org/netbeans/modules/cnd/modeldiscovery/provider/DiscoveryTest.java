@@ -49,7 +49,6 @@ import org.junit.runners.Suite;
 
 /**
  *
- * @author as204739
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({org.netbeans.modules.cnd.modeldiscovery.provider.PackageConfigTestCase.class})

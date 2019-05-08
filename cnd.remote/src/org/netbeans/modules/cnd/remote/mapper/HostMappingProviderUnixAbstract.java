@@ -71,7 +71,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Sergey Grinev
  */
 /*package*/ abstract class HostMappingProviderUnixAbstract implements HostMappingProvider {
     private static final Logger log = RemoteUtil.LOGGER;

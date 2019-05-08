@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class FoldingTest extends CndBaseTestSuite {
     

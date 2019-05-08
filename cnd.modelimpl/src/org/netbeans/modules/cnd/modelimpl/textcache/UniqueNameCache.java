@@ -48,7 +48,6 @@ import org.openide.util.CharSequences;
 
 /**
  * cache entry
- * @author Alexander Simon
  */
 public class UniqueNameCache extends APTStringManager {
 

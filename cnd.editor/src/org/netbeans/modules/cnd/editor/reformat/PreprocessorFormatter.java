@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 
 /**
  *
- * @author Alexander Simon
  */
 public class PreprocessorFormatter {
     private final ReformatterImpl context;

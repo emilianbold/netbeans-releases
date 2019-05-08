@@ -60,7 +60,6 @@ import org.openide.util.Lookup;
  * AbstractNode just declares abstract method
  * CsmObject getCsmObject()
  *
- * @author Vladimir Kvashin
  */
 public abstract class AbstractCsmNode extends AbstractNode {
 

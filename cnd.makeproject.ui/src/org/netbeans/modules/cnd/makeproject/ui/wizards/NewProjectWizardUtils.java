@@ -62,7 +62,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  * Misc utility functions used when creating new project
- * @author Vladimir Kvashin
  */
 public class NewProjectWizardUtils {
 

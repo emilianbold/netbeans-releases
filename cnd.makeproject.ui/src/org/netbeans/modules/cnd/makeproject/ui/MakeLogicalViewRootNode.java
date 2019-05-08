@@ -105,7 +105,6 @@ import org.openide.xml.XMLUtil;
 /**
  * Filter node contain additional features for the Make physical
  *
- * @author Alexander Simon
  */
 final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListener, LookupListener, PropertyChangeListener {
 

@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 /**
  * All model objests shoud implement this interface.
  * Called when the object is being deleted
- * @author Vladimir Kvasihn
  */
 public interface Disposable {
     public void dispose();

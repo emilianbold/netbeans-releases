@@ -52,7 +52,6 @@ import java.io.PrintStream;
  * Each indent() call makes it adding 4 spaces in the beginning of each string
  * unindent() decreases the amount of leading spaces by 4
  *
- * @author Vladimir Kvashin
  */
 public class Tracer {
     public static final String PARSE_FILE_PERFORMANCE_EVENT = "PARSE_FILE_PERFORMANCE_EVENT"; //NOI18N

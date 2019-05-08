@@ -54,7 +54,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author akrasny
  */
 @ServiceProvider(service = TextIndexLayerFactory.class)
 public final class DistTextIndexLayerFactory implements TextIndexLayerFactory {

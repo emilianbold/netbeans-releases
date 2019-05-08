@@ -54,7 +54,6 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ExtendedTokenSequence {
     private final TokenSequence<CppTokenId> ts;

@@ -94,7 +94,6 @@ import org.openide.util.datatransfer.ExTransferable;
 
 /**
  *
- * @author Alexander Simon
  */
 final class ViewItemNode extends FilterNode implements ChangeListener {
 

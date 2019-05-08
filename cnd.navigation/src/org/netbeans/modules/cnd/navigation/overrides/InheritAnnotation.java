@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 /*package*/ class InheritAnnotation extends BaseAnnotation {
 

@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class RemoveAndInsertDeadBlockTestCase extends ModifyDocumentTestCaseBase {
     public RemoveAndInsertDeadBlockTestCase(String testName) {

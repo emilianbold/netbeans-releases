@@ -69,7 +69,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  * FileBuffer implementation
- * @author Vladimir Kvashin
  */
 public class FileBufferDoc extends AbstractFileBuffer {
 

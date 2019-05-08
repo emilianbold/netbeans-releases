@@ -48,7 +48,6 @@ import org.netbeans.api.lexer.Token;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public abstract class CndAbstractTokenProcessor<T extends Token> implements CndTokenProcessor<T> {
     public void start(int startOffset, int firstTokenOffset, int endOffset) {}

@@ -96,7 +96,6 @@ import org.openide.util.CharSequences;
 
 /**
  * prototype implementation of service
- * @author Vladimir Voskresensky
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.class)
 public final class ReferenceRepositoryImpl extends CsmReferenceRepository {

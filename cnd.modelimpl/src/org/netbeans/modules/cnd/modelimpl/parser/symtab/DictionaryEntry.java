@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.parser.symtab;
 /**
  * based on DictionaryEntry removed from cppparser.g
  *
- * @author Vladimir Voskresensky
  */
 public class DictionaryEntry {
 

@@ -50,8 +50,6 @@ import javax.swing.*;
 
 /**
  *
- * @author  Dusan Balek
- * @author  Vladimir Voskresensky
  */
 public class MethodParamsTipPaintComponent extends JToolTip {
 

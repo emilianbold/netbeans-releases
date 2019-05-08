@@ -73,7 +73,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @ServiceProvider(service=CndFileSystemProvider.class)
 public class CndFileSystemProviderImpl extends CndFileSystemProvider {

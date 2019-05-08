@@ -62,7 +62,6 @@ import org.openide.util.WeakSet;
  * The idea and code is borrowed from
  * org.modules.php.project.classpath.IncludePathClassPathProvider
  *
- * @author inikiforov
  */
 //
 @org.openide.util.lookup.ServiceProvider(service = ClassPathProvider.class, position = 200)

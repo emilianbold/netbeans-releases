@@ -54,7 +54,6 @@ import org.netbeans.modules.editor.indent.spi.IndentTask;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FortranIndentTask extends FortranIndentSupport implements IndentTask {
     private Context context;

@@ -62,7 +62,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Petr Hrebejk
  */
 public class CheckTreeView extends BeanTreeView {
 

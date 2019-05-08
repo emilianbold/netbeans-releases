@@ -58,7 +58,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class NewTestSimplePanel extends CndPanel {
 

@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ForbidBuildAnalyzerImpl {
     @org.openide.util.lookup.ServiceProvider(service = ForbidBuildAnalyzerFactory.class)

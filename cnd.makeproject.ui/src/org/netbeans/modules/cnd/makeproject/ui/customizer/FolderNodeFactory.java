@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author as204739
  */
 public class FolderNodeFactory {
 

@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 /**
  * base class for guard block tests
  *
- * @author Alexander Simon
  */
 public class TypeTestCase extends TraceModelTestBase {
 

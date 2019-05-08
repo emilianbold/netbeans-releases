@@ -68,7 +68,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
 /**
- * @author Alexey Vladykin
  */
 public class QmakeProjectWriterTest extends CndBaseTestCase {
 

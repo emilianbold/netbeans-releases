@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface TraceModelFileFilter {
     boolean isProjectFile(String filename);

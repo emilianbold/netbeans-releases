@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceXRef.RefLink;
 
 /**
  *
- * @author Vladimir Voskresenky
  */
 public final class XRefResultSet<T> {
 

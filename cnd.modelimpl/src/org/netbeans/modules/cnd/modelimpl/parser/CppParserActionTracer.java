@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceFactory;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CppParserActionTracer extends CppParserActionImpl implements CppParserActionEx {
     private final TraceFactory.TraceWriter traceWriter;

@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ResolveRfsLibraryImpl {
     @org.openide.util.lookup.ServiceProvider(service = ResolveRfsLibraryFactory.class)

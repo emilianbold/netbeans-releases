@@ -97,7 +97,6 @@ import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author Sergey Grinev
  */
 public abstract class AbstractExecutorRunAction extends NodeAction {
 

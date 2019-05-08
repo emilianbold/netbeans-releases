@@ -80,7 +80,6 @@ import org.openide.util.RequestProcessor;
 /**
  * The definition of a remote server and login. 
  * 
- * @author gordonp
  */
 public class RemoteServerRecord implements ServerRecord, ConnectionNotifier.ExplicitConnectionListener {
 

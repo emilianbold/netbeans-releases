@@ -48,7 +48,6 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface CsmDocProvider {
     /**

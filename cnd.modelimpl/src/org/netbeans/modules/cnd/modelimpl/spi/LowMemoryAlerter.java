@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
  * if it is false, user should be just warned, so that he/she can switch off code model for the some or all projects;
  * if fatal is true, this mean that code model is already switched off for all projects.
  *
- * @author Vladimir Kvashin
  */
 public interface LowMemoryAlerter {
     void alert(LowMemoryEvent event, boolean fatal);

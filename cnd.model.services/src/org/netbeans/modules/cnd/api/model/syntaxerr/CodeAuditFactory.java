@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.api.model.syntaxerr;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface CodeAuditFactory {
     // constant to be used for registration of provider

@@ -98,7 +98,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Alexander Simon
  */
 final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 

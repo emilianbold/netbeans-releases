@@ -78,7 +78,6 @@ import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
 /**
- * @author Vladimir Kvasihn
  */
 public class AstRenderer {
 

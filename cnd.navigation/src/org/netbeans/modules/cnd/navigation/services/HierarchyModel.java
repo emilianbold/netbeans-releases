@@ -38,7 +38,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface HierarchyModel extends HierarchyActions {
     

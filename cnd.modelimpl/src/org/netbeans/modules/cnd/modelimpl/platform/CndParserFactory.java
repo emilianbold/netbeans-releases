@@ -75,7 +75,6 @@ import org.openide.util.WeakSet;
 
 /**
  *
- * @author Alexander Simon
  */
 @MimeRegistrations({
     @MimeRegistration(mimeType=MIMENames.C_MIME_TYPE, service=ParserFactory.class),

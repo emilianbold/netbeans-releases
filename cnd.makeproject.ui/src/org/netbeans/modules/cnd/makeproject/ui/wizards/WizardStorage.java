@@ -47,7 +47,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface WizardStorage {
 

@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver.class)
 public final class IncludeHierarchyResolverImpl extends CsmIncludeHierarchyResolver {

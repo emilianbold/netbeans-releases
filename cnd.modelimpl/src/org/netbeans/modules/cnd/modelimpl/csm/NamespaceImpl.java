@@ -80,7 +80,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * CsmNamespace implementation
- * @author Vladimir Kvashin
  */
 public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer,
         Persistent, SelfPersistent, Disposable, CsmIdentifiable {

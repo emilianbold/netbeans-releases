@@ -51,7 +51,6 @@ import org.openide.util.CharSequences;
  * without dependence on a character buffer and it enables
  * to chain the token-items in both directions.
  * 
- * @author Vladimir Voskresensky
  */
 public interface TokenItem<T extends TokenId> {
     /** Get the token-id of this token-item */

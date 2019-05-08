@@ -87,7 +87,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public class AnalyzeModel implements DiscoveryProvider {
     public static final String MODEL_FOLDER_PROVIDER_ID = "model-folder"; // NOI18N

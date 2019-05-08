@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.model.jclank.bridge.impl.CsmJClankSerivicesImpl;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class CsmJClankSerivices {
 

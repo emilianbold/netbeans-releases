@@ -47,7 +47,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface MakeCommandFlagsProvider {
     public static final String PRE_BUILD_FIRST = "pre-build-first"; //NOI18N

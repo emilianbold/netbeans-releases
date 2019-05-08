@@ -93,7 +93,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * Misc. (static) utility functions
- * @author Vladimir Kvashin
  */
 public class Utils {
     

@@ -54,7 +54,6 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
- * @author Vladimir Kvashin
  */
 
 public class TestRepositoryStatisticsAction extends TestProjectActionBase {

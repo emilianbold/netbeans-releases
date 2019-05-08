@@ -45,7 +45,6 @@ import org.netbeans.api.project.Project;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface MakeProjectLife {
     /**

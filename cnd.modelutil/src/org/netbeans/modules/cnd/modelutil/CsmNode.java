@@ -51,7 +51,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author vk155633
  */
 public class CsmNode extends AbstractCsmNode {
     

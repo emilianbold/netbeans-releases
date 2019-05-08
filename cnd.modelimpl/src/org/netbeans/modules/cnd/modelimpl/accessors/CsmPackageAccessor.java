@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.BuiltinTypes;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CsmPackageAccessor {
     private static CsmPackageAccessor INSTANCE;

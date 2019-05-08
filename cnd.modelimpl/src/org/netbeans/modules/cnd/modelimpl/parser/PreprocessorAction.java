@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface PreprocessorAction {
     void pushFile(CsmFile file);

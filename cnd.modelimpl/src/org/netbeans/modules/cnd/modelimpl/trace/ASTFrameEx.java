@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.antlr.debug.misc.*;
 import org.netbeans.modules.cnd.antlr.collections.*;
 
 /**
- * @author Vladimir Kvasihn
  */
 public class ASTFrameEx extends JFrame {
 

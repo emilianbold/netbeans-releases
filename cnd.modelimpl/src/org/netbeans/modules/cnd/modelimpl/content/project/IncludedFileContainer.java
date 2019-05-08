@@ -72,7 +72,6 @@ import org.openide.util.CharSequences;
 
 /**
  * container to keep files included from project.
- * @author Vladimir Voskresensky
  */
 public final class IncludedFileContainer extends ProjectComponent {
     private final List<Entry> list;

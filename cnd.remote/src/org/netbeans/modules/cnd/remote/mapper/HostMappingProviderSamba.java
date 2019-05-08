@@ -52,7 +52,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
 /**
  *
- * @author Sergey Grinev
  */
 /*package*/final class HostMappingProviderSamba implements HostMappingProvider {
 

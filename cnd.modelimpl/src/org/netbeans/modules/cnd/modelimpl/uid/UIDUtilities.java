@@ -88,7 +88,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * utilities to create CsmUID for CsmObjects
- * @author Vladimir Voskresensky
  */
 public class UIDUtilities {
 

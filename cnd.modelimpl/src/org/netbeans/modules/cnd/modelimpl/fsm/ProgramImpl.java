@@ -68,7 +68,6 @@ import org.openide.util.Exceptions;
 /**
  *
  * @param T
- * @author Dmitriy Ivanov, Vladimir Kvashin
  */
 public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
         implements CsmProgram, CsmFunctionDefinition, CsmNamespaceDefinition, MutableDeclarationsContainer, Disposable, RawNamable {

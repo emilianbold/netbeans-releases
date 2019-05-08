@@ -49,7 +49,6 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
  *
- * @author Alexander Simon
  */
 class QtExtension {
     private boolean isQtObject = false;

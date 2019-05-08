@@ -49,7 +49,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author masha
  */
 @ServiceProvider(service = CndNotifier.class, position = 100)
 public final class CndUIErrorNotifier extends CndNotifier {

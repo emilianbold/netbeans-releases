@@ -58,7 +58,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  * Token ids for doxygen language (embedded in doxygen comments).
  *
  * based on JavadocTokenId
- * @author Vladimir Voskresensky
  * @version 1.00
  */
 public enum DoxygenTokenId implements TokenId {

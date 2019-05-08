@@ -45,7 +45,6 @@ import java.io.File;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class ModifyIncludedHeaderTestCase extends ModifyDocumentTestCaseBase {
     public ModifyIncludedHeaderTestCase(String testName) {

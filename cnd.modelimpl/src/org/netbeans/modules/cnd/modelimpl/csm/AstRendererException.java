@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 
 /**
  *
- * @author Alexander Simon
  */
 public class AstRendererException extends Exception {
     

@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 final class AccessorImpl extends CsmCorePackageAccessor {
     ////////////////////////////////////////////////////////////////////////////

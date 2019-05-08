@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ErrorIncludesModel implements ListModel {
     private final List<String> names = new ArrayList<>();

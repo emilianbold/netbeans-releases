@@ -61,9 +61,7 @@ import org.netbeans.modules.cnd.makeproject.ui.actions.DefaultProjectOperationsI
  * Intention is to contribute it back as soon as it is adapted to remote environment.
  * Since we are planning to contribute it back,
  * NEVER use any remote or cnd stuff directly, but only via a well defined SPI
- * Vladimir Kvashin <vkvashin@netbeans.org>
  *
- * @author Jan Lahoda
  */
 final class DefaultProjectDeletePanel extends javax.swing.JPanel implements InvalidablePanel {
 

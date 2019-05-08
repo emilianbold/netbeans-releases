@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.NbBundle;
 
 /**
- * @author Alexander Simon
  */
 public class GoToClassAction extends AbstractAction {
     

@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 /**
  * Creates an instance of appropriate resolver
  * and delegates work to it
- * @author vk155633
  */
 public class ResolverFactory {
     private static final ThreadLocal<LinkedList<Resolver>> stack = new ThreadLocal<LinkedList<Resolver>>() {

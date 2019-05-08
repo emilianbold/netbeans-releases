@@ -47,7 +47,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author thp
  */
 public class BuildPlatformConfiguration extends IntConfiguration implements Cloneable {
     public BuildPlatformConfiguration(int def, String[] names) {

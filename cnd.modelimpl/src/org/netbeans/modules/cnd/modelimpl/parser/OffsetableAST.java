@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 
 /**
  *
- * @author petrk
  */
 public interface OffsetableAST extends AST {
     

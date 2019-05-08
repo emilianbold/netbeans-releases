@@ -53,7 +53,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public abstract class CsmParserProvider {
     public static final CsmParserProvider DEFAULT = new Default();

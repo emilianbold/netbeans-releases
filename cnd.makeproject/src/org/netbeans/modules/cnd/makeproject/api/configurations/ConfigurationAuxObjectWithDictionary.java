@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface ConfigurationAuxObjectWithDictionary {
     /**

@@ -64,7 +64,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service=FileObjectRedirector.class,position=1000)
 public class ItemRedirector implements FileObjectRedirector {

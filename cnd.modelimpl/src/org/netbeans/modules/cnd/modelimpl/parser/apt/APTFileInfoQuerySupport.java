@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class APTFileInfoQuerySupport {
 

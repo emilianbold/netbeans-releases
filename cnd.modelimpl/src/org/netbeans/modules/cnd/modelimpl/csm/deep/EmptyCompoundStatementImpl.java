@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 /**
  * empty compound statement. Used for incorrect/uncompleted code 
  * to present i.e. functions body
- * @author Vladimir Voskresensky
  */
 public final class EmptyCompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
     

@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.highlight.semantic;
 
 /**
  *
- * @author Alexey Vladykin
  */
 public class UnusedVariablesTest extends SemanticHighlightingNewTestBase {
 

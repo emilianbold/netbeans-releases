@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 /**
  * Popup a dialog which lets the user reconnect to an offline remote host.
  *
- * @author gordonp
  */
 public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeListener {
 

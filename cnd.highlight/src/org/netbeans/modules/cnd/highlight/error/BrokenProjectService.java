@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.BrokenIncludes.class)
 public class BrokenProjectService implements BrokenIncludes {

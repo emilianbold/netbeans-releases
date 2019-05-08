@@ -56,7 +56,6 @@ import org.openide.util.actions.NodeAction;
 /**
  * node action to show folder's properties
  *
- * @author Gordon Prieur
  */
 public final class PropertiesFolderAction extends NodeAction {
 

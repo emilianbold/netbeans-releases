@@ -61,7 +61,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author igromov
  */
 @ServiceProvider(service = FoldingParser.class, position = 100)
 public class FoldingParserService implements FoldingParser {

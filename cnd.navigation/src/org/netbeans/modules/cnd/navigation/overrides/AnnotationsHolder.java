@@ -62,8 +62,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  * After org.netbeans.modules.java.editor.overridden.AnnotationsHolder by
- * @author Jan Lahoda
- * @author Vladimir Kvashin
  */
 public class AnnotationsHolder implements PropertyChangeListener, Runnable {
 

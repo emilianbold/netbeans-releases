@@ -47,7 +47,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Sergey Grinev
  */
 /*package*/final class HostMappingProviderSolaris extends HostMappingProviderUnixAbstract {
 

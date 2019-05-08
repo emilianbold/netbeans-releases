@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 
 /**
- * @author Vladimir Kvasihn
  */
 public interface Resolver {
     public static final boolean TRACE_RECURSION = false;

@@ -59,7 +59,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Alexander Simon
  */
 @MimeRegistrations({
     // cnd source files

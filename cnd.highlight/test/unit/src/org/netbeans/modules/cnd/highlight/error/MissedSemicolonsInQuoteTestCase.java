@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 /**
  * Deletes all semicolons in Quote project,
  * checks error mesages
- * @author Vladimir Kvashin
  */
 public class MissedSemicolonsInQuoteTestCase extends ErrorHighlightingBaseTestCase {
 

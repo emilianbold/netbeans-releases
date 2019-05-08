@@ -46,7 +46,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author mtishkov
  */
 public final class LaunchersRegistryFactory {
     private static final HashMap<FileObject, LaunchersRegistry> instances = new HashMap<>();

@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 
 /**
  * pair to represent preprocessor states information
- * @author Vladimir Voskresensky
  */
 public final class PreprocessorStatePair {
 

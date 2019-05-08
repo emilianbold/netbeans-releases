@@ -46,7 +46,6 @@ import org.netbeans.modules.editor.indent.spi.IndentTask;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FortranIndentFactory implements IndentTask.Factory {
 

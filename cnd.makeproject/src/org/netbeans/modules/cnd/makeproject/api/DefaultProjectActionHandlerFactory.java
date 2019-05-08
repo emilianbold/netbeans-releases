@@ -48,7 +48,6 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * @author Alexey Vladykin
  */
 @ServiceProvider(service=ProjectActionHandlerFactory.class, position=9999)
 public class DefaultProjectActionHandlerFactory implements ProjectActionHandlerFactory {

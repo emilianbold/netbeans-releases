@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 
 /**
  *
- * @author Alexander Simon
  */
 public class BadgeProvider {
     private static final BadgeProvider myInstance = new BadgeProvider();

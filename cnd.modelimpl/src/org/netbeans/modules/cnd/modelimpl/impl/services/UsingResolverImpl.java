@@ -73,7 +73,6 @@ import org.openide.util.CharSequences;
 
 /**
  * implementation of using directives and using declarations resolver
- * @author Vladimir Voskresensky
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmUsingResolver.class)
 public final class UsingResolverImpl extends CsmUsingResolver implements CsmProgressListener {

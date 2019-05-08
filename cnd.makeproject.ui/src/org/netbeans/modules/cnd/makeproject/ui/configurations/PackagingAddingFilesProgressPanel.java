@@ -49,7 +49,6 @@ import javax.swing.SwingUtilities;
 
 /**
  *
- * @author  thp
  */
 public class PackagingAddingFilesProgressPanel extends javax.swing.JPanel {
     private final JButton stopButton;

@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.api.model.syntaxerr;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface CodeAudit {
     String getID();

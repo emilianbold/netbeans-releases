@@ -71,8 +71,6 @@ import org.openide.util.lookup.Lookups;
 
 /** Node representing an Element
  *
- * @author Petr Hrebejk, Jan Lahoda, Dusan Balek
- * @author Vladimir Voskresensky
  */
 public class ElementNode extends AbstractNode {
 

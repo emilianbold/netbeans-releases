@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.highlight.semantic;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class FunctionsHighlightingTest extends SemanticHighlightingNewTestBase {
 

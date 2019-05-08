@@ -49,7 +49,6 @@ import javax.swing.SwingUtilities;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CndUIUtilities {
 

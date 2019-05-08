@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.utils.NamedOption;
 
 /**
  *
- * @author Sergey Grinev
  */
 public abstract class SemanticEntity extends NamedOption {
     public abstract List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter);

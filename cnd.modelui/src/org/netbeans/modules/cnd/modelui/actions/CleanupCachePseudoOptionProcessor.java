@@ -53,7 +53,6 @@ import org.openide.modules.Places;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.sendopts.OptionProcessor.class)
 public class CleanupCachePseudoOptionProcessor extends OptionProcessor {

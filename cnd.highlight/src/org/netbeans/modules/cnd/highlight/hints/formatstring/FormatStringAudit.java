@@ -85,7 +85,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Danila Sergeyev
  */
 public class FormatStringAudit extends AbstractCodeAudit {
     

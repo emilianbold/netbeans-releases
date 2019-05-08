@@ -47,7 +47,6 @@ import java.util.Objects;
 
 /**
  *
- * @author Henk
  */
 public final class Launcher {
     private final int index;

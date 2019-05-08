@@ -49,7 +49,6 @@ import org.openide.util.CharSequences;
 
 /**
  * cache entry
- * @author Alexander Simon
  */
 public class NameCache extends APTStringManager {
     private static final APTStringManager manager = new NameCache();

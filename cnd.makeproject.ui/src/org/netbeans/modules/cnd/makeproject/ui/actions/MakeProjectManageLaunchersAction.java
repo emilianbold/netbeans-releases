@@ -50,7 +50,6 @@ import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author Alexander Simon
  */
 public class MakeProjectManageLaunchersAction  extends NodeAction {
 

@@ -56,7 +56,6 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
  *
- * @author thp
  */
 public class StringPanel extends javax.swing.JPanel implements PropertyChangeListener {
     StringEditor stringEditor;

@@ -62,7 +62,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Alexander Simon
  */
 public class UtilTest extends ModelBasedTestCase {
 

@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.highlight.error;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class MissedSemicolonsErrorMaker extends SimpleDeletingErrorMaker  {
 

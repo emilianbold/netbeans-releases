@@ -82,7 +82,6 @@ import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class BrokenReferencesSupport {
     

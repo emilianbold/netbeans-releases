@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Implements CsmParameter
- * @author Vladimir Kvashin
  */
 public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
 

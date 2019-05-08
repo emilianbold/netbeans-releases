@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.utils.ui;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 /* package-local */
 class ModalMessageDlgPane extends javax.swing.JPanel {

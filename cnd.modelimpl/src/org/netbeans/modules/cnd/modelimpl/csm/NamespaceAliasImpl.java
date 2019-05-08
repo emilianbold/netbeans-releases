@@ -80,7 +80,6 @@ import org.openide.util.CharSequences;
 /**
  * Implements CsmNamespaceAlias
  *
- * @author Vladimir Kvasihn
  */
 public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAlias> implements CsmNamespaceAlias, RawNamable {
 

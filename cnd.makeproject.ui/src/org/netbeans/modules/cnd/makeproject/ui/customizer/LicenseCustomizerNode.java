@@ -64,7 +64,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author alsimon
  */
 public class LicenseCustomizerNode extends CustomizerNode implements MakeContext.Savable {
 

@@ -48,7 +48,6 @@ import org.openide.NotifyDescriptor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ConfirmPlatformMismatchImpl implements ConfirmPlatformMismatch {
 

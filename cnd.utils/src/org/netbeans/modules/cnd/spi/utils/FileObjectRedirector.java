@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.spi.utils;
 import org.openide.filesystems.FileObject;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface FileObjectRedirector {
     

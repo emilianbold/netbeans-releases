@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 /*package*/ final class FileTokenStreamCache {
     private final List<TSData> cacheData;

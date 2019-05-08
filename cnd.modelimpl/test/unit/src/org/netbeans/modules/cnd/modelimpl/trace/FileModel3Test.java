@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 
 /**
  * some tests extracted from sputnik/contrib/codemodeltests
- * @author Vladimir Voskresensky
  */
 public class FileModel3Test extends TraceModelTestBase {
 

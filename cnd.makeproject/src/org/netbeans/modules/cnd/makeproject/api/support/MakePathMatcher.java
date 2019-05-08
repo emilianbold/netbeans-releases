@@ -103,8 +103,6 @@ import java.util.regex.Pattern;
  * <dd>Any Java source file (even in the default package).
  * </dl>
  * @since org.netbeans.modules.project.ant/1 1.15
- * @author Jesse Glick
- * @author Alexander Simon
  */
 public final class MakePathMatcher  {
 

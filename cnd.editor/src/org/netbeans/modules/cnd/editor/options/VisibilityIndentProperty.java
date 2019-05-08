@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Alexander Simon
  */
 public class VisibilityIndentProperty extends PropertySupport.ReadWrite<CodeStyle.VisibilityIndent> {
 

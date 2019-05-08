@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
  *
- * @author thp
  */
 public class PackagingFiles4Panel extends PackagingFilesPanel {
     public PackagingFiles4Panel(List<PackagerFileElement> fileList, FSPath baseDir) {

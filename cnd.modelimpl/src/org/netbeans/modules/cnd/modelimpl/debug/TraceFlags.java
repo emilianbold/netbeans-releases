@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
 
 /**
  * A common place for tracing flags that are used by several classes
- * @author Vladimir Kvashim
  */
 public class TraceFlags {
     public static final boolean SORT_PARSED_FILES = DebugUtils.getBoolean("cnd.model.parse.sorted", false);

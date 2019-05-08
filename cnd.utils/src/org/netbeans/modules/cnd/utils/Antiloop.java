@@ -47,7 +47,6 @@ import java.util.Set;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public final class Antiloop<T> {
     

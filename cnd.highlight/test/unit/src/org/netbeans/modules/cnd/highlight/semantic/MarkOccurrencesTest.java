@@ -56,7 +56,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Sergey Grinev
  */
 public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
 

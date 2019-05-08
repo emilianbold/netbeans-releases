@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  *
- * @author petrk
  */
 public class ShiftedTokenStream implements TokenStream {
     

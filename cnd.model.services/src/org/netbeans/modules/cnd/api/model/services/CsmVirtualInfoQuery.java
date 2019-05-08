@@ -70,7 +70,6 @@ import org.openide.util.Lookup;
 
 /**
  * API to query information about virtuality of method
- * @author Vladimir Voskresensky
  */
 public abstract class CsmVirtualInfoQuery {
     private static final CsmVirtualInfoQuery EMPTY = new Empty();

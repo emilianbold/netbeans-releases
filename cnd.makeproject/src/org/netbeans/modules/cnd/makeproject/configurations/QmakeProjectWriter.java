@@ -71,7 +71,6 @@ import org.openide.filesystems.FileUtil;
 /**
  * Writes qmake project (*.pro file) for given configuration.
  *
- * @author Alexey Vladykin
  */
 public class QmakeProjectWriter {
 

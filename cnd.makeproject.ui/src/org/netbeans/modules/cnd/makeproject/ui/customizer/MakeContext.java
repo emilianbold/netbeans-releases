@@ -57,7 +57,6 @@ import org.openide.util.WeakSet;
 
 /**
  *
- * @author Alexabder Simon
  */
 public class MakeContext {
 

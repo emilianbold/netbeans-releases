@@ -91,7 +91,6 @@ import org.openide.util.CharSequences;
 /**
  * extracted part of Resolver3 which is responsible for gathering file maps.
  * 
- * @author Vladimir Voskresensky
  */
 public final class FileMapsCollector {
     private final CsmFile currentFile;

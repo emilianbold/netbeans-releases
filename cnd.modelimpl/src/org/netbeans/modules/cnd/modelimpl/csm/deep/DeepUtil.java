@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 
 /**
  * Misc static methods used by deep impls
- * @author Vladimir Kvashin
  */
 public class DeepUtil {    
 

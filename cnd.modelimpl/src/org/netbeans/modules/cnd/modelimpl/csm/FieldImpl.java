@@ -60,7 +60,6 @@ import org.openide.util.CharSequences;
 
 /**
  * CsmVariable + CsmMember implementation
- * @author Vladimir Kvashin
  */
 public final class FieldImpl extends VariableImpl<CsmField> implements CsmField {
 

@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  *
- * @author eu155513
  */
 public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterType, SelfPersistent {
     private final CsmType type;

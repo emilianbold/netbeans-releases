@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
  * Action to navigate to next (regarding cursor position) highlighting made
  * by last Mark Occurrences process.
  *
- * @author Sergey Grinev
  */
 public final class GotoNextOccurrenceAction extends BaseAction {
 

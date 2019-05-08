@@ -38,7 +38,6 @@ import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
  * Links point to java IZ.
  * C/C++ specific tests begin from testReformatSimpleClass
  *
- * @author Alexander Simon
  */
 public class FortranIndentTestCase extends FortranEditorBase {
 

@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
  *
- * @author nick
  */
 public interface IncludePathExpansionProvider {
     List<IncludePath> expandIncludePaths(List<IncludePath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);

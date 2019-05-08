@@ -86,7 +86,6 @@ import org.openide.util.Pair;
 /**
  * Service that provides macro expansions implementation.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider.class)
 public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvider {

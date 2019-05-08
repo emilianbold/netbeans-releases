@@ -86,7 +86,6 @@ import org.openide.util.Pair;
 
 /**
  * CsmFileInfoQuery implementation
- * @author Vladimir Voskresenskky
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery.class)
 public final class FileInfoQueryImpl extends CsmFileInfoQuery {

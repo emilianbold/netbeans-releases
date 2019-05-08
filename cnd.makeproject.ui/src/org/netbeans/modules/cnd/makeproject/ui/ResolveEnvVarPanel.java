@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author alsimon
  */
 public class ResolveEnvVarPanel extends javax.swing.JPanel {
     private final EnvProjectProblemsProvider.UnsetEnvVar unset;

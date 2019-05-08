@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author thp
  */
 public class TarPackager implements PackagerDescriptor {
 

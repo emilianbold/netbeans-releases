@@ -70,7 +70,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class ProjectBaseWithEditing extends ProjectBase {
     // remove as soon as TraceFlags.USE_PARSER_API becomes always true

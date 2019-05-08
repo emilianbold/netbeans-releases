@@ -77,7 +77,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public abstract class TokenStreamProducer {
     

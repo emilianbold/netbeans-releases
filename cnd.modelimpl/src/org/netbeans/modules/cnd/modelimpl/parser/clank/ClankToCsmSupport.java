@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
 
 /**
  * Misc static methods used for processing in Clank mode.
- * @author vkvashin
  */
 /*package*/final class ClankToCsmSupport {
 

@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
 <api-answers
   question-version="1.24"
   module="cnd.makeproject"
-  author="jglick@netbeans.org"
+  author=""
 >
 
   &api-questions;

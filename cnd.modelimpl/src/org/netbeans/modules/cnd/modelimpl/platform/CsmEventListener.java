@@ -67,8 +67,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
- * @author Vladimir Voskresensky
- * @author Vladimir Kvashin
  */
 /*package*/ final class CsmEventListener {
 

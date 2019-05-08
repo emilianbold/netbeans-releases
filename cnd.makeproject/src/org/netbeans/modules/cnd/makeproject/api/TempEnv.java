@@ -52,7 +52,6 @@ import org.openide.util.NbPreferences;
 
 /**
  * Manages maps of temporary environment variables entered by user in Resolve dialogue
- * @author vkvashin
  */
 
 public final class TempEnv {

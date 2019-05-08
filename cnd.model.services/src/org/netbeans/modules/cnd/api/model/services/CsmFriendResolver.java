@@ -53,7 +53,6 @@ import org.openide.util.Lookup;
 
 /**
  * entry point to resolve friends of declarations
- * @author Vladimir Voskresensky
  */
 public abstract class CsmFriendResolver {
     /** A dummy resolver that never returns any results.

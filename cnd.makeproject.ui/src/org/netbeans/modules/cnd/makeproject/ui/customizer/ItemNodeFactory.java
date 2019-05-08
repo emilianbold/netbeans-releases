@@ -70,7 +70,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author as204739
  */
 public class ItemNodeFactory {
     private static final boolean SHOW_HEADER_EXCLUDE = CndUtils.getBoolean("cnd.makeproject.showHeaderExclude", true); // NOI18N

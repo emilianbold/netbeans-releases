@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableName;
 /**
  * Object for recognizing references to template based identifiers.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CsmTemplateBasedReferencedObject extends CsmOffsetableName {
 

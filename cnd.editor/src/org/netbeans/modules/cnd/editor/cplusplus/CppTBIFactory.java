@@ -62,7 +62,6 @@ import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor.MutableContext;
 
 /**
  *
- * @author Alexander Simon
  */
 @MimeRegistrations({
     // cnd source files

@@ -80,7 +80,6 @@ import org.openide.util.Exceptions;
 
 /**
  * buffer 
- * @author Vladimir Voskresensky
  */
 public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
     // -J-Dorg.netbeans.modules.cnd.modelimpl.platform.FileBufferImpl.level=FINE

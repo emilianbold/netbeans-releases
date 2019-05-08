@@ -58,7 +58,6 @@ import org.openide.filesystems.FileObject;
  * used only for semantic highlighting walkers. This should be refactored out if
  * more uses for SelfWalking would appear.
  * 
- * @author Sergey Grinev
  */
 public class APTSelfWalker extends APTAbstractWalker {
 

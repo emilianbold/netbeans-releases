@@ -63,7 +63,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service = PreBuildArtifactProvider.class, position = 2000)
 public class QmakeScriptSupport implements PreBuildArtifactProvider {

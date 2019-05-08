@@ -61,7 +61,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  * An abstract error provider.
- * @author Vladimir Kvashin
  */
 public abstract class CsmErrorProvider extends NamedOption {
     private static final boolean TRACE_TASKS = false;

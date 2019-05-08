@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
 
 /**
  *
- * @author Alexander Simon
  */
 /*package local*/ class DiffLinkedList {
     private final LinkedList<Diff> storage = new LinkedList<Diff>();

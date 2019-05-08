@@ -42,7 +42,6 @@ import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 
 /**
  *
- * @author Alexander Simon
  */
 public class HierarchyFactory {
     

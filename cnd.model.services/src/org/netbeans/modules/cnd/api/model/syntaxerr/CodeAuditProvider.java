@@ -46,7 +46,6 @@ import java.util.Collection;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface CodeAuditProvider {
     Collection<CodeAudit> getAudits();

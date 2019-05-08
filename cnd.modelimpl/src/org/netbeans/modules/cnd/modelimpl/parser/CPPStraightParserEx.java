@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 final class CPPStraightParserEx extends CPPParserEx {
     protected CPPStraightParserEx(TokenStream stream, CppParserActionEx callback, int initialBufferCapacity) {

@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * CsmGotoStatement implementation
- * @author Vladimir Kvashin
  */
 public final class GotoStatementImpl extends StatementBase implements CsmGotoStatement {
 

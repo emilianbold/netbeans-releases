@@ -67,7 +67,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Alexander Simon
  */
 public class IncludeNode extends AbstractCsmNode {
     private CsmFile object;

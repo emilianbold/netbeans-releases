@@ -69,7 +69,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 @ServiceProvider(service = CsmBaseUtilitiesProvider.class, position = 1000)
 public class BaseUtilitiesProviderImpl extends CsmBaseUtilitiesProvider {

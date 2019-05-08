@@ -61,7 +61,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Sergey Grinev
  */
 public abstract class CndPanelGUI  extends javax.swing.JPanel implements DocumentListener {
 

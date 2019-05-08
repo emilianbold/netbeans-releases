@@ -61,7 +61,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author thp
  */
 public class SVR4Packager implements PackagerDescriptor {
 

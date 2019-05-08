@@ -50,7 +50,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public class BuildSupport {
     public interface BuildFile {

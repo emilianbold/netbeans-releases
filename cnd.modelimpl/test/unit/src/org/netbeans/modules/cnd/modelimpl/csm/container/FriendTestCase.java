@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 /**
  * base class for friends tests
  *
- * @author Alexander Simon
  */
 public class FriendTestCase extends TraceModelTestBase {
 

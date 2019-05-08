@@ -58,7 +58,6 @@ import org.openide.util.lookup.ServiceProviders;
 
 /**
  * Error provider based on parser errors
- * @author Vladimir Kvashin
  */
 @ServiceProviders({
 @ServiceProvider(service=CsmErrorProvider.class, position=10),

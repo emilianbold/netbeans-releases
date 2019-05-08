@@ -50,7 +50,6 @@ package org.netbeans.modules.cnd.remote.support;
  *
  * TODO: should it be moved to remote API?
  * 
- * @author Vladimir Kvashin
  */
 public class RemoteException extends Exception {
     public RemoteException(String message) {

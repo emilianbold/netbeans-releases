@@ -47,7 +47,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=RunActionSupport.class)
 public class RunActionSupportImpl extends RunActionSupport {

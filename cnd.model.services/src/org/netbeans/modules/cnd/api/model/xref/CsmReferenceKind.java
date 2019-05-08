@@ -47,7 +47,6 @@ import java.util.Set;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public enum CsmReferenceKind {
     DEFINITION,

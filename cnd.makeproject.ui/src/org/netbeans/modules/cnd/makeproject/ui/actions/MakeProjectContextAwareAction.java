@@ -50,7 +50,6 @@ import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author mtishkov
  */
 public abstract class MakeProjectContextAwareAction extends NodeAction {
     

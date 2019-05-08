@@ -48,7 +48,6 @@ import org.netbeans.editor.Utilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public enum FortranHotCharIndent {
     INSTANCE;

@@ -50,7 +50,6 @@ import org.junit.Test;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class TinyMapsTest {
 

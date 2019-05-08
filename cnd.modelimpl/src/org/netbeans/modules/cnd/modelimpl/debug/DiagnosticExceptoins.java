@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * 
  * Use for testing purposes only
  * 
- * @author Vladimir Kvashin
  */
 public class DiagnosticExceptoins {
 

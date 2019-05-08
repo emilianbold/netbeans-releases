@@ -96,7 +96,6 @@ import org.openide.util.Pair;
  * 2) acts as a base class for FunctionDefinitionImpl.
  * In other words, it corresponds to function that has a double colon "::" in its name
  * @param T 
- * @author Vladimir Kvashin
  */
 public class FunctionImplEx<T>  extends FunctionImpl<T> {
 

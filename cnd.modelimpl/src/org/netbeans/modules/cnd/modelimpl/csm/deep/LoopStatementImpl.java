@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * Common base for for/while statements implementation
- * @author Vladimir Kvashin
  */
 public final class LoopStatementImpl extends StatementBase implements CsmLoopStatement {
     

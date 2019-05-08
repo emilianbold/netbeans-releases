@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  *
- * @author nk220367
  */
 public class FortranUtils {
 

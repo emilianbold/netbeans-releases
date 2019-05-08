@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * CsmIfStatement implementation
- * @author Vladimir Kvashin
  */
 public final class IfStatementImpl extends StatementBase implements CsmIfStatement {
     

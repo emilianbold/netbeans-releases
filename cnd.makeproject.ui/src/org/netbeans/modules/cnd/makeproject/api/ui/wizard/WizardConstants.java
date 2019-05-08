@@ -57,7 +57,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  * Constants that are used by wizards
- * @author Vladimir Kvashin
  */
 public final class WizardConstants {
 

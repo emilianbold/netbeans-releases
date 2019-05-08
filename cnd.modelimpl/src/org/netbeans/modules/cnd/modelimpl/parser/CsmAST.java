@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  *
- * @author Dmitriy Ivanov
  */
 public class CsmAST extends BaseAST implements TokenBasedAST, OffsetableAST, Serializable {
 

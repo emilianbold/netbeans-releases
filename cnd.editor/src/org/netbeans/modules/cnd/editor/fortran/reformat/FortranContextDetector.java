@@ -49,7 +49,6 @@ import static org.netbeans.cnd.api.lexer.FortranTokenId.*;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FortranContextDetector extends FortranExtendedTokenSequence {
     //private FortranBracesStack braces;

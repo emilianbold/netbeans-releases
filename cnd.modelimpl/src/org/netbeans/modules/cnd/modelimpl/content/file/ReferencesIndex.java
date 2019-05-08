@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class ReferencesIndex implements SelfPersistent, Persistent {
 

@@ -68,7 +68,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  * 
- * @author Vladimir Kvashin
  */
 public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
 

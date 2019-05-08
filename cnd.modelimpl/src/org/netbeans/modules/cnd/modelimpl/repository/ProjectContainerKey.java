@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  * base class for large and mutable project containers.
- * @author Vladimir Voskresensky
  */
 public abstract class ProjectContainerKey extends ProjectNameBasedKey {
 

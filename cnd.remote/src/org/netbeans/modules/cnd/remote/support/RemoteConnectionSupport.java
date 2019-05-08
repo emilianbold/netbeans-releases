@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author gordonp
  */
 public abstract class RemoteConnectionSupport {
 

@@ -55,7 +55,6 @@ import javax.swing.event.DocumentListener;
 
 /**
  * Editable combo box with memory on 5 previous values
- * @author Alexander Simon
  */
 public class EditableComboBox extends JComboBox {
 

@@ -65,7 +65,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CppIndentTask extends IndentSupport implements IndentTask {
 

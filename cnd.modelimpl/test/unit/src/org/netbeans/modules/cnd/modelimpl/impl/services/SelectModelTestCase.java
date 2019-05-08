@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.FileModelCpp14Test;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class SelectModelTestCase extends SelectTestBase {
 

@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ErrorInfoImpl implements CsmErrorInfo, DisableHintFix.CodeAuditInfo {
     private final String providerID;

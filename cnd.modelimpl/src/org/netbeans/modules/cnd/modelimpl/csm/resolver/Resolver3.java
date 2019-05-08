@@ -107,7 +107,6 @@ import org.netbeans.modules.cnd.utils.MutableObject;
 import org.openide.util.CharSequences;
 
 /**
- * @author Vladimir Kvasihn
  */
 public final class Resolver3 implements Resolver {
     static final Logger LOGGER = Logger.getLogger("Resolver3"); // NOI18N

@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public class OffsetToPositionFrame extends JFrame {
     

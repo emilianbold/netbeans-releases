@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  *
- * @author Alexander Simon
  */
 public class DeclarationContainerNamespace extends DeclarationContainer {
     private static final DeclarationContainerNamespace EMPTY = new DeclarationContainerNamespace() {
