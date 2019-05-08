@@ -42,7 +42,6 @@
  * made subject to such option by the copyright holder.
  */
 
-// Based on the code sent by Martin Ryzel
 package org.netbeans.modules.mobility.cldcplatform.startup;
 
 
