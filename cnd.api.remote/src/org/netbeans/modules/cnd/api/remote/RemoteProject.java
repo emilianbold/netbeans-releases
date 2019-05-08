@@ -50,7 +50,6 @@ import org.openide.filesystems.FileSystem;
 /**
  *
  *
- * @author Sergey Grinev
  */
 public interface RemoteProject {
 

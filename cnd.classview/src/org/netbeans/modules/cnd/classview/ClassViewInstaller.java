@@ -57,7 +57,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.CsmModelStateListener.class)
 public class ClassViewInstaller implements CsmModelStateListener {

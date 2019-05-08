@@ -49,7 +49,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  * 
- * @author Alexander Simon
  */
 final class FSImpl implements RelocatablePathMapper.FS {
     private final FileSystem fileSystem;

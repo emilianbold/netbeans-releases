@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 
 /**
  *
- * @author Egor Ushakov
+ *
  */
 public final class DbxPathProvider {
 

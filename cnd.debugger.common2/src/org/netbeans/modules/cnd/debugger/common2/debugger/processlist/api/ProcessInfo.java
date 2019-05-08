@@ -50,7 +50,6 @@ import java.util.List;
 /**
  * Information about one process
  * 
- * @author ak119685
  */
 public final class ProcessInfo implements Comparable<ProcessInfo> {
 

@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarge
 
 /**
  *
- * @author masha
  */
 abstract public class NativeDebuggerManagerAccessor {
     private static NativeDebuggerManagerAccessor INSTANCE;

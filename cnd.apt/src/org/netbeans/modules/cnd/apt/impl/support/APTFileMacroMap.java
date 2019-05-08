@@ -67,7 +67,6 @@ import org.openide.util.CharSequences;
  * macro map is created for each translation unit and
  * it has specified system predefined map where it delegates
  * requests about macros if not found in own macro map
- * @author Vladimir Voskresensky
  */
 public class APTFileMacroMap extends APTBaseMacroMap {
     private static final Map<CharSequence,APTMacro> NO_CACHE = Collections.unmodifiableMap(new HashMap<CharSequence,APTMacro>(0));

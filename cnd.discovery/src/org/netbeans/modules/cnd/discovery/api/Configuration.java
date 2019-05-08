@@ -49,7 +49,6 @@ import java.util.Map;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface Configuration {
 

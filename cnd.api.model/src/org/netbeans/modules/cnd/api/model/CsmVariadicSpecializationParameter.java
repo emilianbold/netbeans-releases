@@ -46,7 +46,6 @@ import java.util.List;
 /**
  * Variadic template specialization parameter.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CsmVariadicSpecializationParameter extends CsmSpecializationParameter { 
     List<CsmSpecializationParameter> getArgs();

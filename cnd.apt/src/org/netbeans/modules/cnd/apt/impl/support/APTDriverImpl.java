@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
  * This driver supports synchronized access with waiting when necessary to the
  * file's APT.
  * Wait if need to create and another process already creating.
- * @author Vladimir Voskresensky
  */
 public class APTDriverImpl {
     /** map of active creators */

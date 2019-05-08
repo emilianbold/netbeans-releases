@@ -66,7 +66,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author ak119685
  */
 public final class ProcessNode extends AbstractNode {
 

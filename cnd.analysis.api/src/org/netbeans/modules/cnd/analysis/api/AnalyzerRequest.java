@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.analysis.api;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface AnalyzerRequest {
     String getSingleAuditId();

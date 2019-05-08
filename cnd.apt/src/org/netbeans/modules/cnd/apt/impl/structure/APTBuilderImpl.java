@@ -64,7 +64,6 @@ import org.openide.util.CharSequences;
 
 /**
  * implementation of APTBuilder
- * @author Vladimir Voskresensky
  */
 public final class APTBuilderImpl {
     /** Creates a new instance of APTBuilder */

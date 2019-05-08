@@ -45,7 +45,6 @@ import java.util.Collection;
 
 /**
  * For testing purpose
- * @author Egor Ushakov
  */
 public class TestMICommand extends MICommand {
     public TestMICommand(int routingToken, String command) {

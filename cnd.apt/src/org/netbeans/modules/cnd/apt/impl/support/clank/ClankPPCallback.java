@@ -103,7 +103,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class ClankPPCallback extends FileInfoCallback {
 

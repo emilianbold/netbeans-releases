@@ -47,7 +47,6 @@ import java.util.HashMap;
 /**
  * value of DW_AT_inline
  *
- * @author Alexander Simon
  */
 public enum INL {
     DW_INL_not_inlined(0x0, "not inlined"), // NOI18N

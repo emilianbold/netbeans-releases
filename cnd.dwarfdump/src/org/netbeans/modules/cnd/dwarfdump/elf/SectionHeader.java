@@ -51,7 +51,6 @@ import java.nio.charset.Charset;
 
 /**
  *
- * @author ak119685
  */
 public class SectionHeader {
     public String name;            /* section name */

@@ -54,7 +54,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 @ServiceProvider(service=EngineCapabilityProvider.class, position=50)
 public final class DbxEngineCapabilityProvider implements EngineCapabilityProvider {

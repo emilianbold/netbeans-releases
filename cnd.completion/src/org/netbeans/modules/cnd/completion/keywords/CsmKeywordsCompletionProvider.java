@@ -72,7 +72,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
 /**
  *
- * @author alsimon
+ *
  */
 public class CsmKeywordsCompletionProvider implements CompletionProvider {
     private static final boolean TRACE  = false;

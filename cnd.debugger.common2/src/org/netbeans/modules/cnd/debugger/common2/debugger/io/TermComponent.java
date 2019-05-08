@@ -52,7 +52,6 @@ import org.openide.windows.InputOutput;
 
 /**
  *
- * @author ivan
  */
 public interface TermComponent {
 

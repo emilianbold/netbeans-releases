@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.api.model;
 /**
  * one K&R object inside "(" and ")" which referencing to actual K&R parameter
  * declaration
- * @author Vladimir Voskresensky
  */
 public interface CsmKnRName extends CsmOffsetableName {
     CsmParameter getReferencedParameter();

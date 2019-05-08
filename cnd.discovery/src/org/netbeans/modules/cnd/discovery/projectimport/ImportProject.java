@@ -155,7 +155,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ImportProject implements PropertyChangeListener {
 

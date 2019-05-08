@@ -53,7 +53,6 @@ import org.netbeans.spi.debugger.ui.Controller;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class NativeBreakpointCustomizer extends JPanel implements Customizer, Controller {
     

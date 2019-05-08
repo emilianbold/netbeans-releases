@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 
 /**
  *
- * @author vk155633
  */
 public class SmartChangeEvent {
     private Map<CsmProject,Storage> changedProjects = new HashMap<CsmProject,Storage>();

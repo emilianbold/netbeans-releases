@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class CallGraphModelFactory {
     private static final CallGraphModelFactory DEFAULT = new Default();

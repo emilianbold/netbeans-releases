@@ -51,8 +51,6 @@ import org.openide.util.Lookup;
 /**
  * Interface for a remote host information utility provider which can/will be implemented in another module.
  *
- * @author gordonp
- * @author Sergey Grinev
  */
 public abstract class HostInfoProvider {
 

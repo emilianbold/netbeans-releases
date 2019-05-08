@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class APTSystemMacroMap extends APTBaseMacroMap {
 

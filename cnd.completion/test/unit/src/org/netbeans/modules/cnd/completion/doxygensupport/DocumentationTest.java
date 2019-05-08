@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author Nikolay Koldunov
+ *
  */
 public class DocumentationTest extends CndBaseTestSuite{
 

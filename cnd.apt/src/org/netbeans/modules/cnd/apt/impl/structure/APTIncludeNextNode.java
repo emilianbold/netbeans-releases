@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #include_next directive implementation
- * @author Vladimir Voskresensky
  */
 public final class APTIncludeNextNode extends APTIncludeBaseNode 
                                         implements APTIncludeNext, Serializable {

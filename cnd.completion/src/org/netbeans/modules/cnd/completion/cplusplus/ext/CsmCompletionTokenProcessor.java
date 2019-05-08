@@ -56,7 +56,6 @@ import static org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExp
 /**
  * Token processor that parses the text and produces jc expressions.
  *
- * @author Vladimir Voskresensky
  * @version 1.00
  */
 final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<TokenId>> {

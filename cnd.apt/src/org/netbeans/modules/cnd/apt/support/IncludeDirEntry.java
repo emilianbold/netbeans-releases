@@ -61,7 +61,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class IncludeDirEntry {
     static {

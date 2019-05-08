@@ -65,7 +65,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author alsimon
  */
 public class CompilerSettings {
 

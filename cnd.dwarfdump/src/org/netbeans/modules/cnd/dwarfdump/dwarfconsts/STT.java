@@ -46,7 +46,6 @@ import java.util.HashMap;
 /**
  * Symbol table types (st_info)
  *
- * @author Alexander Simon
  */
 public enum STT {
     STT_NOTYPE(0, "NOTYPE"), /* Type not specified */ // NOI18N

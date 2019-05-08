@@ -55,7 +55,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Egor Ushakov
  */
 public final class APTConstTextToken extends APTTokenAbstact implements APTTokenTypes {
     private static final int MAX_TEXT_ID = APTTokenTypes.LAST_LEXER_FAKE_RULE;

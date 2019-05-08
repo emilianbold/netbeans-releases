@@ -49,7 +49,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author gorrus
  */
 public abstract class APTTokenAbstact implements APTToken {
     @Override

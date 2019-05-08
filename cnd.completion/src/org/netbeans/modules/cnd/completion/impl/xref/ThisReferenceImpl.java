@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 
 /**
  * A special class for "this" reference
- * @author Vladimir Kvashin
+ *
  */
 public class ThisReferenceImpl extends ReferenceImpl {
 

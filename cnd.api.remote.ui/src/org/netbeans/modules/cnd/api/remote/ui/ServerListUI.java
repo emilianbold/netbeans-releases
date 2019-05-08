@@ -54,7 +54,6 @@ import org.openide.util.Lookup;
  * It was created as a replacement of the show() method
  * of the ServerList class (ServerList is a model, so it shouldn't be mixed with UI)
  *
- * @author Vladimir Kvashin
  */
 public abstract class ServerListUI {
 

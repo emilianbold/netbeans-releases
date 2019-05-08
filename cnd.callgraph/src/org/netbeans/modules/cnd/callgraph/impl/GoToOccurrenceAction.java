@@ -52,7 +52,6 @@ import org.openide.util.actions.Presenter;
 
 /**
  *
- * @author toor
  */
 public class GoToOccurrenceAction extends AbstractAction implements Presenter.Popup {
     public static final int FUNCTION = 0;

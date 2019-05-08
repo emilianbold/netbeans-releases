@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.dwarfdump.source;
 
 /**
  *
- * @author Alexander Simon
  */
 public enum CompileLineOrigin {
     BuildLog, DwarfCompileLine, ExecLog

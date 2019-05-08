@@ -63,7 +63,7 @@ import org.openide.text.NbDocument;
 
 /**
  *
- * @author Alexander Simon
+ *
  */
 public class ReferencesCache {
 

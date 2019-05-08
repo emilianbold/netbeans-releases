@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.openide.nodes.Children;
 
 /**
- * @author Vladimir Kvasihn
  */
 public class ForwardClassNode extends ObjectNode {
 

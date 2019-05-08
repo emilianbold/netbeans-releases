@@ -72,7 +72,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Egor Ushakov
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.class)
 public class AttachOutputActionProvider extends BuildActionsProvider {

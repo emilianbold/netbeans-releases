@@ -54,7 +54,6 @@ import org.netbeans.spi.debugger.ui.DebuggingView;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 
 public abstract class NativeDVSupportImpl extends DebuggingView.DVSupport{    

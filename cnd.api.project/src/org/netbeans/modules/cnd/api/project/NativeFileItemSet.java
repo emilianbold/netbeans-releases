@@ -49,7 +49,6 @@ import java.util.Collection;
 /**
  * this interface is not for extending by clients, only for Lookup queries
  * C/C++ data objects provides this as cookie
- * @author Vladimir Voskresensky
  */
 public interface NativeFileItemSet {
     public static final String PROPERTY_ITEMS_CHANGED = "nativeFileItemSetChanged"; //NOI18N

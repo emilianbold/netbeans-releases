@@ -48,7 +48,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service=MakeProjectLife.class)
 public class MakeProjectLifeImpl implements MakeProjectLife {

@@ -55,7 +55,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class CsmIncludeCompletionProvider implements CompletionProvider {
 

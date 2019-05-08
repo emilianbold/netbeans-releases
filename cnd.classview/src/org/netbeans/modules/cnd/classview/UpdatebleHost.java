@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface UpdatebleHost {
     boolean newNamespsce(CsmNamespace ns);

@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 
 /**
  *
- * @author alsimon
  */
 public class CompilationUnitStab implements CompilationUnitInterface {
     private final String sourceName;

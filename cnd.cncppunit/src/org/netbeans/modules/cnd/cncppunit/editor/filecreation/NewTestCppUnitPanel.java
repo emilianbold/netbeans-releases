@@ -65,7 +65,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author sg155630
  */
 public class NewTestCppUnitPanel extends CndPanel {
 

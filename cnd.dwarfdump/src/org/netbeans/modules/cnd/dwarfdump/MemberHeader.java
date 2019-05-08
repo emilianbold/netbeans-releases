@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.dwarfdump;
 
 /**
  *
- * @author Alexander Simon
  */
 public class MemberHeader {
     private final long offset;

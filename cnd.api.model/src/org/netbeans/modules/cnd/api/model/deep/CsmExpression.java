@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 
 /**
  * Represents expression
- * @author Vladimir Kvashin
  */
 public interface CsmExpression extends CsmOffsetable, CsmScopeElement {
 

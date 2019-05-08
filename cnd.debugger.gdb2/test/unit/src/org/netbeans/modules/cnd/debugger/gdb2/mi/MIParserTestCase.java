@@ -47,7 +47,6 @@ import org.junit.Test;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class MIParserTestCase extends TestCase {
 

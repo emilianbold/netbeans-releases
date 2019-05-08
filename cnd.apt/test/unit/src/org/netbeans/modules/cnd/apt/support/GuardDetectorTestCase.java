@@ -54,7 +54,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class GuardDetectorTestCase extends NbTestCase {
     private final static String LINE_COMMENT = "\n//line comment\n";

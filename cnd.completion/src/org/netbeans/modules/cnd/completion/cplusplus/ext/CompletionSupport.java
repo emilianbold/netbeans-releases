@@ -131,7 +131,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class CompletionSupport implements DocumentListener {
 

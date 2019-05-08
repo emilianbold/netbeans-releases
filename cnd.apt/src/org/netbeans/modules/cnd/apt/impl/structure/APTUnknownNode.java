@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * impl for unknown #-directive with it's content till end of line
- * @author Vladimir Voskresensky
  */
 public final class APTUnknownNode extends APTStreamBaseNode 
                                     implements APTUnknown, Serializable {

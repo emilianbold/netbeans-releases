@@ -73,7 +73,6 @@ import org.openide.util.Parameters;
 
 /**
  * implementation of include handler responsible for preventing recursive inclusion
- * @author Vladimir Voskresensky
  */
 public class APTIncludeHandlerImpl implements APTIncludeHandler {
     private List<IncludeDirEntry> systemIncludePaths;

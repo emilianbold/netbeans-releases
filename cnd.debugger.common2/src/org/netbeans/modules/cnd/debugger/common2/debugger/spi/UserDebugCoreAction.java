@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 public interface UserDebugCoreAction {
     void debugCore(String host, String corefile, String executable, EngineType type);

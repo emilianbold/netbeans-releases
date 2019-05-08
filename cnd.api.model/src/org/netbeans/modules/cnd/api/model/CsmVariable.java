@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 
 /**
  * Represents a variable
- * @author Vladimir Kvashin
  */
 public interface CsmVariable extends CsmOffsetableDeclaration {
 

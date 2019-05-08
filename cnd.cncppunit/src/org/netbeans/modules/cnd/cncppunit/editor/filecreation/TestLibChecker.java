@@ -63,7 +63,6 @@ import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
- * @author Alexey Vladykin
  */
 /*package*/ class TestLibChecker implements Runnable {
 

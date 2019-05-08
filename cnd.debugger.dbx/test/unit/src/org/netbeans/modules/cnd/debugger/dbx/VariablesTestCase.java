@@ -48,7 +48,6 @@ import org.junit.Test;
 
 /**
  *
- * @author Jean Ko
  */
 public class VariablesTestCase extends DebuggerTestCase {
 

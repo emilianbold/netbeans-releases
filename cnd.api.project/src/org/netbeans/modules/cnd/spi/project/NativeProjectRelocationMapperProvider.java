@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
  * as source file path (this is how it was stored in the repository originally)
  * and it should return /export/home/MYPROJECT/src/test.cc as a result
  *
- * @author mtishkov
  */
 public interface NativeProjectRelocationMapperProvider {
     /**

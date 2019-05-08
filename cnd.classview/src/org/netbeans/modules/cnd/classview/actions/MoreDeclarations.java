@@ -61,7 +61,6 @@ import org.openide.util.actions.Presenter;
 
 /**
  *
- * @author Alexander Simon
  */
 public class MoreDeclarations extends AbstractAction implements Presenter.Popup {
     private static final String PROP_DECLARATION = "prop_declaration"; // NOI18N

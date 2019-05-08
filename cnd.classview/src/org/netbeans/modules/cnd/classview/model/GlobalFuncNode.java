@@ -52,7 +52,6 @@ import  org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 
 /**
- * @author Vladimir Kvasihn
  */
 public class GlobalFuncNode extends ObjectNode {
     private CharSequence text;

@@ -65,7 +65,6 @@ import org.openide.loaders.DataObject;
 
 /**
  * utils to help work with CND editor and other core objects
- * @author Vladimir Voskresensky
  */
 public class CndCoreTestUtils {
     

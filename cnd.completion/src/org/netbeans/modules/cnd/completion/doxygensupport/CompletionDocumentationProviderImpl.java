@@ -65,7 +65,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author thp
  */
 @ServiceProvider(service = CsmDocProvider.class)
 public class CompletionDocumentationProviderImpl implements CsmDocProvider {

@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.apt.support.api.PPMacroMap.State;
 
 /**
  * entry to store post include data
- * @author Vladimir Voskresensky
  */
 public final class PostIncludeData {
 

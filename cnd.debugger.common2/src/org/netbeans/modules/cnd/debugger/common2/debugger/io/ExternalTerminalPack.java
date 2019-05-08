@@ -46,7 +46,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Egor Ushakov
  */
 class ExternalTerminalPack extends IOPack {
     private DebuggerExternalTerminal terminal = null;

@@ -46,7 +46,6 @@ import org.junit.Test;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 public class RedirectionPathTestCase extends TestCase {
 

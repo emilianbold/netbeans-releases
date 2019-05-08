@@ -46,7 +46,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class PioPack extends InternalTerminalPack {
     private final TermComponent pio;

@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 
 /**
- * @author Nikolay Krasilnikov
+ *
  */
 public class Cpp11TestCase extends HyperlinkBaseTestCase {
 

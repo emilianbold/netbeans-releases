@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
 
 /**
  * base class for #if, #elif directives
- * @author Vladimir Voskresensky
  */
 public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
                                             implements Serializable {

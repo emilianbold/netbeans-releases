@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
  * test for testing completion of non-global items, i.e.
  * "this->|", "obj.prfix|", ...
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class NonGlobalCompletionTestCase extends CompletionBaseTestCase {
 

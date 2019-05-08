@@ -56,7 +56,6 @@ import org.openide.windows.InputOutput;
 
 /**
  * Only console, base for all IOPacks
- * @author Egor Ushakov
  */
 public class IOPack {
     private final TermComponent console;

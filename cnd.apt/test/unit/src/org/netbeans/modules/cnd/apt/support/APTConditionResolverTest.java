@@ -65,7 +65,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class APTConditionResolverTest {
     private static final String MAX_INT_CHECK_CODE = "\n"

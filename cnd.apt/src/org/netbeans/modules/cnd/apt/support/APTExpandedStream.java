@@ -73,7 +73,6 @@ import org.openide.util.CharSequences;
 /**
  * TokenStream responsible to expand all containing macros and as result
  * the return value of nextToken() need not be checked for macro substitution
- * @author Vladimir Voskresensky
  */
 public class APTExpandedStream implements TokenStream, APTTokenStream {
 

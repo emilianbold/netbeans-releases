@@ -48,7 +48,6 @@ import java.util.HashMap;
 
 /**
  *
- * @author ak119685
  */
 public enum TAG {
     DW_TAG_array_type(0x01),

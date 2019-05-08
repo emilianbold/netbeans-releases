@@ -52,7 +52,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Egor Ushakov
  */
 @ServiceProvider(service=StateListener.class)
 public class GoToSourceAction extends CallableSystemAction implements StateListener {

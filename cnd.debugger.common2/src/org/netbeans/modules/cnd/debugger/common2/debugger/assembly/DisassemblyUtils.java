@@ -51,7 +51,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class DisassemblyUtils {
     private DisassemblyUtils() {

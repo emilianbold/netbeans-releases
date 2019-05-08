@@ -52,7 +52,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Nikolay Koldunov
+ *
  */
 public class DocumentationTextGenerationBaseTestCase extends HyperlinkBaseTestCase {
     

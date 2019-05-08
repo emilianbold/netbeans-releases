@@ -55,7 +55,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     private static final RequestProcessor RP = new RequestProcessor(DiscoveryWizardIterator.class.getName(), 1);

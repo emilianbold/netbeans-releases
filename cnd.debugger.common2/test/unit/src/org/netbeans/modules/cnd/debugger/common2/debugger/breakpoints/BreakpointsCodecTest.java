@@ -51,7 +51,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class BreakpointsCodecTest extends CndBaseTestCase {
     public BreakpointsCodecTest() {

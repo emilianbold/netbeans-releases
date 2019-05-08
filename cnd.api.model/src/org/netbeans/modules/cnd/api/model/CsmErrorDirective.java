@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  * represent #error directive
- * @author Vladimir Voskresensky
  */
 public interface CsmErrorDirective extends CsmOffsetable {
     CharSequence getErrorMessage();

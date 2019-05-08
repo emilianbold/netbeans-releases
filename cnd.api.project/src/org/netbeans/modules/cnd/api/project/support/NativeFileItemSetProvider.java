@@ -53,7 +53,6 @@ import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * @author Alexey Vladykin
  */
 @ServiceProvider(service = CndCookieProvider.class)
 public final class NativeFileItemSetProvider extends CndCookieProvider {

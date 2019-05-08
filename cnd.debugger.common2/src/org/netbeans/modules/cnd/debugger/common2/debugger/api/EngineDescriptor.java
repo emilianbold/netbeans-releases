@@ -52,7 +52,6 @@ import org.openide.util.Lookup;
  * responsibility:
  * - gives information about capability of encapsulated engine type
  * 
- * @author Vladimir Voskresensky
  */
 public final class EngineDescriptor {
     private final EngineType et;

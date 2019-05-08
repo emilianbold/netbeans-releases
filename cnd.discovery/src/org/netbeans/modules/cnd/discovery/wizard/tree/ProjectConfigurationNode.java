@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ProjectConfigurationNode extends DefaultMutableTreeNode {
     private final ProjectConfigurationImpl project;

@@ -49,7 +49,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class EditorContextBridge {
     private static final EditorContextDispatcher contextDispatcher = EditorContextDispatcher.getDefault();

@@ -52,7 +52,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 /**
  * This is a place holder for a RemoteServerList which will be implemented in cnd.remote.
  * 
- * @author gordonp
  */
 public interface ServerListImplementation {
     

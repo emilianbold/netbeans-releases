@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 /**
  * Contains actions which may vary in different versions of gdb
  *
- * @author Egor Ushakov
  */
 public class GdbVersionPeculiarity {
     private final Version version;

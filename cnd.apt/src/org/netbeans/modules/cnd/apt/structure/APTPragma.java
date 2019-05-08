@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface APTPragma extends APT {
     public static final String PRAGMA_ONCE = "once"; // NOI18N

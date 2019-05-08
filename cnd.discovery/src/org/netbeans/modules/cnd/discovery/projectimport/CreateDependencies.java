@@ -92,7 +92,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  * 
- * @author Alexander Simon
  */
 public class CreateDependencies implements PropertyChangeListener {
     private static final RequestProcessor RP = new RequestProcessor(ImportExecutable.class.getName(), 1);

@@ -60,7 +60,6 @@ import java.util.Set;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfStatementList {
     public long total_length;

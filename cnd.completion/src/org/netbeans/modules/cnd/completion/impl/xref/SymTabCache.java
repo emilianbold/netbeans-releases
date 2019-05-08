@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 
 /**
  *
- * @author Alexander Simon
+ *
  */
 public final class SymTabCache {
 

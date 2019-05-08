@@ -63,7 +63,6 @@ import org.openide.util.NbPreferences;
 /**
  * base class for class view golden tests
  *
- * @author Alexander Simon
  */
 public class BaseTestCase extends TraceModelTestBase implements CsmModelListener {
     private boolean isReparsed;

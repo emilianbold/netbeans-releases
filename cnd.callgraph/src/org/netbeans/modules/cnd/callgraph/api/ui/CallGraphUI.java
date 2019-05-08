@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.callgraph.api.Call;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface CallGraphUI {
     /**

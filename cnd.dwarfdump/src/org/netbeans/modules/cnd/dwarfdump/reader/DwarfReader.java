@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfReader extends ElfReader {
     

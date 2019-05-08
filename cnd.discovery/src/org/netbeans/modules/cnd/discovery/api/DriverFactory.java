@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.dwarfdump.source.Driver;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class DriverFactory {
 

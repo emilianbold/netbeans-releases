@@ -44,7 +44,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public class ClankMacroExpandedToken implements APTToken {
 

@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  * Common ancestor for the majority of model classes
- * @author Vladimir Kvasihn
  */
 public interface CsmObject {
 }

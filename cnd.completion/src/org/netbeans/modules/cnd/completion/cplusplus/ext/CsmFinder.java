@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 /**
 * Java completion finder
 *
-* @author Vladimir Voskresensky
 * @version 1.00
 * based on JCFinder @version 1.00 - move to CSM model
 */

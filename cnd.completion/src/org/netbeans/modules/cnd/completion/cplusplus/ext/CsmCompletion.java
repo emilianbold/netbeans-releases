@@ -86,7 +86,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 /**
  * Java completion query specifications
  *
- * @author Miloslav Metelka
  * @version 1.00
  */
 abstract public class CsmCompletion {

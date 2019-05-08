@@ -47,7 +47,6 @@ import java.util.List;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class ClankSystemMacroMap extends ClankMacroMap {
 

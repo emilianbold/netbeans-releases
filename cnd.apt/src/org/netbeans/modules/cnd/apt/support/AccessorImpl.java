@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.apt.impl.support.SupportAPIAccessor;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 class AccessorImpl extends SupportAPIAccessor {
 

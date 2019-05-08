@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
  * context - ordered collection of scope entries passed till language context
- * @author Vladimir Voskresensky
  */
 public class CsmContext {
     private final CsmFile file;

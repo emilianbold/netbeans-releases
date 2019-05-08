@@ -49,7 +49,7 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
 

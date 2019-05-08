@@ -55,7 +55,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author vv159170
+ *159170
  */
 public class CsmIncludeCompletionItem implements CompletionItem {
 

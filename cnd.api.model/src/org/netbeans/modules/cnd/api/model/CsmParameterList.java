@@ -53,7 +53,6 @@ import java.util.Collection;
  * #define MACRO(a,b) a + b
  *
  * CsmParameterList object is offsetable starting at "(" and ending at ")"
- * @author Vladimir Voskresensky
  */
 public interface CsmParameterList<K> extends CsmOffsetable {
     /**

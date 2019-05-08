@@ -95,7 +95,6 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author ak119685
  */
 public final class ProcessListPanel extends javax.swing.JPanel
         implements ExplorerManager.Provider, ChangeListener, Lookup.Provider {

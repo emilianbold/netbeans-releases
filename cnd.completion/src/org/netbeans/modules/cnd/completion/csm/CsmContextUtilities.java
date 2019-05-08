@@ -113,7 +113,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author vv159170
  */
 public class CsmContextUtilities {
     private static final boolean DEBUG = Boolean.getBoolean("csm.utilities.trace");

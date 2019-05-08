@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
  * the original idea is antlr.AST approach, but no setters => immutable =>
  * could be used at the same time by multiple APT Visitors.
  *
- * @author Vladimir Voskresensky
  */
 public interface APT {
     public interface Type {

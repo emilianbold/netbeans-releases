@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
  * catch( exception-decl ) { ... }
  * construction
  *
- * @author Vladimir Kvashin
  */
 public interface CsmExceptionHandler extends CsmCompoundStatement, CsmScope {
 

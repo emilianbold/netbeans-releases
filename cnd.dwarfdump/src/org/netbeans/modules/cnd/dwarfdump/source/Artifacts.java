@@ -47,7 +47,6 @@ import java.util.Set;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface Artifacts {
 

@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.dwarfdump.source.DefaultDriver;
 
 /**
  *
- * @author alsimon
  */
 public class StabIndexSection extends ElfSection {
     private final StabIndexStrSection strings;

@@ -48,7 +48,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * A factory for local HostInfoProvider
- * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.HostInfoProviderFactory.class)
 public class LocalHostInfoProviderFactory implements  HostInfoProviderFactory {

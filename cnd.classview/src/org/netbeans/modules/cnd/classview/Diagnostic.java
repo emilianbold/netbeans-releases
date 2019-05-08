@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.modelutil.Tracer;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class Diagnostic {
     

@@ -48,7 +48,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
 /**
- * @author Vladimir Kvashin
  */
 public interface RemoteSyncService {
     RemoteSyncSupport.Worker getUploader(Lookup.Provider project, ExecutionEnvironment execEnv) throws IOException;

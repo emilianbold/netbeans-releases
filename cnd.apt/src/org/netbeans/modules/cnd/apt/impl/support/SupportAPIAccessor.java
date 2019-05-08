@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 
 /**
  *
- * @author vv159170
  */
 public abstract class SupportAPIAccessor {
     public static final Charset INTERNAL_CHARSET;

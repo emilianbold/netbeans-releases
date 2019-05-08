@@ -80,7 +80,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Egor Ushakov
  */
 @ServiceProvider(service=AutosProvider.class)
 public class CsmAutosProviderImpl implements AutosProvider {

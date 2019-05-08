@@ -14,7 +14,7 @@ import org.netbeans.spi.debugger.ui.PinWatchUISupport;
 
 /**
  *
- * @author Nikolay Koldunov
+ *
  */
 @DebuggerServiceRegistration(path = "netbeans-DbxDebuggerEngine", types = PinWatchUISupport.ValueProvider.class)
 public class DbxPinWatchValueProvider extends NativePinWatchValueProvider {

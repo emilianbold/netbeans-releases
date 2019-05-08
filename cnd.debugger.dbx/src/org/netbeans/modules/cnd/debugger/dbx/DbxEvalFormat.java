@@ -9,7 +9,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 
 /**
  *
- * @author Egor Ushakov
+ * 
  */
 public enum DbxEvalFormat implements FormatOption {
     DEFAULT(Catalog.get("Default_format"), ""), //NOI18N

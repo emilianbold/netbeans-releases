@@ -53,7 +53,6 @@ import org.openide.nodes.Sheet;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class CustomizableHost extends Host implements Record, OptionSetOwner {
     private OptionSet options = new HostOptionSet();

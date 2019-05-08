@@ -48,7 +48,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class CallGraphPreferences {
     private static final Preferences preferences = NbPreferences.forModule(CallGraphPanel.class);

@@ -45,7 +45,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface PPIncludeHandler {
     // TODO: (get/set)State methods and interface could be hidded on impl layer,

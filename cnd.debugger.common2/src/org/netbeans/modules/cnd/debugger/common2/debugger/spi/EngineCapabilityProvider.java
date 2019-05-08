@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescripto
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface EngineCapabilityProvider {
     public boolean hasCapability(EngineType et, EngineCapability capability);

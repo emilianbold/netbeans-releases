@@ -63,8 +63,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author gorrus
- * @author Vladimir Voskresensky
  */
 public final class APTMacroMapSnapshot extends MapSnapshot<APTMacro> {
     /**

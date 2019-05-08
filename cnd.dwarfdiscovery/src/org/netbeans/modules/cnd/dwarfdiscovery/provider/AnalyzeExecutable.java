@@ -77,7 +77,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class AnalyzeExecutable extends BaseDwarfProvider {
     public static final String EXECUTABLE_PROVIDER_ID = "dwarf-executable"; // NOI18N

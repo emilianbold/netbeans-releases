@@ -54,7 +54,6 @@ import org.openide.util.CharSequences;
 /**
  * helper for c++11 standard. 
  * all '>>' are replaced uncoditionally with two '>' tokens
- * @author Vladimir Voskresensky
  */
 public class SplitShiftRightTokenFilter  implements APTTokenStream, TokenStream {
     

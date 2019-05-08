@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 
 /**
  *
- * @author alsimon
  */
 public class StabIndexStrSection extends ElfSection {
     private byte[] stringtable = null;

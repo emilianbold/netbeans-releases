@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #define directive
- * @author Vladimir Voskresensky
  */
 public interface APTDefine extends APT {
     /** 

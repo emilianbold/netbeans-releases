@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  *
- * @author eu155513
  */
 public interface CsmClassifierBasedTemplateParameter extends CsmTemplateParameter, CsmClassifier {
 

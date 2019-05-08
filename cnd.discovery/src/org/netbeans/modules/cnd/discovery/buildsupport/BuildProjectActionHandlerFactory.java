@@ -58,7 +58,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  * ProjectActionHandlerFactory for for builds using exec traces
- * @author Alexander Simon
  */
 @ServiceProvider(service=ProjectActionHandlerFactory.class, position=3050)
 public class BuildProjectActionHandlerFactory implements ProjectActionHandlerFactory {

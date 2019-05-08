@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  * Element of scope
- * @author Vladimir Kvashin
  */
 public interface CsmScopeElement extends CsmObject {
 

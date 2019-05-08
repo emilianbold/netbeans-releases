@@ -69,7 +69,6 @@ import org.openide.util.CharSequences;
 /**
  * utility methods for sorting Csm elements
  *
- * @author Vladimir Voskresensky
  */
 @SuppressWarnings("unchecked")
 public class CsmSortUtilities {

@@ -14,7 +14,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author mtishkov
+ *
  */
 @ServiceProvider(service = DebuggerToolRecognizer.class, position = 100)
 public class DebuggerToolRecognizerDbxImpl implements DebuggerToolRecognizer{

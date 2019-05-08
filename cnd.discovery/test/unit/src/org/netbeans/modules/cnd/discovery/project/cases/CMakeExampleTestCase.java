@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
 
 /**
  * Not in suite
- * @author Alexander Simon
  */
 public class CMakeExampleTestCase extends MakeProjectTestBase {
 

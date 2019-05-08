@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class LoadingNode extends AbstractNode implements Call {
     public LoadingNode() {

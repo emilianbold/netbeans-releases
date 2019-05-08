@@ -44,7 +44,6 @@ import junit.framework.TestSuite;
 
 /**
  *
- * @author Jean Ko
  */
 public class DebuggerUnitTest extends TestSuite {
 

@@ -47,7 +47,6 @@ import java.util.Set;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class ValuePresenter {
     private ValuePresenter() {

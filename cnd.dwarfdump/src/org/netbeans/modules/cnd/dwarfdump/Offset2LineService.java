@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.dwarfdump.section.DwarfLineInfoSection.LineNumbe
 
 /**
  *
- * @author Alexander Simon
  */
 public class Offset2LineService {
     private static final boolean TRACE = false;

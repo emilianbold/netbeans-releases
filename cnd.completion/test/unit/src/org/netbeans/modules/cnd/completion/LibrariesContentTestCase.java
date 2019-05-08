@@ -37,7 +37,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
  *
- * @author vv159170
+ *159170
  */
 public class LibrariesContentTestCase extends CompletionBaseTestCase {
     

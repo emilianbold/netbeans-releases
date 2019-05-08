@@ -58,7 +58,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class CsmIncludeCompletionQuery {
 

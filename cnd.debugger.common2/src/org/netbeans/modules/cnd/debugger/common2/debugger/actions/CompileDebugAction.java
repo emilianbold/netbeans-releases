@@ -60,7 +60,6 @@ import org.openide.windows.InputOutput;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CompileDebugAction extends CompileRunActionBase {
     public CompileDebugAction() {

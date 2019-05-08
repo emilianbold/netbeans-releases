@@ -46,7 +46,6 @@ import org.netbeans.spi.debugger.ui.Controller;
 
 /**
  * Copied from JPDA implementation
- * @author Martin Entlicher
  */
 public interface ControllerProvider {
 

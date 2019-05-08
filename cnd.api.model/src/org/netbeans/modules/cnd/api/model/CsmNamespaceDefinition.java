@@ -48,7 +48,6 @@ import java.util.Collection;
 
 /**
  * Represent namespace declaration
- * @author Vladimir Kvashin
  */
 public interface CsmNamespaceDefinition extends CsmOffsetableDeclaration, CsmScope {
 

@@ -61,7 +61,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
     private final Map<CharSequence,Integer/*ttype*/> filter;

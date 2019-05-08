@@ -121,7 +121,7 @@ import org.openide.util.RequestProcessor;
  *
  * (copy of Jan Lahoda CompletionTest.java)
  *
- * @author Vladimir Voskresensky
+ *
  * @version 1.0
  */
 public class CompletionTestPerformer {

@@ -47,7 +47,6 @@ import java.util.HashMap;
 /**
  * value of DW_AT_virtuality
  *
- * @author Alexander Simon
  */
 public enum VIRTUALITY {
     DW_VIRTUALITY_none(0x0, "none"), // NOI18N

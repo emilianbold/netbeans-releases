@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.antlr.collections.impl.Vector;
  *
  * All lookahead elements are sets of token types.
  *
- * @author  Terence Parr, John Lilley
  * @see     org.netbeans.modules.cnd.antlr.Grammar
  * @see     org.netbeans.modules.cnd.antlr.Lookahead
  */

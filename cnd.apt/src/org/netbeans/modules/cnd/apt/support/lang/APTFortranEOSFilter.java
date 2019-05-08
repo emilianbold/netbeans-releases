@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter.FilterTok
 
 /**
  *
- * @author nk220367
  */
 final class APTFortranEOSFilter implements APTLanguageFilter {
     /**

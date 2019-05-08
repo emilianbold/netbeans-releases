@@ -52,7 +52,6 @@ package org.netbeans.modules.cnd.api.model;
  * Z<int, 2> z;
  * int and 2 are specialization parameters too.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CsmSpecializationParameter extends CsmOffsetable, CsmScopeElement {
 }

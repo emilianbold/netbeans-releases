@@ -52,7 +52,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 
 /**
  *
- * @author thp
+ *
  */
 public class DoxygenDocumentationTest {
 
@@ -84,7 +84,7 @@ public class DoxygenDocumentationTest {
  "* @param argc\n" +
  "* @param argv\n" +
  "* @return ...\n" +
- "* @author thp\n" +
+ "*\n" +
  "*/";
         String expResult = "<p>Document main(int,char**) here...\n</p><p>\n<strong>Parameter:</strong><br>&nbsp;  <i>argc</i>\n</p><p>\n<strong>Parameter:</strong><br>&nbsp;  <i>argv</i>\n</p><p>\n<strong>Returns:</strong><br>&nbsp;  ...\n</p><p>\n<strong>Author:</strong><br>&nbsp;  thp</p>";
         String result = DoxygenDocumentation.doxygen2HTML(doxygen, CppTokenId.DOXYGEN_COMMENT);
@@ -132,7 +132,7 @@ public class DoxygenDocumentationTest {
  "* Document...\n" +
  "*\n" +
  "* @unimplemented xyz\n" +
- "* @author thp\n" +
+ "*\n" +
  "*/";
         String expResult = "<p>Document...\n</p><p>\n<strong>unimplemented:</strong><br>&nbsp;  xyz\n</p><p>\n<strong>Author:</strong><br>&nbsp;  thp</p>";
         String result = DoxygenDocumentation.doxygen2HTML(doxygen, CppTokenId.DOXYGEN_COMMENT);

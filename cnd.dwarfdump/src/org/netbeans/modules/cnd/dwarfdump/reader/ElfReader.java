@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.dwarfdump.section.SymTabSection;
 
 /**
  *
- * @author ak119685
  */
 public class ElfReader extends ByteStreamReader {
     private boolean isCoffFormat;

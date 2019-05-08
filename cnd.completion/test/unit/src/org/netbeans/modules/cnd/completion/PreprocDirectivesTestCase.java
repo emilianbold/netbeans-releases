@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class PreprocDirectivesTestCase extends CompletionBaseTestCase {
     public PreprocDirectivesTestCase(String testName) {

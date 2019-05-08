@@ -67,7 +67,6 @@ import org.openide.windows.CloneableOpenSupport;
 
 /**
  *  Simple editor for Asm files.
- * @author  Vladimir Voskresensky
  */
 public class AsmEditorSupport extends DataEditorSupport implements EditCookie,
         EditorCookie, EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie, ReadOnlySupport {

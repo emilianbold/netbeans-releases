@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public final class DbxDebuggerSettings implements DebuggerSettings {
 

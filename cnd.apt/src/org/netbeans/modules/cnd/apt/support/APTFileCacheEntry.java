@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.apt.structure.APTInclude;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class APTFileCacheEntry {
     private final Map<Integer, PostIncludeData> cache;

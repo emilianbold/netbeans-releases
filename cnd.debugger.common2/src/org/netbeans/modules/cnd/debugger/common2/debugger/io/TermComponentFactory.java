@@ -48,7 +48,6 @@ import org.netbeans.modules.terminal.api.ui.IOTopComponent;
 
 /**
  *
- * @author ivan
  */
 public final class TermComponentFactory {
     public static final int ACTIVE = 1 << 0;

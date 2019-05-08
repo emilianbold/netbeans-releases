@@ -69,7 +69,6 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
 /**
  * base class to isolate using of NbJUnit library
- * @author Vladimir Voskresensky
  */
 public class CndBaseTestSuite extends NativeExecutionBaseTestSuite {
     static {

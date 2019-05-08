@@ -55,7 +55,6 @@ import org.openide.util.Lookup;
 
 /**
  * Utility functions related with remote synchronization
- * @author Vladimir Kvashin
  */
 public final class RemoteSyncSupport {
 

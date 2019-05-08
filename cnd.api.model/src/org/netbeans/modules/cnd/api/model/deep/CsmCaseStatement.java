@@ -48,7 +48,6 @@ package org.netbeans.modules.cnd.api.model.deep;
  * Represents case pseudo statement.
  * It does NOT include the statement after "case ...:" clause, just "case ...:" itself.
  *
- * @author Vladimir Kvashin
  */
 public interface CsmCaseStatement extends CsmStatement {
 

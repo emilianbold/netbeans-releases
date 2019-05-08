@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class ReferencesTestCase extends ReferencesBaseTestCase {
     

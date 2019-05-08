@@ -48,7 +48,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author masha
  */
 abstract public class ProcessListAccessor {
   private static volatile ProcessListAccessor DEFAULT;

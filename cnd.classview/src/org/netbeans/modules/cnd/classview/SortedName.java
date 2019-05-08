@@ -49,7 +49,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Alexander Simon
  */
 public class SortedName implements Comparable<SortedName> {
     private byte prefix;

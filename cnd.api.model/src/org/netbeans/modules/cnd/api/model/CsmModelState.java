@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  * Represents the state of the code model.
- * @author Vladimir Kvashin
  */
 public enum CsmModelState {
     

@@ -49,7 +49,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface APTIncludeHandler extends PPIncludeHandler {
     /**

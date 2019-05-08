@@ -58,7 +58,6 @@ import org.openide.util.WeakSet;
  *  - only one instance per macro object
  *  - based on weak references to allow GC of unused macros
  *
- * @author Vladimir Voskresensky
  */
 public abstract class APTMacroCache  {
     public enum CacheKind {

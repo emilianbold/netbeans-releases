@@ -52,7 +52,6 @@ package org.netbeans.modules.cnd.api.model;
  * Note that there might be unnamed parameters;
  * in this case getName() returns "".
  *
- * @author Vladimir Kvashin
  */
 public interface CsmParameter extends CsmVariable {
 

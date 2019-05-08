@@ -51,7 +51,6 @@ import java.util.logging.Logger;
  * Since the ServerList is updated from the Tools->Options panel, changes must be cached
  * until the OK button is pressed (T->O updates aren't immediately applied).
  * 
- * @author gordonp
  */
 public final class ServerUpdateCache {
 

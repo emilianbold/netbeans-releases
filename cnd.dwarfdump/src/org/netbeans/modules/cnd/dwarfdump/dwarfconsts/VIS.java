@@ -47,7 +47,6 @@ import java.util.HashMap;
 /**
  * value of DW_AT_visibility
  *
- * @author Alexander Simon
  */
 public enum VIS {
     DW_VIS_local(0x1, "local"), // NOI18N

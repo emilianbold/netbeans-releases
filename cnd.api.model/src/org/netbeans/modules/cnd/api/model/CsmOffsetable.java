@@ -48,7 +48,6 @@ import java.util.Comparator;
 
 /**
  * An object, which has correspondent file and a pair of offsets (start and end)
- * @author Vladimir Kvashin
  */
 public interface CsmOffsetable extends CsmObject {
 

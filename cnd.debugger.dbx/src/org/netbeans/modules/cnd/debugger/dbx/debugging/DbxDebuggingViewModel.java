@@ -13,7 +13,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 
 /**
  *
- * @author Nikolay Koldunov
+ *
  */
 @DebuggerServiceRegistration(path="netbeans-DbxSession/DebuggingView",
                              types={TreeModel.class/*, AsynchronousModelFilter.class*/},

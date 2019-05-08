@@ -48,7 +48,6 @@ import org.netbeans.spi.debugger.ui.PinWatchUISupport;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 @DebuggerServiceRegistration(path = "netbeans-GdbDebuggerEngine", types = PinWatchUISupport.ValueProvider.class)
 public class GdbPinWatchValueProvider extends NativePinWatchValueProvider {

@@ -57,7 +57,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class NativeProjectSupport {
     private NativeProjectSupport() {}

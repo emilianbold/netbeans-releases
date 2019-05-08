@@ -51,7 +51,6 @@ import java.util.Set;
 
 /**
  *
- * @author Alexander Simon
  */
 public class DefaultDriver implements Driver {
     

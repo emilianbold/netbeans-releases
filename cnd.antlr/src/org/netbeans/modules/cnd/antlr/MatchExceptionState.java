@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.antlr;
 
 /**
  *
- * @author gorrus
  */
 public abstract class MatchExceptionState {
     public boolean matchError = false;

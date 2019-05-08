@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.dwarfdump.dwarfconsts;
 
 /**
  *
- * @author ak119685
  */
 public interface ElfConstants {
     public static final byte ELFCLASS32 = 1;

@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 /**
  *
- * @author petrk
+ *
  */
 public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
 

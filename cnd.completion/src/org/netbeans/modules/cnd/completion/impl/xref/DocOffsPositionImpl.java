@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 
 /**
  * (line, col, offset) based CsmOffsetable.Position implementation
- * @author Vladimir Voskresensky
+ *
  */
 public class DocOffsPositionImpl implements CsmOffsetable.Position {
 

@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.api.model.support.CsmTypes;
 
 /**
  * SPI for types provider
- * @author Vladimir Voskresensky
  */
 public interface TypesProvider {
     CsmType createType(CharSequence seq, CsmScope scope, CsmTypes.SequenceDescriptor descriptor);

@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 
 /**
- * @author Vladimir Kvasihn
  */
 public abstract class ObjectNode extends BaseNode implements ChangeListener {
     private PersistentKey key;

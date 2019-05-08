@@ -80,7 +80,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class PerformanceIssueDetector implements PerformanceLogger.PerformanceListener, CsmProgressListener {
     private final Set<Project> projects = new HashSet<>();

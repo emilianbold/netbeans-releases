@@ -48,7 +48,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Represents a source file
- * @author Vladimir Kvashin
  */
 public interface CsmFile extends CsmNamedElement, CsmScope, CsmValidable {
 

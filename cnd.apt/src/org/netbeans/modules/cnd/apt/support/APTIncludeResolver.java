@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 
 /**
  * interface to resolve #include and #include node file path
- * @author Vladimir Voskresensky
  */
 public interface APTIncludeResolver {
     public ResolvedPath resolveInclude(APTInclude apt, APTMacroCallback callback);

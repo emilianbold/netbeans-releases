@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
 

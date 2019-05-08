@@ -59,7 +59,6 @@ import org.openide.util.Lookup;
 
 /**
  * A factory for RemoteSyncWorker
- * @author Vladimir Kvashin
  */
 public abstract class RemoteSyncFactory {
 

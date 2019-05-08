@@ -50,7 +50,6 @@ import org.openide.util.Cancellable;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface DiscoveryProvider extends Cancellable {
 

@@ -84,7 +84,6 @@ import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 
 /**
  *
- * @author ak119685
  */
 public class CompilationUnit implements CompilationUnitInterface{
     private final DwarfReader reader;

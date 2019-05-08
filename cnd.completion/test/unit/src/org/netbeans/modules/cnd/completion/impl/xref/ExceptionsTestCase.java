@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 
 /**
  *
- * @author Vladimir Kvashin
+ *
  */
 public class ExceptionsTestCase extends ReferencesBaseTestCase {
 

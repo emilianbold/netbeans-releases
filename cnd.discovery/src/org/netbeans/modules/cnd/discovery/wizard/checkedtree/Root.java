@@ -55,7 +55,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Alexander Simon
  */
 public class Root implements AbstractRoot {
     private final Map<String,AbstractRoot> children = new HashMap<>();

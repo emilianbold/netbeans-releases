@@ -54,7 +54,6 @@ import org.openide.nodes.*;
 
 /**
  * Misc static utilitiy functions
- * @author Vladimir Kvasihn
  */
 public class CVUtil {
     private static final boolean showParamNames = CndUtils.getBoolean("cnd.classview.show-param-names", true); // NOI18N

@@ -59,7 +59,6 @@ import org.openide.filesystems.FileSystem;
 /**
  * Thread safe driver to obtain APT for the file.
  * Wait till APT for file will be created.
- * @author Vladimir Voskresensky
  */
 public final class APTDriver {
     

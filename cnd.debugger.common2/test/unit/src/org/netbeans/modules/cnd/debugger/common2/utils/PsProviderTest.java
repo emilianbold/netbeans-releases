@@ -55,8 +55,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  *
- * @author
- * Egor Ushakov
  */
 public class PsProviderTest extends CndBaseTestCase {
     

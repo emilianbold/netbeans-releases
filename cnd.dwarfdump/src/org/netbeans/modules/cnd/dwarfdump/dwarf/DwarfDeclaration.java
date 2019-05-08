@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.dwarfdump.dwarf;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfDeclaration {
     public final String kind;

@@ -61,7 +61,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author alms
  */
 public final class APTPredefinedMacroMap implements APTMacroMap {
        

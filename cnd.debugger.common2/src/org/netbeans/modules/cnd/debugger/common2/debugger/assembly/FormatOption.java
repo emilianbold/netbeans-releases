@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.assembly;
 
 /**
  *
- * @author Egor Ushakov
  */
 public interface FormatOption {
     String getOption();

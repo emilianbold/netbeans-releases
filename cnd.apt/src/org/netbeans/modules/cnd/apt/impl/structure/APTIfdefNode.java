@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #ifdef directive implementation
- * @author Vladimir Voskresensky
  */
 public final class APTIfdefNode extends APTIfdefConditionBaseNode 
                                 implements APTNodeBuilder, APTIfdef, Serializable {

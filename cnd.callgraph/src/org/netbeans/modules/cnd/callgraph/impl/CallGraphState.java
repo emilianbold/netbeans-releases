@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.callgraph.api.Function;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CallGraphState {
     private CallModel model;

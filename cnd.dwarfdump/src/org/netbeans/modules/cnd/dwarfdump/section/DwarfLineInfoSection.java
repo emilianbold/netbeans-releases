@@ -67,7 +67,6 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ByteStreamReader;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfLineInfoSection extends ElfSection {
     private HashMap<Long, DwarfStatementList> statementLists = new HashMap<Long, DwarfStatementList>();

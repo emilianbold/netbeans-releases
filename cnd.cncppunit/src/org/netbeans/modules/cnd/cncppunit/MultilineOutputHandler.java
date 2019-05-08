@@ -48,7 +48,6 @@ import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 
 /**
  *
- * @author Ilia Gromov
  */
 public abstract class MultilineOutputHandler extends TestRecognizerHandler {
 

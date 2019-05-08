@@ -53,7 +53,6 @@ import static org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver.
 
 /**
  *
- * @author petrk
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmExpressionResolverImplementation.class)
 public final class CsmExpressionResolverImpl implements CsmExpressionResolverImplementation {

@@ -54,7 +54,6 @@ import org.openide.util.Utilities;
 
 /**
  * HostInfoProvider implementation for local host
- * @author Vladimir Kvashin
  */
 /*package-local*/ class LocalHostInfoProvider extends HostInfoProvider {
 

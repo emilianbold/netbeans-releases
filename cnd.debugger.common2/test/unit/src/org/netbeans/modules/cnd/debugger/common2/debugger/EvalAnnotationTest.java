@@ -47,7 +47,6 @@ import org.openide.text.Line;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class EvalAnnotationTest extends CndBaseTestCase {
     

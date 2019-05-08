@@ -48,7 +48,6 @@ import org.openide.util.Lookup;
 
 /**
  * Maintains lists of model listeners of different kind
- * @author Vladimir Kvashin
  */
 public abstract class CsmListeners {
 

@@ -69,7 +69,6 @@ import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.Utilities;
 
 /**
- * @author Alexey Vladykin
  */
 public class LibraryChecker {
 

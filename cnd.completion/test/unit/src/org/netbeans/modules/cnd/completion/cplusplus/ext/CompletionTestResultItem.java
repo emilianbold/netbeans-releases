@@ -45,7 +45,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
  *
- * @author petrk
+ *
  */
 public class CompletionTestResultItem {
     

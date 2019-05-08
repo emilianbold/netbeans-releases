@@ -52,7 +52,6 @@ import java.nio.charset.Charset;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfMacinfoEntry {
     public final MACINFO type;

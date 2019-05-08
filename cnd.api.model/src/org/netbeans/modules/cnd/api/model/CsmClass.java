@@ -48,7 +48,6 @@ import java.util.Collection;
 
 /**
  * Represents class, struct, enum and union
- * @author Vladimir Kvashin
  *
  * TODO: think over how to represent built-in types
  */

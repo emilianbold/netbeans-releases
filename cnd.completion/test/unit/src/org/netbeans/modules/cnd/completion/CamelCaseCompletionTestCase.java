@@ -43,7 +43,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
  *
- * @author igromov
+ *
  */
 public class CamelCaseCompletionTestCase extends CompletionBaseTestCase {
 

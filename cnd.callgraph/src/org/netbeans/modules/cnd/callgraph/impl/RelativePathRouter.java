@@ -51,7 +51,6 @@ import org.netbeans.api.visual.widget.Widget;
 
 /**
  *
- * @author ilia
  */
 public class RelativePathRouter implements Router {
 

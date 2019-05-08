@@ -61,7 +61,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Alexander Simon
  */
 public class RelocatablePathMapperImpl implements RelocatablePathMapper {
 

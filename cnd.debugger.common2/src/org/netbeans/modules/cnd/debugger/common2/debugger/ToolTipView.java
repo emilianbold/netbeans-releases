@@ -69,7 +69,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 public final class ToolTipView extends JComponent implements ExplorerManager.Provider {
     private static final ToolTipView INSTANCE = new ToolTipView();

@@ -50,7 +50,6 @@ import java.util.Map;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfNameLookupTable {
     public long unit_length;

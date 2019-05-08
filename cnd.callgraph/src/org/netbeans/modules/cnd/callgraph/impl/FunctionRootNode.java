@@ -53,7 +53,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FunctionRootNode extends AbstractNode implements Comparable<FunctionRootNode>{
     private final Function object;

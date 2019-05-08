@@ -54,7 +54,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  * builds APT from TokenStream and APTLight from APT
- * @author Vladimir Voskresensky
  */
 public final class APTBuilder {
     /** Creates a new instance of APTBuilder */

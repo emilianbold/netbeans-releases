@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FileConfigurationImpl extends NodeConfigurationImpl implements FileConfiguration {
     private final SourceFileProperties sourceFile;

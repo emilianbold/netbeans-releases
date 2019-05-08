@@ -75,7 +75,7 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Alexander Simon
+ *
  */
 public final class FileReferencesContext extends CsmProgressAdapter {
     private static final class Lock{}

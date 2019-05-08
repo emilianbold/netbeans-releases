@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 
 /**
  * filter out preprocessor tokens from original token stream
- * @author Vladimir Voskresensky
  */
 public class APTPreprocFilter implements TokenStream, APTTokenStream {
 

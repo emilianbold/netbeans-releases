@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 
 /**
  *
- * @author Alexander Simon
  */
 public class DwarfRelaDebugInfoSection extends ElfSection {
     private final Map<Long, Long> table = new HashMap<Long,Long>();

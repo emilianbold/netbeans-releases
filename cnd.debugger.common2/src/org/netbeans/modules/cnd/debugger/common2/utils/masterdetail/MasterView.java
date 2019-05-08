@@ -61,7 +61,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author  jeanko
  */
 public class MasterView<R extends Record> extends JPanel implements Validator {
 

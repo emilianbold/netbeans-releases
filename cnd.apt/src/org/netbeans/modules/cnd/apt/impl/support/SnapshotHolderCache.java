@@ -58,7 +58,6 @@ import org.openide.util.WeakSet;
  *  - only one instance containing the same set of macro objects
  *  - based on weak references to allow GC of unused instances
  *
- * @author Vladimir Voskresensky
  */
 public abstract class SnapshotHolderCache  {
     public enum CacheKind {

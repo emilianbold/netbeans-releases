@@ -53,7 +53,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
- * @author Alexey Vladykin
  */
 public class LibraryCheckerTest extends RemoteTestBase {
 

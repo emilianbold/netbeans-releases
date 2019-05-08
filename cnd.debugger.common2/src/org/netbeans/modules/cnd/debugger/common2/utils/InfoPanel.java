@@ -57,7 +57,6 @@ import javax.swing.JCheckBox;
 /**
  * A panel which puts up some informative messages and allows the user to
  * turn off all such further messages.
- * @author ivan
  */
 public class InfoPanel extends JPanel {
     private JTextArea textArea;

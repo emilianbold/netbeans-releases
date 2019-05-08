@@ -71,7 +71,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexandr Simon
  */
 public class LineHyperlinkProvider implements HyperlinkProviderExt {
     private LineTarget jumpToken;

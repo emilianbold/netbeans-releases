@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CMakeDiscoverySuiteTest extends CndBaseTestSuite {
 

@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 
 /**
  * filter for Std C language
- * @author Vladimir Voskresensky
  */
 class APTStdCFilter extends APTBaseLanguageFilter {
     

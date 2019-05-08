@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 /**
  * #include and #include_next base implementation
- * @author Vladimir Voskresensky
  */
 public abstract class APTIncludeBaseNode extends APTTokenBasedNode
         implements APTNodeBuilder, Serializable {

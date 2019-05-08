@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.discovery.api;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface SourceFileProperties extends ItemProperties {
     /**

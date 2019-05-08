@@ -77,7 +77,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
     private static final boolean traceEvents = Boolean.getBoolean("cnd.classview.key-events"); // NOI18N

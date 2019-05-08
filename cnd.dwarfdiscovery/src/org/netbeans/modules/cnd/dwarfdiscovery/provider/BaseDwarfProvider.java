@@ -80,7 +80,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class BaseDwarfProvider extends BaseProvider {
     

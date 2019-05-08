@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * composition of include handler and macro map for parsing file phase
- * @author Vladimir Voskresensky
  */
 public class APTPreprocHandlerImpl implements APTPreprocHandler {
     private boolean compileContext;

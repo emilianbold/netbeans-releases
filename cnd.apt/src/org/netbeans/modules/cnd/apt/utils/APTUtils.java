@@ -91,7 +91,6 @@ import org.openide.util.CharSequences;
 
 /**
  * APT utilities
- * @author Vladimir Voskresensky
  */
 public class APTUtils {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.apt"); // NOI18N

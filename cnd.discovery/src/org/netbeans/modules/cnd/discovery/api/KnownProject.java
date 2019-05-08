@@ -47,7 +47,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class KnownProject {
     /** well known project name */

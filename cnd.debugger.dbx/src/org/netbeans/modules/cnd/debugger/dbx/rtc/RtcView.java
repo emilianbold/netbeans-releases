@@ -92,7 +92,7 @@ import org.netbeans.modules.terminal.api.ui.IOTopComponent;
  * <li> In interactive mode under a MuxabeTopComponent which appears in the
  * output mode.
   </ul>
- * @author ivan
+ *
  */
 public class RtcView extends JPanel
 		     implements ChangeListener, SaveCookie {

@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.apt.structure.APTDefine;
 
 /**
  * macros for APT macro map
- * @author Vladimir Voskresensky
  */
 public interface APTMacro {
     public Kind getKind();

@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase.SimpleFileFi
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 

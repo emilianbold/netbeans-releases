@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
 
 /**
  *
- * @author as204739
  */
 public class SimpleTestCase extends MakeProjectTestBase {
 

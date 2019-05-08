@@ -52,7 +52,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CallChildren extends Children.Keys<Call> {
     private Call call;

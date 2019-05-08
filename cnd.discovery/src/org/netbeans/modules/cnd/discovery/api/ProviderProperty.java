@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.discovery.api;
 
 /**
- * @author Alexander Simon
  * 
  * @param <T> property type
  */

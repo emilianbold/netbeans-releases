@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 /**
  * Represents declaration statement
  *
- * @author Vladimir Kvashin
  */
 public interface CsmDeclarationStatement extends CsmStatement {
 

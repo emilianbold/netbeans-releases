@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #elif directive implementation
- * @author Vladimir Voskresensky
  */
 public final class APTElifNode extends APTIfConditionBaseNode 
                                 implements APTElif, Serializable {

@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.apt.structure;
 
 /**
  * #if directive
- * @author Vladimir Voskresensky
  */
 public interface APTIf extends APTIfCondition {
 }

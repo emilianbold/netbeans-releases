@@ -48,7 +48,6 @@ import javax.swing.event.ChangeListener;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface BrokenIncludes {
     boolean isBroken(NativeProject project);

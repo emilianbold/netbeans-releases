@@ -36,7 +36,7 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class CCIncludesCompletionTest extends CndBaseTestSuite {
 

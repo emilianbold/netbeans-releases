@@ -48,7 +48,7 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 /**
  *
- * @author Nikolay Koldunov
+ *
  */
 @DebuggerServiceRegistration(path = "netbeans-DbxSession", types = BreakpointsActivationProvider.class)
 public class DbxBreakpointsActivationProvider extends NativeBreakpointsActivationProvider {

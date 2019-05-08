@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class APTMacroExpandedStream extends APTExpandedStream {
     private final boolean emptyExpansionAsComment;

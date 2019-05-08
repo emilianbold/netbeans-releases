@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 /**
  *
- * @author alsimon
  */
 public class PathMapperTest extends NbTestCase {
 

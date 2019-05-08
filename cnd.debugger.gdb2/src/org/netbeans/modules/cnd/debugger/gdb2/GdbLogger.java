@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.debugger.gdb2;
 /*
  * GdbLogger.java
  *
- * @author Nik Molchanov
  *
  * Originally this class was in org.netbeans.modules.cnd.debugger.gdb package.
  * Later a new "proxy" package was created and this class was moved, that's how

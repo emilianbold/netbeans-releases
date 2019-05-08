@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.api;
 
 /**
  * different engine capabilities
- * @author Vladimir Voskresensky
  */
 public enum EngineCapability {
     DERIVE_EXECUTABLE, // can derive executable from PID or Core file

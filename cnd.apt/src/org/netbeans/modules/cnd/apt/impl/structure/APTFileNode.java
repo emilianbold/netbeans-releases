@@ -55,7 +55,6 @@ import org.openide.util.Parameters;
 
 /**
  * implementation of APTFile
- * @author Vladimir Voskresensky
  */
 public final class APTFileNode extends APTContainerNode 
                                 implements APTFile, Serializable {

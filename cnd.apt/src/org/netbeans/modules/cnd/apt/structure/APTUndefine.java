@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #undef directive
- * @author Vladimir Voskresensky
  */
 public interface APTUndefine extends APT {
     /** 

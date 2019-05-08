@@ -55,7 +55,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Alexander Simon
  */
 public class RemoteJarServiceProvider {
     private static final Class<?> service = Offset2LineService.class;

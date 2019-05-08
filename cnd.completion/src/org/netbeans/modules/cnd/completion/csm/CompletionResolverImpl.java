@@ -93,7 +93,6 @@ import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CompletionResolverImpl implements CompletionResolver {
 

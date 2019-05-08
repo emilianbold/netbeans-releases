@@ -121,7 +121,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public final class ReferencesSupport {
 

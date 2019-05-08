@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class ClankFileMacroMap extends ClankMacroMap {
 

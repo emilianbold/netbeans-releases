@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class MultiParseHyperlinkTestCase extends HyperlinkBaseTestCase {
     public MultiParseHyperlinkTestCase(String testName) {

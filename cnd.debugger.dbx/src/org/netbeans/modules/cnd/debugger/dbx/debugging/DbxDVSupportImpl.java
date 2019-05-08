@@ -12,7 +12,7 @@ import org.netbeans.spi.debugger.ui.DebuggingView;
 
 /**
  *
- * @author Nikolay Koldunov
+ *
  */
 @DebuggingView.DVSupport.Registration(path="netbeans-DbxSession")
 public class DbxDVSupportImpl extends NativeDVSupportImpl{

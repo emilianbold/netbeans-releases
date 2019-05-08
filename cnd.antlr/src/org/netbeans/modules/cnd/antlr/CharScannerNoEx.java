@@ -44,7 +44,6 @@ import org.netbeans.modules.cnd.antlr.collections.impl.BitSet;
 
 /**
  *
- * @author gorrus
  */
 public abstract class CharScannerNoEx extends CharScanner {
     public CharScannerNoEx(InputBuffer cb) { // SAS: use generic buffer

@@ -65,7 +65,6 @@ import org.openide.util.CharSequences;
 /**
  * APTMacroMap base implementation
  * support collection of macros and saving/restoring this collection
- * @author Vladimir Voskresensky
  */
 public abstract class APTBaseMacroMap implements APTMacroMap {
 

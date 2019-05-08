@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface ProjectConfiguration extends NodeConfiguration {
     

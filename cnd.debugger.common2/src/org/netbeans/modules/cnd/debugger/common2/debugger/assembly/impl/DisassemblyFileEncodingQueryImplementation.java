@@ -49,7 +49,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 @org.openide.util.lookup.ServiceProvider(service = FileEncodingQueryImplementation.class)
 public class DisassemblyFileEncodingQueryImplementation extends FileEncodingQueryImplementation {

@@ -76,7 +76,6 @@ import org.openide.util.NbBundle;
 
 /**
  * this is the modified copy of JavaCompletionProvider
- * @author Vladimir Voskresensky
  */
 public class CsmCompletionProvider implements CompletionProvider {
 

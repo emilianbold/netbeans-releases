@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 
 /**
  *
- * @author as204739
  */
 public abstract class APIAccessor {
 

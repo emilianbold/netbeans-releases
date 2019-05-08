@@ -56,7 +56,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Misc. static methods used for tracing of code model objects
- * @author vk155633
  */
 public final class CsmTracer {
 

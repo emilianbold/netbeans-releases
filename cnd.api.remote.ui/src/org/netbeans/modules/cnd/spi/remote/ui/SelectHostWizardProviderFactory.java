@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.api.remote.ui.SelectHostWizardProvider;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public interface SelectHostWizardProviderFactory {
     SelectHostWizardProvider createHostWizardProvider(boolean allowLocal, boolean allowToCreateNewHostDirectly, ChangeListener changeListener);

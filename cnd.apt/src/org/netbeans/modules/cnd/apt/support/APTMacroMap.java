@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 
 /**
  * interface to support contextual macro definitions map
- * @author Vladimir Voskresensky
  */
 public interface APTMacroMap extends APTMacroCallback, PPMacroMap {
     /** 

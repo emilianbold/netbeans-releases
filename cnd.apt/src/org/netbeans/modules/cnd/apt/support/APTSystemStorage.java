@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class APTSystemStorage {
     private final Map<String, PPMacroMap> allMacroMaps = new HashMap<String, PPMacroMap>();

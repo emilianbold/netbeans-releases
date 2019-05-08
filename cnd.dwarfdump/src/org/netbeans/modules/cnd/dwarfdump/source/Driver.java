@@ -46,7 +46,6 @@ import java.util.ListIterator;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface Driver {
     /**

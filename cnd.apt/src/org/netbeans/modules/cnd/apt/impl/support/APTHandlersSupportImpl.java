@@ -71,7 +71,6 @@ import org.openide.util.CharSequences;
 
 /**
  * utilities for working with APT states (macro-state, include-state, preproc-state)
- * @author Vladimir Voskresensky
  */
 public class APTHandlersSupportImpl {
 

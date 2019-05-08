@@ -75,7 +75,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  * utilities for APT serialization
- * @author Vladimir Voskresensky
  */
 public class APTSerializeUtils {
 

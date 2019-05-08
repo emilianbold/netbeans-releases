@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * #ifndef/#ifdef directives base implementation
- * @author Vladimir Voskresensky
  */
 public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNode
                                                 implements Serializable {

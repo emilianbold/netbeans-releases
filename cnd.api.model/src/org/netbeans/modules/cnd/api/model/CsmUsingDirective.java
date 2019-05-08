@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.api.model;
 
 /**
- * @author Vladimir Kvasihn
  */
 public interface CsmUsingDirective extends CsmOffsetableDeclaration {
 

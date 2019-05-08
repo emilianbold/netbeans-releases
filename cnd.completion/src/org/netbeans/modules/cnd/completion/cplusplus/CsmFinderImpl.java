@@ -82,7 +82,6 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion;
 
 /**
  *
- * @author Vladimir Voskresensky
  * based on MDRFinder
  */
 public class CsmFinderImpl implements CsmFinder {

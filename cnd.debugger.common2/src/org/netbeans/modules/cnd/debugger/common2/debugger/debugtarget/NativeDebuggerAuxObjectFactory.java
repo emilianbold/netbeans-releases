@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxO
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface NativeDebuggerAuxObjectFactory extends ConfigurationAuxObjectProvider {
     public String getAuxObjectID();

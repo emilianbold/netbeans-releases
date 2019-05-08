@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
  *   result = resolver.getResult();
  *  }
  *
- * @author vv159170
  */
 public interface CompletionResolver {
     // flags indicating what we plan to resolve using this resolver

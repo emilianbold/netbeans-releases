@@ -56,7 +56,6 @@ import java.io.PrintStream;
 
 /**
  *
- * @author ak119685
  */
 public class AddressRange {
     private long address;

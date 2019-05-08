@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * impl for #error directive 
- * @author Vladimir Kvashin
  */
 public class APTErrorNode extends APTStreamBaseNode 
                                     implements APTError, Serializable {

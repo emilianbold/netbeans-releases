@@ -101,10 +101,6 @@ import javax.swing.table.*;
  * This is a long overdue rewrite of a class of the same name that
  * first appeared in the swing table demos in 1997.
  * 
- * @author Philip Milne
- * @author Brendon McLean 
- * @author Dan van Enckevort
- * @author Parwinder Sekhon
  * @version 2.0 02/27/04
  */
 

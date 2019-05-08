@@ -79,7 +79,6 @@ import org.openide.loaders.TemplateWizard;
 
 /**
  *
- * @author sg155630
  */
 public class TestCppUnitIterator extends AbstractUnitTestIterator {
     private WizardDescriptor.Panel<WizardDescriptor> targetChooserDescriptorPanel;

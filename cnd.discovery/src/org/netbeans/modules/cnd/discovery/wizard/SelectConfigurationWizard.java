@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class SelectConfigurationWizard implements WizardDescriptor.Panel, ChangeListener {
     

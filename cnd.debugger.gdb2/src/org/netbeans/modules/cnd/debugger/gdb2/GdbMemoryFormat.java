@@ -47,7 +47,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Egor Ushakov
  */
 public enum GdbMemoryFormat implements FormatOption {
     HEXADECIMAL(NbBundle.getMessage(GdbMemoryFormat.class, "Format_Hexadecimal"), "x"), //NOI18N

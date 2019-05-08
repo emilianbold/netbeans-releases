@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.dwarfdump;
 
 /**
  *
- * @author Alexander Simon
  */
 public enum Magic{
     Elf, Exe, Pe, Coff, Arch, Macho

@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
  *
- * @author Alexander Simom
  */
 public interface APTFileSearchImplementation {
     public FSPath searchInclude(String include, CharSequence basePath);

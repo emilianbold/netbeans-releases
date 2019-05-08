@@ -34,7 +34,7 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class CCIncludesAuxTestCase extends CndBaseTestCase {
 

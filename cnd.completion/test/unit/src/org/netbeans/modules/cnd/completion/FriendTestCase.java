@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
  * test cases for resolving completion in friends context
- * @author Vladimir Voskresensky
+ *
  */
 public class FriendTestCase extends CompletionBaseTestCase {
     

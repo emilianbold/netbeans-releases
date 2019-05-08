@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
  * #include "user.h"
  * #include MACRO_EXPRESSION
  *
- * @author Vladimir Voskresensky
  */
 public interface APTInclude extends APT {
     /* 

@@ -82,7 +82,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ProviderControl<T> {
     private final ProviderProperty property;

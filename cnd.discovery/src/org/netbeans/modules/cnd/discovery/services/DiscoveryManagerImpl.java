@@ -70,7 +70,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class DiscoveryManagerImpl {
 

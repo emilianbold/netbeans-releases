@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 
 /**
  * condition based preprocessor directives (i.e. #if/#elif).
- * @author Vladimir Voskresensky
  */
 public interface APTIfCondition extends APT {
     TokenStream getCondition();

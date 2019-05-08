@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 /**
  * Creates token stream for input path
  * 
- * @author Vladimir Voskresensky
  */
 public final class APTTokenStreamBuilder {
 

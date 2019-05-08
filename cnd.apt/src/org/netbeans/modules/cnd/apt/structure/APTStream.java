@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 
 /**
  * APT element to present token stream without preprocessor tokens
- * @author Vladimir Voskresensky
  */
 public interface APTStream extends APT {
     /** 

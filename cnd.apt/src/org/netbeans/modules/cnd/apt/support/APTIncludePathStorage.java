@@ -53,7 +53,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class APTIncludePathStorage {
     private final ConcurrentMap<CharSequence, List<IncludeDirEntry>> allIncludes = new ConcurrentHashMap<CharSequence, List<IncludeDirEntry>>();

@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.api.model;
 /**
  * An element, which has qualified name:
  * class, method, namespace, etc
- * @author Vladimir Kvashin
  */
 public interface CsmQualifiedNamedElement extends CsmNamedElement {
 

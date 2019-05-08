@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 import org.netbeans.junit.RandomlyFails;
 
 /**
- * @author Nikolay Krasilnikov
+ *
  */
 @RandomlyFails
 public class MetaprogrammingTestCase extends HyperlinkBaseTestCase {

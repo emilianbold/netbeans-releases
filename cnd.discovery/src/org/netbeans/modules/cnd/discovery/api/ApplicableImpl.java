@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Positi
 
 /**
  *
- * @author Alexander Simon
  */
 public final class ApplicableImpl implements Applicable {
     private final String compiler;

@@ -12,7 +12,7 @@ import org.netbeans.spi.viewmodel.NodeModel;
 
 /**
  *
- * @author Nikolay Koldunov
+ *
  */
 @DebuggerServiceRegistration(path = "netbeans-DbxSession/DebuggingView",
             types = NodeModel.class,

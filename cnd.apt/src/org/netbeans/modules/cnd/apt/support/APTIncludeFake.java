@@ -53,7 +53,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  * fake include node for "-include file" option of preprocessor
- * @author Vladimir Voskresensky
  */
 public final class APTIncludeFake implements APTInclude {
     private final FileSystem fs;

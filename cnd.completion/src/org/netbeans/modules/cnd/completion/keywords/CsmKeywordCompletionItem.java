@@ -61,7 +61,7 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 
 /**
  *
- * @author alsimon
+ *
  */
 public class CsmKeywordCompletionItem implements CompletionItem {
 

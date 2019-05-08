@@ -52,7 +52,6 @@ import org.netbeans.modules.nativeexecution.api.util.AuthenticationUtils;
 
 /**
  *
- * @author Egor Ushakov
  */
 class ExecHost extends Host {
     private final ExecutionEnvironment exEnv;

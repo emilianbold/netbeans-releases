@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.dwarfdump.section.DwarfAttribute;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfAbbriviationTableEntry {
     private final long index;

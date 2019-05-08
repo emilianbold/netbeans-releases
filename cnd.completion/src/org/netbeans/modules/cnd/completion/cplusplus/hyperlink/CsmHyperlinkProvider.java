@@ -104,7 +104,6 @@ import org.openide.util.Exceptions;
  * <br>
  * The click action corresponds to performing the goto-declaration action.
  *
- * @author Jan Lahoda, Vladimir Voskresensky
  */
 public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
 

@@ -9,7 +9,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 
 /**
  *
- * @author Egor Ushakov
+ *
  */
 public enum DbxMemoryFormat implements FormatOption {
     HEXADECIMAL8(Catalog.get("L_Hexadecimal"), "lX"), //NOI18N

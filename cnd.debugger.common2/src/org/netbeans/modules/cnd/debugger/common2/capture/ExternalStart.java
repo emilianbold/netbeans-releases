@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.debugger.common2.capture;
 
 /**
  *
- * @author ivan
  */
 public interface ExternalStart {
 

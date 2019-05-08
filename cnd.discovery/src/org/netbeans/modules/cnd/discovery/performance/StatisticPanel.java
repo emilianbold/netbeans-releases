@@ -65,7 +65,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author alsimon
  */
 public class StatisticPanel extends JPanel {
     private static final RequestProcessor RP = new RequestProcessor("statistic", 1); //NOI18N

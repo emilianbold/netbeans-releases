@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 
 /**
  * wrapper for APT nodes corresponding to preprocessor directives
- * @author Vladimir Voskresensky
  */
 public final class APTPreprocessorToken extends APTTokenAbstact {
     private final APT ppNode;

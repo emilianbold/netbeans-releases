@@ -88,7 +88,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public class DwarfSource extends RelocatableImpl implements SourceFileProperties {
     public static final Logger LOG = Logger.getLogger(DwarfSource.class.getName());

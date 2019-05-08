@@ -66,7 +66,7 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 

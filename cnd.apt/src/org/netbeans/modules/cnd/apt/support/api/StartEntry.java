@@ -59,7 +59,6 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class StartEntry implements SelfPersistent {
     private final CharSequence startFile;

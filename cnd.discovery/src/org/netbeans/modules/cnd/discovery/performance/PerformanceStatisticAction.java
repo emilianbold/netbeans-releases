@@ -53,7 +53,6 @@ import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author Alexander Simon
  */
 @Messages({
     "statistic.action.name.text=Project Performance Statistic",

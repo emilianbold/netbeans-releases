@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.classview.resources.I18n;
 
 /**
- * @author Vladimir Kvashin
  */
 public class GoToDeclarationAction extends AbstractAction {
     

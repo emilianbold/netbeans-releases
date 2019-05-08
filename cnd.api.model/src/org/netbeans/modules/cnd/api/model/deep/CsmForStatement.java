@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.api.model.deep;
 /**
  * Represents for statement
  *
- * @author Vladimir Kvashin
  */
 public interface CsmForStatement extends CsmLoopStatement {
 

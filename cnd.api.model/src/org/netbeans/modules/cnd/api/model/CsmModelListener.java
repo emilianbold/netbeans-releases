@@ -50,7 +50,6 @@ import java.util.EventListener;
  * Gets notification on model events
  * for now, project opening and closing
  *
- * @author Vladimir Kvashin
  */
 public interface CsmModelListener extends EventListener {
 

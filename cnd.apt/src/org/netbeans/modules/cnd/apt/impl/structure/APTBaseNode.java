@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.apt.structure.APT;
 
 /**
  * base APT node impl
- * @author Vladimir Voskresensky
  */
 public abstract class APTBaseNode implements APT, Serializable {
     private static final long serialVersionUID = -7790789617759717719L;

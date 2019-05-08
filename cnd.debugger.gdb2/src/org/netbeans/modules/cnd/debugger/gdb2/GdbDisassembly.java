@@ -65,7 +65,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class GdbDisassembly extends Disassembly {
     private String functionName = "";

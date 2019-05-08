@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
  * overwrite readXXX() methods (they are final in RandomAccessFile).
  * But we have to deal with bytes order...
  *
- * @author ak119685
  */
 public class ByteStreamReader implements DataInput {
     private MyRandomAccessFile file = null;

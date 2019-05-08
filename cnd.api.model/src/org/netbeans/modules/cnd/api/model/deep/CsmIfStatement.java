@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 
 /**
  * Represents "If" statement
- * @author Vladimir Kvashin
  */
 public interface CsmIfStatement extends CsmStatement, CsmScope {
 

@@ -49,7 +49,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author vkvashin
  */
 public class ClankFileSystemProviderImpl {
     

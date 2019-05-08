@@ -43,7 +43,7 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 
 /**
  *
- * @author petrk
+ *
  */
 public class Cpp14TestCase extends HyperlinkBaseTestCase {
 

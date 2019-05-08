@@ -48,7 +48,6 @@ import java.util.Collection;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public interface CsmEnum extends CsmCompoundClassifier {
 

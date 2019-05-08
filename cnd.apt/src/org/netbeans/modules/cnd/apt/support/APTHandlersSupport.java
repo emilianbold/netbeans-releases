@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
  * utilities for working with APT states (macro-state, include-state, preproc-state)
- * @author Vladimir Voskresensky
  */
 public class APTHandlersSupport {
 

@@ -47,7 +47,7 @@ import java.util.Arrays;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class SimpleReferencesTestCase extends ReferencesBaseTestCase {
 

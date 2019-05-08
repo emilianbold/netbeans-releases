@@ -57,7 +57,6 @@ import java.util.List;
  * TODO: perhaps we should provide some higher level of service
  * for determining the groups of statements for each case
  *
- * @author Vladimir Kvashin
  */
 public interface CsmSwitchStatement extends CsmStatement, CsmScope  {
 

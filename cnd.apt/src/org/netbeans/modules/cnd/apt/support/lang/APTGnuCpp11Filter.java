@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 
 /**
  * GNU C++11 language filter
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 class APTGnuCpp11Filter extends APTBaseLanguageFilter {
     

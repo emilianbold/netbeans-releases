@@ -45,7 +45,6 @@ import java.util.List;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface RelocatablePathMapper {
     ResolvedPath getPath(String path);

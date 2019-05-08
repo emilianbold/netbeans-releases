@@ -53,7 +53,6 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 
 /**
  *
- * @author Alexander Simon
  */
 public class RemotePkgConfigTestCase extends MakeProjectTestBase {
 

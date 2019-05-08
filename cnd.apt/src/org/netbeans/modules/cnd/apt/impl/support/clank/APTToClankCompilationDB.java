@@ -61,7 +61,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class APTToClankCompilationDB implements ClankCompilationDataBase {
     private static boolean SKIP_COMPILER_SETTINGS = Boolean.valueOf(System.getProperty("cnd.skip.compiler.builtin", "false")); // NOI18N

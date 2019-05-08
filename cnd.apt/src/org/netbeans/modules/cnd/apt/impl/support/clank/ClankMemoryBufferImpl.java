@@ -50,7 +50,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author vkvashin
  */
 final class ClankMemoryBufferImpl extends MemoryBuffer {
     // for remote paths it is url; for locals it is normalized system absolute path

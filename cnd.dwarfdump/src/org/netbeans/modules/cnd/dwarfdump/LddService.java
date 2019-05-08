@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
 
 /**
  *
- * @author Alexander Simon
  */
 public class LddService {
 

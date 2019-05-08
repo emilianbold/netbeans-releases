@@ -79,7 +79,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author alsimon
  */
 public final class ExecLogReader {
     private static final String CYG_DRIVE = "/cygdrive/"; // NOI18N

@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.debugger.gdb2.peculiarity.PeculiarityTestCase;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class GdbUnitTest extends TestSuite {
     

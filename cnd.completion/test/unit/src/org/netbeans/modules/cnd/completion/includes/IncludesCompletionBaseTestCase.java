@@ -35,7 +35,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionTestPerformer
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class IncludesCompletionBaseTestCase extends CompletionBaseTestCase {
     

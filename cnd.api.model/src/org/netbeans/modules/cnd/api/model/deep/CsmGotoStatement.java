@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.api.model.deep;
 
 /**
  * Represents goto statement
- * @author Vladimir Kvashin
  */
 public interface CsmGotoStatement extends CsmStatement {
 

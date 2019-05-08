@@ -69,7 +69,6 @@ import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfMacroInfoSection extends ElfSection {
     private final HashMap<Long, DwarfMacinfoTable> macinfoTables = new HashMap<Long, DwarfMacinfoTable>();

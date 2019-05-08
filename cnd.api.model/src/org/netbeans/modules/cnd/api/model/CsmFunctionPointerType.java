@@ -47,7 +47,6 @@ import java.util.Collection;
 /**
  * Class represents pointer to function type.
  *
- * @author Alexey Vladykin
  */
 public interface CsmFunctionPointerType extends CsmScope, CsmOffsetable, CsmScopeElement {
     

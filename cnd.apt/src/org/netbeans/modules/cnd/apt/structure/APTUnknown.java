@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 
 /**
  * unknown #-directive with it's content till end of line
- * @author Vladimir Voskresensky
  */
 public interface APTUnknown extends APT {
     /** 

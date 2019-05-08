@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface NativeFileSearchProvider {
     /**

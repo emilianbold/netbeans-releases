@@ -111,7 +111,6 @@ import org.openide.util.Lookup;
 import org.netbeans.swing.plaf.LFCustoms;
 /**
  *
- * @author  Vladimir Voskresensky
  * after JCResultItem
  */
 public abstract class CsmResultItem implements CompletionItem {

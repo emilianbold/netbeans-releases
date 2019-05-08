@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfNameLookupTableSection extends ElfSection {
     private List<DwarfNameLookupTable> tables = null;

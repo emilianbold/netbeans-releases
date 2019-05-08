@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
 /**
  * collection for debugger settings
- * @author Vladimir Voskresensky
  */
 public interface DebuggerSettings {
     public RunProfile runProfile();

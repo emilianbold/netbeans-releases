@@ -55,7 +55,6 @@ import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class CallGraphPopupAction extends CookieAction {
     

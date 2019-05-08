@@ -76,7 +76,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class FollowUp extends JPanel {
     private static final RequestProcessor RP = new RequestProcessor(FollowUp.class.getName(), 2);

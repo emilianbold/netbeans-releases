@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.apt.structure;
 
 /**
  * #endif directive
- * @author Vladimir Voskresensky
  */
 public interface APTEndif extends APT {
 

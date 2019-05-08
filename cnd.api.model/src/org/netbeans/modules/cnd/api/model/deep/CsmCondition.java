@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
  * rather then having 2 methods,  getExpression() and getDeclaration(), 
  * one of which returns null?
  * 
- * @author Vladimir Kvashin
  */
 public interface CsmCondition extends CsmOffsetable, CsmScopeElement {
   

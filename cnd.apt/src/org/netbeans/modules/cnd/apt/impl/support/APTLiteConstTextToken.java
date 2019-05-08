@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class APTLiteConstTextToken  extends APTTokenAbstact implements APTTokenTypes {
 

@@ -60,8 +60,6 @@ import org.netbeans.modules.cnd.antlr.CharFormatter;
  * Also seems like or() from util is wrong when size of incoming set is bigger
  * than this.bits.length.
  *
- * @author Terence Parr
- * @author <br><a href="mailto:pete@yamuna.demon.co.uk">Pete Wells</a>
  */
 public class BitSet implements Cloneable {
     protected final static int BITS = 64;    // number of bits / long

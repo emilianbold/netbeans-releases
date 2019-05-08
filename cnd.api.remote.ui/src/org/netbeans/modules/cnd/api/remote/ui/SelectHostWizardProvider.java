@@ -57,7 +57,6 @@ import org.openide.util.Lookup;
  * In the case user decided to set up a new host,
  * it returns a set of additional panels and notifies PropertyChangeListener
  * 
- * @author Vladimir Kvashin
  */
 public abstract class SelectHostWizardProvider {
 

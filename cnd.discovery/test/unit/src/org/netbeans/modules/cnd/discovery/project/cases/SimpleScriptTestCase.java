@@ -60,7 +60,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author as204739
  */
 public class SimpleScriptTestCase extends MakeProjectTestBase {
 

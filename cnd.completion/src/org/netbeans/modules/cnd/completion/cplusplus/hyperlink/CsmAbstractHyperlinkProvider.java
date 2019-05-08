@@ -75,7 +75,6 @@ import org.openide.util.NbBundle;
 
 /**
  * base hyperlink provider for Csm elements
- * @author Vladimir Voskresensky
  */
 public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderExt {
 

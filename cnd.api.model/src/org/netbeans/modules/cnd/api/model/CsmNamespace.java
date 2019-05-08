@@ -51,7 +51,6 @@ import java.util.Collection;
  * but a join of all namespace declarations, which have thje given name
  * (see interface CsmNamespaceDeclaration)
  *
- * @author Vladimir Kvashin
  */
 public interface CsmNamespace extends CsmQualifiedNamedElement, CsmScope {
 

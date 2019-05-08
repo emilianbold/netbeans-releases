@@ -55,7 +55,6 @@ import java.util.Set;
  * Default implementation of FolderProperties.
  * Enough in most cases.
  * 
- * @author Alexander Simon
  */
 public final class FolderImpl implements FolderProperties {
     private final String path;

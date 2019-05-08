@@ -45,7 +45,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 
 /**
  *
- * @author Nikolay Koldunov
+ *
  */
 public class BasicDocumentationTextGenerationTestCase extends DocumentationTextGenerationBaseTestCase {
 

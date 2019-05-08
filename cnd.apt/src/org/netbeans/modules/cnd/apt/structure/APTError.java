@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 
 /**
  * #error directive
- * @author Vladimir Kvashin
  */
 public interface  APTError extends APT {
     /** 

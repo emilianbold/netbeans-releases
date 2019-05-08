@@ -48,7 +48,6 @@ import org.openide.awt.StatusDisplayer;
 
 /**
  *
- * @author ivan
  */
 public class AbstractExternalStart {
 

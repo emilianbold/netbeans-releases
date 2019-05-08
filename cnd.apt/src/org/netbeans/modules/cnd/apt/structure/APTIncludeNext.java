@@ -48,7 +48,6 @@ package org.netbeans.modules.cnd.apt.structure;
  * #include_next <string.h>
  * #include_next "user.h"
  *
- * @author Vladimir Voskresensky
  */
 public interface APTIncludeNext extends APTInclude {
     

@@ -78,7 +78,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Alexander Simon
  */
 public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, CsmProgressListener {
     private boolean isRootNamespase;

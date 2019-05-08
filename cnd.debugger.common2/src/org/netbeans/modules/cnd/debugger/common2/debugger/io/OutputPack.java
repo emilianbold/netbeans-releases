@@ -51,7 +51,6 @@ import org.openide.windows.InputOutput;
 
 /**
  *
- * @author Egor Ushakov
  */
 class OutputPack extends IOPack {
     private final IOProxy ioProxy;

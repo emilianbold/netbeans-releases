@@ -51,7 +51,6 @@ import org.openide.util.Cancellable;
 /**
  * Source model
  *
- * @author Vladimir Kvashin
  */
 public interface CsmModel {
 

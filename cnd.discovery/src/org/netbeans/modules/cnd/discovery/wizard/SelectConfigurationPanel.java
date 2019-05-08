@@ -80,7 +80,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class SelectConfigurationPanel extends JPanel {
     private static final RequestProcessor RP = new RequestProcessor(SelectConfigurationPanel.class.getName(), 1);

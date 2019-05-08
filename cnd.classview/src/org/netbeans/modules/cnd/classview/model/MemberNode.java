@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 
 
 /**
- * @author Vladimir Kvasihn
  */
 public class MemberNode extends ObjectNode {
     

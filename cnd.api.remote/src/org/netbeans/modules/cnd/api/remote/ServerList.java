@@ -58,7 +58,6 @@ import org.openide.util.NbBundle;
 /**
  * This is a place holder for a RemoteServerList which will be implemented in cnd.remote.
  * 
- * @author gordonp
  */
 public class ServerList {
 

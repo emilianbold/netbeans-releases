@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.antlr.ASdebug;
 /**
  * Provides offset info for a token.<br>
  * All offsets are 0-based.
- * @author Prashant Deva
  */
 public class TokenOffsetInfo
 {

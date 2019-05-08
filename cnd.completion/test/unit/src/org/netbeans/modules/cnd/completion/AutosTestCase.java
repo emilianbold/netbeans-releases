@@ -65,7 +65,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
- * @author Egor Ushakov
+ *
  */
 public class AutosTestCase extends ProjectBasedTestCase {
 

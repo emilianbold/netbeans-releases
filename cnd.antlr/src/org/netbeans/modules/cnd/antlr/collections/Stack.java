@@ -51,7 +51,6 @@ import java.util.NoSuchElementException;
 /** A simple stack definition; restrictive in that you cannot
  * access arbitrary stack elements.
  *
- * @author Terence Parr
  * <a href=http://www.MageLang.com>MageLang Institute</a>
  */
 public interface Stack {

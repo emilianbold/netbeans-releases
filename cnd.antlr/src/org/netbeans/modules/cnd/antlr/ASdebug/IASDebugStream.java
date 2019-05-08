@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.antlr.Token;
 /**
  * Provides information used by the 'Input Text' view
  * of Antlr Studio.
- * @author Prashant Deva
  */
 public interface IASDebugStream
 {

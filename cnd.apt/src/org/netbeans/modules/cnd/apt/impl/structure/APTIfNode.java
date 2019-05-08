@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #if directive implementation
- * @author Vladimir Voskresensky
  */
 public final class APTIfNode extends APTIfConditionBaseNode 
                             implements APTIf, Serializable {

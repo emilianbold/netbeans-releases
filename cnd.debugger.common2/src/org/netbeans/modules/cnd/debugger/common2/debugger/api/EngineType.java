@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.api;
 
 /**
  * enum like ID for debugger engines
- * @author Vladimir Voskresensky
  */
 public final class EngineType {
 

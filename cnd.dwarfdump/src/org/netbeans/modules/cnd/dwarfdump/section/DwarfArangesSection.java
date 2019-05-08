@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfArangesSection extends ElfSection {
     private final List<AddressRangeSet> addressRangeSets = new ArrayList<AddressRangeSet>();

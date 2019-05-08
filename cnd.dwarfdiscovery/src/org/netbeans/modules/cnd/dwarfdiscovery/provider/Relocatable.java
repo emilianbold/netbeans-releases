@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.Re
 
 /**
  *
- * @author Alexander Simon
  */
 public interface Relocatable {
     void resetItemPath(ResolvedPath resolved, RelocatablePathMapper mapper, FS fs);

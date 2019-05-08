@@ -61,7 +61,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class DisInfoPanel extends JPanel {
     private static DisInfoPanel INSTANCE;

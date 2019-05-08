@@ -76,7 +76,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public class AnalyzeFolder extends BaseDwarfProvider {
     public static final String FOLDER_PROVIDER_ID = "dwarf-folder"; // NOI18N

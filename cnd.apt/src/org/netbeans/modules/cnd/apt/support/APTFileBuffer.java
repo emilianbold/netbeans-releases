@@ -49,7 +49,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  * Represents the input stream provider for APTDriver
- * @author Vladimir Voskresensky
  */
 public interface APTFileBuffer {
     /** Gets normalized absolute path */

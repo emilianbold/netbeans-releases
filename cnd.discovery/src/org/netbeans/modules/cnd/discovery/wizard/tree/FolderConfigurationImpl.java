@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.discovery.wizard.api.FolderConfiguration;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FolderConfigurationImpl extends NodeConfigurationImpl implements FolderConfiguration {
     private final String path;

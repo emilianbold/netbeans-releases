@@ -46,7 +46,6 @@ import java.awt.Image;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface Function {
     

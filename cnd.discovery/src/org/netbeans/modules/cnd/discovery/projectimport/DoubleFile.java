@@ -57,7 +57,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class DoubleFile {
     private final File localFile;

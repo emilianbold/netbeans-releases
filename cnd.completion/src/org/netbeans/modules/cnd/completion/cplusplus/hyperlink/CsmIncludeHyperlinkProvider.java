@@ -83,7 +83,6 @@ import org.openide.windows.OutputWriter;
  * <br>
  * The click action corresponds to performing the open file action.
  *
- * @author Vladimir Voskresensky
  */
 public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
 

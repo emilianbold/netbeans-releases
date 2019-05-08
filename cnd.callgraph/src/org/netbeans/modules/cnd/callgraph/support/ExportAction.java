@@ -64,7 +64,6 @@ import org.openide.util.actions.Presenter;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ExportAction extends AbstractAction  implements Presenter.Popup {
 

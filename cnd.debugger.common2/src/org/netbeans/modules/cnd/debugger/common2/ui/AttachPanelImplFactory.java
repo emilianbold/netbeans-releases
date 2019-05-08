@@ -50,7 +50,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author masha
  */
 @ServiceProvider(service = AttachPanelFactory.class, position = 500)
 public class AttachPanelImplFactory extends AttachPanelFactory{

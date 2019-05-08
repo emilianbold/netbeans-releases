@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  *
- * @author gorrus
  */
 public final class APTCommentToken extends APTTokenAbstact {
     /** Creates a new instance of APTCommentToken */

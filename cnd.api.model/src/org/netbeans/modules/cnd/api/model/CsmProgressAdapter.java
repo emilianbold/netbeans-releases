@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  * Stub CsmProgressListener implementation
- * @author Vladimir Kvashin
  */
 public class CsmProgressAdapter implements CsmProgressListener {
     

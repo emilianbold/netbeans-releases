@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * #else directive implementation
- * @author Vladimir Voskresensky
  */
 public final class APTElseNode extends APTTokenAndChildBasedNode 
                                 implements APTElse, Serializable {

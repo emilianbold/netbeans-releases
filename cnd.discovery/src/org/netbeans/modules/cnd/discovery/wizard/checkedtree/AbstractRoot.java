@@ -49,7 +49,6 @@ import java.util.List;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface AbstractRoot {
     Collection<AbstractRoot> getChildren();

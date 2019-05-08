@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase.SimpleFileFi
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public ClassMembersHyperlinkTestCase(String testName) {

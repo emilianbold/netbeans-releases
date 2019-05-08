@@ -50,7 +50,7 @@ import org.netbeans.junit.NbTestSuite;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class MetaprogrammingTest extends NbTestSuite {
     

@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmObjectAttributeQuery;
 /**
  * utilities method for working with offsets of Csm objects
  * and CsmOffsetable objects
- * @author vv159170
  */
 public class CsmOffsetUtilities {
 

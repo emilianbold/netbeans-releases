@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.classview;
 
 /**
  *
- * @author Alexander Simon
  */
 public class QuoteTestCase extends BaseTestCase {
 

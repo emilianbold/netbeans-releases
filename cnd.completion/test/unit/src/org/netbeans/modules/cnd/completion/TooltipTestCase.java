@@ -46,7 +46,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
  *
- * @author Nikolay Krasilnikov
+ *
  */
 public class TooltipTestCase extends CompletionBaseTestCase {
     public TooltipTestCase(String testName) {

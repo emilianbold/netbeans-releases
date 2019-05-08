@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 @EditorActionRegistrations({
     @EditorActionRegistration(

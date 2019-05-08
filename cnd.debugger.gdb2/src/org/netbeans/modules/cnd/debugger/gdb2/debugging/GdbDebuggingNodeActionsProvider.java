@@ -51,7 +51,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 @DebuggerServiceRegistration(path="netbeans-GdbSession/DebuggingView",
                              types=NodeActionsProvider.class,

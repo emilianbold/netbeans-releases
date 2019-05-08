@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface FileConfiguration extends NodeConfiguration {
 

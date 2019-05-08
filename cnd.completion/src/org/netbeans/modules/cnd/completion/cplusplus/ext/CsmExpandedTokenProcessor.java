@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.support.Interrupter;
 /**
  * Macro expanded token processor.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<TokenId>>, MacroCallback {
 

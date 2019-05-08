@@ -47,7 +47,6 @@ import java.util.regex.Pattern;
 
 /**
  *
- * @author thp
  * Simple man output to HTML formatter.
  */
 public class Man2HTML {

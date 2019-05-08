@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class EngineTypeManager {
     private final static EngineType INHERIT = new EngineType(true, "INHERIT", NbBundle.getMessage(EngineNodeProp.class, "InheritedFromToolCollection"));// NOI18N

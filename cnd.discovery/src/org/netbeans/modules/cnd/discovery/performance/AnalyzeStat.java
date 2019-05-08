@@ -50,7 +50,6 @@ import java.util.TreeMap;
 
 /**
  *
- * @author alsimon
  */
 public class AnalyzeStat {
 

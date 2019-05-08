@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
+ *<petrk@netbeans.org>
  */
 public class Cpp11TooltipsTestCase extends TooltipsBaseTestCase {
 

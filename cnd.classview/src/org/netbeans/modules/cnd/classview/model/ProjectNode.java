@@ -62,7 +62,6 @@ import org.openide.util.actions.NodeAction;
 import org.openide.util.lookup.Lookups;
 
 /**
- * @author Vladimir Kvasihn
  */
 public class ProjectNode extends NPNode {
     public static final boolean EXPORT = Boolean.getBoolean("cnd.classview.export"); // NOI18N

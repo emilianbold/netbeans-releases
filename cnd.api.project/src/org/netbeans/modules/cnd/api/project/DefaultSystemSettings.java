@@ -48,7 +48,6 @@ import org.openide.util.Lookup;
 
 /**
  * This service provides default include path and macros.
- * @author Leonid Mesnik
  */
 public abstract class DefaultSystemSettings {
     /** A dummy provider that never returns any results.

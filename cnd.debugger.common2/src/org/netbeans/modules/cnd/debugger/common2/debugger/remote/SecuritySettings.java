@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.remote;
 /**
  * Our analog of CND's class Authentication.
  *
- * @author ivan
  */
 public final class SecuritySettings {
     private final int sshPort;

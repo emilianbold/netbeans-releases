@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 /**
  * base implementation of nodes with associated stream
  *
- * @author Vladimir Voskresensky
  */
 public abstract class APTStreamBaseNode extends APTTokenBasedNode
                                         implements APTNodeBuilder, Serializable {

@@ -59,7 +59,6 @@ import org.openide.windows.*;
 
 /**
  * Shows/Hides class view pane
- * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.cnd.classview.ClassViewAction", category = "View")
 @ActionRegistration(lazy = true, displayName = "#CTL_ClassViewAction", iconBase=ClassViewTopComponent.ICON_PATH)

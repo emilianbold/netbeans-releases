@@ -77,7 +77,6 @@ import org.netbeans.modules.cnd.utils.MutableObject;
 
 /**
  * resolve file objects under offset
- * @author vv159170
  */
 public class CsmOffsetResolver {
     private CsmFile file;

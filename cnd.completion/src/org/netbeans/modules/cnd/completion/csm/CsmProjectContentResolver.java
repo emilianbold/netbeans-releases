@@ -105,7 +105,6 @@ import org.openide.util.CharSequences;
 /**
  * help class to resolve content of the project
  * if file was passed => additionally collect file specific info
- * @author vv159170
  */
 public final class CsmProjectContentResolver {
     private static final String SCOPE = "::";  // NOI18N

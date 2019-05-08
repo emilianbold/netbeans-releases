@@ -48,7 +48,6 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 @DebuggerServiceRegistration(path = "netbeans-GdbSession", types = BreakpointsActivationProvider.class)
 public class GdbBreakpointsActivationProvider extends NativeBreakpointsActivationProvider {

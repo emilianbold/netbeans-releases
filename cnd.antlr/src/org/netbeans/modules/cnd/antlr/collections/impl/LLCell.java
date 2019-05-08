@@ -50,7 +50,6 @@ package org.netbeans.modules.cnd.antlr.collections.impl;
  * The data,next members are public to this class, but not outside the
  * collections.impl package.
  *
- * @author Terence Parr
  * <a href=http://www.MageLang.com>MageLang Institute</a>
  */
 class LLCell {

@@ -54,7 +54,6 @@ import org.openide.filesystems.FileSystem;
  * 
  * Allows to differ ordinary path and path to framework.
  *
- * @author Alexander Simon
  */
 public class IncludePath {
 

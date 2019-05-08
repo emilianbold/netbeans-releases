@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * implementation of APTMacro
- * @author Vladimir Voskresensky
  */
 public final class APTMacroImpl implements APTMacro {
     private final CharSequence file;

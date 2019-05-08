@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  * Common ancestor for both fundamental (built-in) and compound types
- * @author Vladimir Kvashin
  */
 public interface CsmClassifier extends CsmDeclaration {
     

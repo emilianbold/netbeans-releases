@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class APTTraceUtils {
     

@@ -52,7 +52,6 @@ import org.openide.nodes.Children;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FriendClassNode extends ObjectNode {
     private CharSequence shortName;

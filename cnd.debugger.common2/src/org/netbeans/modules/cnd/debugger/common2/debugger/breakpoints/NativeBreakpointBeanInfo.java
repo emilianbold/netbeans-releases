@@ -47,7 +47,6 @@ import java.beans.SimpleBeanInfo;
 
 /**
  *
- * @author Egor Ushakov
  */
 class NativeBreakpointBeanInfo extends SimpleBeanInfo {
     

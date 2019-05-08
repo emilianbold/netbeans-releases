@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.dwarfdump.section.StabIndexSection;
 
 /**
  *
- * @author ak119685
  */
 public class Dwarf {
     private DwarfReader dwarfReader;

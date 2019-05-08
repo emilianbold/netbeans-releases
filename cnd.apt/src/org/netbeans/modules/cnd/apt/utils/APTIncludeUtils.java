@@ -57,7 +57,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class APTIncludeUtils {
     

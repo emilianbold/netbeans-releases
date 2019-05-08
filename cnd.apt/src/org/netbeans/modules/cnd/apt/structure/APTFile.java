@@ -50,7 +50,6 @@ import org.openide.filesystems.FileSystem;
  * APT root element to present whole file
  * it doesn't have any siblings, only children
  *
- * @author Vladimir Voskresensky
  */
 public interface APTFile extends APT {
     enum Kind {

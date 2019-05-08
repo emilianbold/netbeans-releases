@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.discovery.wizard.api.FolderConfiguration;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FolderConfigurationNode extends DefaultMutableTreeNode {
     private final FolderConfigurationImpl folder;

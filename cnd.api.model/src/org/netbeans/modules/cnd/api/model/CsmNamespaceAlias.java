@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.api.model;
 /**
  * Represents namespace alias, for example
  *  namespace CWLN = Company_with_very_long_name;
- * @author Vladimir Kvasihn
  */
 public interface CsmNamespaceAlias extends CsmOffsetableDeclaration {
 

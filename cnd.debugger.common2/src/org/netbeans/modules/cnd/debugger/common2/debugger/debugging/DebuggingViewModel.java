@@ -54,7 +54,6 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 public abstract class DebuggingViewModel implements TreeModel, ModelListener/*, AsynchronousModelFilter*/ {
     private final NativeDebugger debugger;

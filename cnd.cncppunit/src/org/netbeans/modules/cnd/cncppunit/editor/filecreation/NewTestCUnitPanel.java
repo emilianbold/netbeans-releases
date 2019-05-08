@@ -62,7 +62,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class NewTestCUnitPanel extends CndPanel {
 

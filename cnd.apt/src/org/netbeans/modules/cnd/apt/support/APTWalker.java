@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * base Tree walker for APT
- * @author Vladimir Voskresensky
  */
 public abstract class APTWalker {
     private final APTMacroMap macros;

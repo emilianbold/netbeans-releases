@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 
 /**
  * composition of include handler and macro map for parsing file phase
- * @author Vladimir Voskresensky
  */
 public interface APTPreprocHandler extends PreprocHandler {
 

@@ -46,7 +46,6 @@ import org.openide.filesystems.FileSystem;
 /**
  * Type safe properties
  * 
- * @author Alexander Simon
  * 
  * @param <T> property type
  */

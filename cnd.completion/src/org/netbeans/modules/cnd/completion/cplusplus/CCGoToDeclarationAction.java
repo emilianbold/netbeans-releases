@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
 /**
  * Open CC source according to the given expression.
  *
- * @author Vladimir Voskresensky
  * @version 1.0
  */
 @EditorActionRegistrations({

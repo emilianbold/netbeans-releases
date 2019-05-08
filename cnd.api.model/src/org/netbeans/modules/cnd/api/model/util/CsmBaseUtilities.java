@@ -85,7 +85,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CsmBaseUtilities {
 

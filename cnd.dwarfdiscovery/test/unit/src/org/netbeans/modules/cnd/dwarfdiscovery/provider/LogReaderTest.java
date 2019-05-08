@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.dwarfdump.source.Driver;
 
 /**
  *
- * @author sg155630
  */
 public class LogReaderTest extends TestCase {
 

@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.api.model.deep;
 /**
  * Represents range-based for statement
  *
- * @author Vladimir Kvashin
  */
 public interface CsmRangeForStatement extends CsmLoopStatement {
 

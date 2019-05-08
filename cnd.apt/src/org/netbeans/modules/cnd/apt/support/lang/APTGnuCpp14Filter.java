@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 /**
  * Copied from Cpp11 filter
  * 
- * @author petrk
  */
 public class APTGnuCpp14Filter extends APTBaseLanguageFilter {
     

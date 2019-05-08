@@ -49,7 +49,6 @@ import org.openide.nodes.AbstractNode;
 
 /**
  *
- * @author Alexander Simon
  */
 public class RootNode extends AbstractNode {
 

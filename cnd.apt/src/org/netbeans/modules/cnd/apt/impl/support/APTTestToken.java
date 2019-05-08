@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * lightweigth Token implementation (to reduce memory used by APT)
- * @author Vladimir Voskresensky
  */
 public final class APTTestToken extends TokenImpl implements APTToken {
 

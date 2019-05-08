@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 /**
  * Callback for expanded token processor
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface MacroCallback {
 

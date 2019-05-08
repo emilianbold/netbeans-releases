@@ -80,7 +80,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class SelectProviderPanel extends JPanel implements CsmProgressListener {
     private static final boolean SHOW_RESTRICT = Boolean.getBoolean("cnd.discovery.wizard.restrictSources"); // NOI18N

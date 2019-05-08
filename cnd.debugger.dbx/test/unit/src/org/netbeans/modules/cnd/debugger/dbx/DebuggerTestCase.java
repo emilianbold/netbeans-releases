@@ -72,7 +72,7 @@ import org.openide.filesystems.FileUtil;
  * Base class for each debugger test case should extend this class. It provides a handle
  * to a Debugger engine as well as the test apps.
  *
- * @author gordonp
+ *
  */
 public abstract class DebuggerTestCase extends CndBaseTestCase implements ContextProvider {
 

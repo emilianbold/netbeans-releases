@@ -55,7 +55,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class ExpandableEditableComboBox extends EditableComboBox {
     

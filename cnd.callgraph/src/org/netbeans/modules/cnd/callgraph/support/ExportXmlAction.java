@@ -71,7 +71,6 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Danila Sergeyev
  */
 public class ExportXmlAction extends AbstractAction implements Presenter.Popup {
     private static final String EXTENSION = "xml"; // NOI18N

@@ -48,7 +48,6 @@ import java.util.HashMap;
 
 /**
  *
- * @author ak119685
  */
 public enum ATTR {
     DW_AT_sibling(0x01),

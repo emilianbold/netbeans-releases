@@ -48,7 +48,6 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api;
  * Describes a chunck of process information [column description in a process
  * list table]
  *
- * @author ak119685
  */
 public final class ProcessInfoDescriptor {
 

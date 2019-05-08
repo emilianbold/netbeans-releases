@@ -58,7 +58,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class ResolvedPath {
     private final CharSequence folder;

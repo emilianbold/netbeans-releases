@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.apt.support.api;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface PreprocHandler {
     /*

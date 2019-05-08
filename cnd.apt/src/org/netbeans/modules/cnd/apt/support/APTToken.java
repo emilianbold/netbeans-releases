@@ -49,7 +49,6 @@ import java.io.Serializable;
 
 /**
  * interface for APT tokens
- * @author Vladimir Voskresensky
  */
 public interface APTToken extends Token, Serializable {    
     public int getOffset();

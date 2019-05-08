@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.antlr;
 
 /**
  *
- * @author gorrus
  */
 public class Context {
     public static final int NO_GUESSING = 0;

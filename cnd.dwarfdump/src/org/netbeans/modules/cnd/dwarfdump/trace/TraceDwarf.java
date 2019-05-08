@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 
 /**
  *
- * @author Sergey Grinev
  */
 public class TraceDwarf {
 

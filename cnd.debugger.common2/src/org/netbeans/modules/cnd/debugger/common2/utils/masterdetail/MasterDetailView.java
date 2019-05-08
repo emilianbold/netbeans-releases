@@ -61,7 +61,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author  jeanko
  */
 public class MasterDetailView extends TopComponent {
 

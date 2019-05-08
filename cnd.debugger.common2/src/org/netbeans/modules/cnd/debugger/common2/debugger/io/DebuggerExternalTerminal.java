@@ -66,7 +66,6 @@ import org.openide.util.NbBundle;
 /**
  * Create, open, and manage an external terminal for a Unix debug session.
  *
- * @author Egor Ushakov
  */
 class DebuggerExternalTerminal {
     

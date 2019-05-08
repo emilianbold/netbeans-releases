@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 /**
  * token as wrapper to present macro expansion
  * on deserialization is substituted by presenter
- * @author Vladimir Voskresensky
  */
 public class MacroExpandedToken implements APTToken, Serializable {
 

@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.api.model.deep;
 
 /**
  * Represents expression statement
- * @author Vladimir Kvashin
  */
 public interface CsmExpressionStatement extends CsmStatement {
 

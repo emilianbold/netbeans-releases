@@ -64,7 +64,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
- * @author Egor Ushakov
+ *
  */
 public class FunctionCallsTestCase extends ProjectBasedTestCase {
     public FunctionCallsTestCase(String testName) {

@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.completion.spi.dynhelp;
 
 /**
  * Interface for providing help for completion
- * @author Vladimir Kvashin
+ *
  */
 public interface CCHelpManager {
 

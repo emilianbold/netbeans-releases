@@ -69,7 +69,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Egor Ushakov
  */
 @ServiceProvider(service=FunctionCallsProvider.class)
 public class CsmFunctionCallsProviderImpl implements FunctionCallsProvider {

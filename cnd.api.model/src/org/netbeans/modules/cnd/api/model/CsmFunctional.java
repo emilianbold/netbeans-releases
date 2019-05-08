@@ -46,7 +46,6 @@ import java.util.Collection;
 
 /**
  *
- * @author petrk
  */
 public interface CsmFunctional extends CsmObject {
     

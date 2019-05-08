@@ -47,8 +47,6 @@ package org.netbeans.modules.cnd.api.project;
 /**
  * Native project type.
  * Register one instance to default lookup in order to define an Native project type.
- * @author Jesse Glick
- * @author Alexander Simon
  *
  */
 public interface NativeProjectType {

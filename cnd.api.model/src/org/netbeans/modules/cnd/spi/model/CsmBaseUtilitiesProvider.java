@@ -55,7 +55,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public abstract class CsmBaseUtilitiesProvider {
     private static CsmBaseUtilitiesProvider DEFAULT = new Default();

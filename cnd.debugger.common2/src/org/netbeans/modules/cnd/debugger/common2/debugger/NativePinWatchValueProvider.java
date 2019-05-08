@@ -52,7 +52,6 @@ import org.netbeans.spi.debugger.ui.PinWatchUISupport;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 
 public class NativePinWatchValueProvider implements PinWatchUISupport.ValueProvider, PinWatchUISupport.ValueProvider.ValueChangeListener {

@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class APTFileNodeTest extends NbTestSuite {
 

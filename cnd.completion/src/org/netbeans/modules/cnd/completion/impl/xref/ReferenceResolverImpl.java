@@ -65,7 +65,7 @@ import org.openide.nodes.Node;
 
 /**
  * implementation of references resolver
- * @author Vladimir Voskresensky
+ *
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver.class, position = 1000)
 public class ReferenceResolverImpl extends CsmReferenceResolver {

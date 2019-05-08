@@ -46,7 +46,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author masha
  */
 abstract public class AttachPanel extends TopComponent{
     abstract public Controller getController();

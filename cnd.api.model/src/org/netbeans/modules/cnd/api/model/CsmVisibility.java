@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.api.model;
 /**
  * Typesafe enumeration - represents member / inheritance visibility
  * some utilities methods are in org.netbeans.modules.cnd.api.model.util.CsmInheritanceUtilities
- * @author Vladimir Kvashin
  */
 public enum CsmVisibility  {
     PUBLIC,

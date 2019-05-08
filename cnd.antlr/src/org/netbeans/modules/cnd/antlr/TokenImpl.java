@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.antlr;
 
 /**
  *
- * @author gorrus
  */
 public class TokenImpl implements Token {
     // each Token has at least a token type

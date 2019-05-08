@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 /**
  * Implementation of <code>CsmReferenceContext</code>.
  *
- * @author Alexey Vladykin
+ *
  */
 public class ReferenceContextImpl implements CsmReferenceContext {
 

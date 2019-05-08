@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #ifdef directive
- * @author Vladimir Voskresensky
  */
 public interface APTIfdef extends APT {
     public APTToken getMacroName();

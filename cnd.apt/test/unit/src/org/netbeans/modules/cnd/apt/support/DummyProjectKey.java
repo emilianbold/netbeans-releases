@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.filesystems.FileSystem;
 
 /**
- * @author vkvashin
  */
 final class DummyProjectKey implements Key, PersistentFactory, Persistent {
 

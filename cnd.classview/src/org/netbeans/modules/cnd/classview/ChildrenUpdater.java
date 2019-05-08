@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ChildrenUpdater {
     private static final boolean traceEvents = Boolean.getBoolean("cnd.classview.key-events"); // NOI18N

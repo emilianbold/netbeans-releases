@@ -107,7 +107,6 @@ import org.openide.util.Utilities;
  *  pkg-config-0.25.tar.gz
  *  qlife-qt4-0.9.tar.gz
  *  sqlite-autoconf-3071700.tar.gz
- * @author Alexander Simon
  */
 public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends NbTestCase
     protected static final String LOG_POSTFIX = ".discoveryLog";

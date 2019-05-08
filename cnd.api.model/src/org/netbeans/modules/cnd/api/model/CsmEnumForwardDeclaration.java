@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  * Represents enum forward declaration (C++11).
- * @author Vladimir Voskresensky
  */
 public interface CsmEnumForwardDeclaration extends CsmOffsetableDeclaration, CsmClassifier {
 

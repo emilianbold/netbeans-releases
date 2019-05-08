@@ -48,7 +48,6 @@ import java.util.Map;
 
 /**
  *
- * @author Alexander Simom
  */
 public class MacroMap {
     private final Map<String, Value> storage = new HashMap<>();

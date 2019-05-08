@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.api.project;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface NativeProjectSettings {
 

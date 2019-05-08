@@ -71,7 +71,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 abstract public class HostKeyArray extends Children.Keys<PersistentKey> implements UpdatebleHost{
     private static final boolean traceEvents = Boolean.getBoolean("cnd.classview.key-events"); // NOI18N

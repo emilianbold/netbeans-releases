@@ -72,7 +72,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  * abstract Tree walker for APT
- * @author Vladimir Voskresensky
  */
 public abstract class APTAbstractWalker extends APTWalker {
     private final APTPreprocHandler preprocHandler;

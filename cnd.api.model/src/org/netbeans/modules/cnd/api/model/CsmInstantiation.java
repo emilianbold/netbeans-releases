@@ -53,7 +53,6 @@ import java.util.Map;
  * getTemplateDeclaration() will be original template declaration
  * of template class A and getInstantiationType
  * will be CsmType presenting A<int, double> 
- * @author Vladimir Voskresensky
  */
 public interface CsmInstantiation extends CsmObject {
     /**

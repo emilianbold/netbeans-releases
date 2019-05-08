@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.apt.structure;
 
 /**
  * #else directive
- * @author Vladimir Voskresensky
  */
 public interface APTElse extends APT {
 

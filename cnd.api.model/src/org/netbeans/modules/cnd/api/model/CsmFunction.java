@@ -50,7 +50,6 @@ import java.util.Map;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public interface CsmFunction extends CsmFunctional, CsmOffsetableDeclaration, CsmScope {
     

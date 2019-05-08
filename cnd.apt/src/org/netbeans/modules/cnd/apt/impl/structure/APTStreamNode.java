@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * implementation of APTStream
- * @author Vladimir Voskresensky
  */
 public final class APTStreamNode extends APTStreamBaseNode 
                                     implements APTStream, Serializable {

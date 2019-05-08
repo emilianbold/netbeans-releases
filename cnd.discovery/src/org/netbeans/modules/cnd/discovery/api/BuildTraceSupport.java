@@ -68,7 +68,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class BuildTraceSupport {
 

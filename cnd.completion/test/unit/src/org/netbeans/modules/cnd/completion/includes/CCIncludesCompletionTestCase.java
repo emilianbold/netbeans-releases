@@ -32,7 +32,7 @@ package org.netbeans.modules.cnd.completion.includes;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class CCIncludesCompletionTestCase extends IncludesCompletionBaseTestCase {
 

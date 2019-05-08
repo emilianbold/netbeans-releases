@@ -68,7 +68,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public class DwarfDiscoveryTest  extends NbTestCase {
 

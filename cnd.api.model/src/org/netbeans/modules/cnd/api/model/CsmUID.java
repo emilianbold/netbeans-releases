@@ -49,7 +49,6 @@ package org.netbeans.modules.cnd.api.model;
  * storing hard reference to Csm Objects for a lont time
  * 
  * @see CsmIdentifiable
- * @author Vladimir Voskresensky
  */
 public interface CsmUID<T> {
     /**

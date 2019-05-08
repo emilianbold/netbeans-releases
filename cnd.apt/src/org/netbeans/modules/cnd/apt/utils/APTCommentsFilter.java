@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 
 /**
  * filter to remove comments from token stream
- * @author Vladimir Voskresensky
  */
 public class APTCommentsFilter implements TokenStream, APTTokenStream {
     private final TokenStream orig;

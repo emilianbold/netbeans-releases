@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIRecord;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 public class MemParserTestCase extends TestCase {
 

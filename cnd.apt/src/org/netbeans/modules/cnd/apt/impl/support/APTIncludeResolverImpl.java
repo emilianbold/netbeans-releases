@@ -61,7 +61,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  * implementation of include resolver
- * @author Vladimir Voskresensky
  */
 public class APTIncludeResolverImpl implements APTIncludeResolver {
     private final int baseFileIncludeDirIndex;

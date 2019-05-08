@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  *
- * @author petrk
  */
 public interface CsmFunctionPointerClassifier extends CsmFunctional, CsmClassifier, CsmOffsetableDeclaration, CsmScope {
 }

@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class UnnamedEnumTestCase extends HyperlinkBaseTestCase {
     

@@ -54,7 +54,6 @@ package org.netbeans.modules.cnd.dwarfdump.section;
 
 /**
  *
- * @author ak119685
  */
 public class FileEntry {
     public final String fileName;

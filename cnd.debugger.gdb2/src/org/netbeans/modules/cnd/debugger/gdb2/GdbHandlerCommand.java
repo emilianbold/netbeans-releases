@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerCom
 
 /**
  *
- * @author Egor Ushakov
  */
 public class GdbHandlerCommand extends HandlerCommand {
     public enum Type {CHANGE, REPLACE};

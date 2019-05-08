@@ -74,7 +74,6 @@ import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 
 /**
  *
- * @author vv159170
  */
 public class CsmDeclarationResolver {
 

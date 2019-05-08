@@ -103,8 +103,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
  * Utulity functions to prevent using of "instanceof" on CsmObjects for 
  * determining type/kind of Csm element
  *
- * @author Vladimir Kvashin
- * @author Vladimir Voskresensky
  */
 public class CsmKindUtilities {
 

@@ -53,7 +53,6 @@ import  org.netbeans.modules.cnd.api.model.*;
 
 
 /**
- * @author Vladimir Kvasihn
  */
 public class EnumeratorNode extends ObjectNode {
     

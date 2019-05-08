@@ -77,7 +77,6 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  * View as such
- * @author Vladimir Kvasihn
  */
 public class ClassView extends JComponent implements ExplorerManager.Provider, Accessible, PropertyChangeListener, Lookup.Provider {
     

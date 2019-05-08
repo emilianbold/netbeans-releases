@@ -46,7 +46,6 @@ import org.openide.util.ChangeSupport;
 
 /**
  *
- * @author ak119685
  */
 public final class ProcessFilter {
 

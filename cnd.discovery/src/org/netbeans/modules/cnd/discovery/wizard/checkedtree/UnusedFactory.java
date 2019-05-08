@@ -52,7 +52,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Alexander Simon
  */
 public class UnusedFactory {
     

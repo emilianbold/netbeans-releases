@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
  * responsibility of filter to build filtering token stream
  * which can be used for changing ID tokens on fly,
  * by making keywords from identifiers
- * @author Vladimir Voskresensky
  */
 public interface APTLanguageFilter {    
     /**

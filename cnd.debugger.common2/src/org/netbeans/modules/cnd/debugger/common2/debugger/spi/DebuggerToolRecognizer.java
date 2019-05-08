@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.toolchain.Tool;
 
 /**
  *
- * @author mtishkov
  */
 public interface DebuggerToolRecognizer {
     public boolean canHandle(String debuggerID);

@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.dwarfdump.elf;
 
 /**
  *
- * @author ak119685
  */
 public class ProgramHeaderTable {
 

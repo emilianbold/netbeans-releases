@@ -61,7 +61,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author ak119685
  */
 public final class ProcessesRootNode extends AbstractNode {
     private final boolean treeMode;

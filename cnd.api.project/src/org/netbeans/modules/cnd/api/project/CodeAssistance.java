@@ -49,7 +49,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface CodeAssistance {
     enum State {

@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.api.model;
 import java.util.Collection;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface CsmFunctionInstantiation extends CsmOffsetableDeclaration, CsmScope {
     

@@ -59,7 +59,6 @@ import org.openide.util.Pair;
 
 /**
  * Misc static utility functions
- * @author Vladimir Kvashin
  */
 public class CsmCompletionUtils {
     public static final String CPP_AUTO_COMPLETION_TRIGGERS = "cppAutoCompletionTriggers"; //NOI18N

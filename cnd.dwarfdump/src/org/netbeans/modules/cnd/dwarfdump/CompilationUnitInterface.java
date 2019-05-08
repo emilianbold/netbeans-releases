@@ -45,7 +45,6 @@ import java.io.IOException;
 
 /**
  *
- * @author alsimon
  */
 public interface CompilationUnitInterface {
     String getCompilationDir() throws IOException;

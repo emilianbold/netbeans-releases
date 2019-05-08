@@ -56,7 +56,6 @@ import org.openide.util.actions.Presenter;
 
 /**
  *
- * @author Alexander Simon
  */
 public class GoToReferenceAction extends AbstractAction implements Presenter.Popup {
     public static final int FUNCTION = 0;

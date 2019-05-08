@@ -68,7 +68,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class AnalyzeExecLog extends BaseProvider {
     public static final String EXEC_LOG_PROVIDER_ID = "exec-log"; // NOI18N

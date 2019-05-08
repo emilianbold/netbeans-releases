@@ -48,7 +48,6 @@ import java.util.HashMap;
 
 /**
  *
- * @author ak119685
  */
 public enum ATE {
     DW_ATE_address(0x1),

@@ -53,7 +53,6 @@ import java.util.List;
  * which aren't compound statements
  * as such, e.g. CsmCatchClause
  *
- * @author Vladimir Kvashin
  */
 public interface CsmCompoundStatement extends CsmStatement, CsmScope {
     /** Gets statements this one consists of*/

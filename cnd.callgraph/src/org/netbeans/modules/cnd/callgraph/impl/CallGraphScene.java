@@ -98,7 +98,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
 /**
- * @author Alexander Simon
  */
 public class CallGraphScene extends GraphScene<Function,Call> {
 

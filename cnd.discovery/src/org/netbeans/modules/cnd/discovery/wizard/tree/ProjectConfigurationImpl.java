@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ProjectConfigurationImpl extends NodeConfigurationImpl implements ProjectConfiguration {
     private final ProjectProperties project;

@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  *
- * @author Egor Ushakov
  */
 public interface APTNodeBuilder {
     boolean accept(APTFile curFile, APTToken token);

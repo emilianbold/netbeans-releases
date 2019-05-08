@@ -52,7 +52,6 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
- * @author Vladimir Kvasihn
  */
 public abstract class BaseNode extends AbstractCsmNode {
     private Image image;

@@ -89,7 +89,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ProjectBridge {
     private final String baseFolder;

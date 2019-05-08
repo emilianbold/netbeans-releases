@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.apt.structure;
 
 /**
  * #elif directive
- * @author Vladimir Voskresensky
  */
 public interface APTElif extends APTIfCondition {
 }

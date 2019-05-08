@@ -102,7 +102,6 @@ import org.openide.util.Lookup;
 /**
  * base class to isolate using of NbJUnit library
  * ${xtest.data} value is usually ${module}/test/unit/data folder
- * @author Vladimir Voskresensky
  */
 public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
 

@@ -63,7 +63,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 /*package-local*/ class ClassViewModel {
     

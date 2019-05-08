@@ -48,7 +48,6 @@ import java.util.HashMap;
 
 /**
  *
- * @author ak119685
  */
 public enum LNE {
     DW_LNE_end_sequence(0x01),

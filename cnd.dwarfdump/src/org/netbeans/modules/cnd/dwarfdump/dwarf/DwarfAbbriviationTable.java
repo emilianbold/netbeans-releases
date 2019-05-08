@@ -52,7 +52,6 @@ import java.util.List;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfAbbriviationTable {
     private List<DwarfAbbriviationTableEntry> entries = null;

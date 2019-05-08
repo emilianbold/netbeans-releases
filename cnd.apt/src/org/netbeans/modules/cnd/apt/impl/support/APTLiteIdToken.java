@@ -48,7 +48,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Egor Ushakov
  */
 public final class APTLiteIdToken extends APTTokenAbstact {
     private static final int COL_BITS  = 10;

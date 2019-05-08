@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationImpl;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class ConfigurationFactory {
     

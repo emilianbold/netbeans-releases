@@ -50,7 +50,6 @@ import java.util.Map;
 
 /**
  * Event for model change notifications
- * @author Vladimir Kvashin 
  */
 public abstract class CsmChangeEvent extends EventObject {
 

@@ -50,7 +50,6 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.assembly;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class DisProgressPanel extends javax.swing.JPanel {
 

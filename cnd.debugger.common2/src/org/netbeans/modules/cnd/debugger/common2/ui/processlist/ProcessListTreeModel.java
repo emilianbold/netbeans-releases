@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.processlist.api.Proces
 
 /**
  *
- * @author ak119685
  */
 public final class ProcessListTreeModel {
 

@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * #include directive implementation
- * @author Vladimir Voskresensky
  */
 public final class APTIncludeNode extends APTIncludeBaseNode 
                                     implements APTInclude, Serializable {

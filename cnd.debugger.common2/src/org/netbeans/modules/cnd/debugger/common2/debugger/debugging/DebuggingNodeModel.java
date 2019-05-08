@@ -55,7 +55,6 @@ import org.openide.util.datatransfer.PasteType;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 
 public abstract class DebuggingNodeModel implements ExtendedNodeModel {

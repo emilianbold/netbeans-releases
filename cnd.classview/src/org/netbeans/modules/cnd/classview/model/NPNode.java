@@ -51,7 +51,6 @@ import org.openide.util.Lookup;
 
 /**
  * Common functinality for ProjectNode and NamespaceNode
- * @author vk155633
  */
 public abstract class NPNode extends BaseNode  {
     protected NPNode(Children.Array key) {

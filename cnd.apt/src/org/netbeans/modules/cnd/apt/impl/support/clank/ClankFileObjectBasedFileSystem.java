@@ -82,7 +82,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author vkvashin
  */
 public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSystem {
 

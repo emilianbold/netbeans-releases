@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.callgraph.api.ui;
 
 /**
  *
- * @author mtishkov
  */
 public interface CallGraphActionEDTRunnable extends Runnable{
     

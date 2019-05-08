@@ -71,7 +71,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Alexander Simon
  */
 public class LddServiceTest extends NativeExecutionBaseTestCase {
 

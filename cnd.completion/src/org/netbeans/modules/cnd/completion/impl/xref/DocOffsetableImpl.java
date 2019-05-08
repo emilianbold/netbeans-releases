@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.api.model.util.UIDs;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class DocOffsetableImpl implements CsmOffsetable {
     private final CsmUID<CsmFile> uidFile;

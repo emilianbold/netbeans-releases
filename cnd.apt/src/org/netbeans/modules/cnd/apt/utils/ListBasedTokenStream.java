@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 /**
  * implementation of TokenStream based on list
  * passed list is unchanged
- * @author Vladimir Voskresensky
  */
 public final class ListBasedTokenStream implements TokenStream, APTTokenStream {
     private final List<APTToken> tokens;

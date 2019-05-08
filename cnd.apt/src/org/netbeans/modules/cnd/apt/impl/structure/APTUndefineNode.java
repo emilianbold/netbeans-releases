@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * #undef directive implementation
- * @author Vladimir Voskresensky
  */
 public final class APTUndefineNode extends APTMacroBaseNode 
                                     implements APTNodeBuilder, APTUndefine, Serializable {

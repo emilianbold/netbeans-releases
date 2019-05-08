@@ -56,7 +56,6 @@ import org.netbeans.spi.debugger.ui.Controller;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class GdbAttachType extends AttachType {
     private static final boolean isOssTooolchainOnly = Boolean.valueOf(System.getProperty("oss.toolchain.only", "false")); // NOI18N

@@ -56,7 +56,7 @@ import org.netbeans.spi.debugger.ui.Controller;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 @AttachType.Registration(displayName = "#DbxDebuggerEngine")
 public final class DbxAttachType extends org.netbeans.spi.debugger.ui.AttachType {

@@ -45,7 +45,6 @@ import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author Alexander Simon
  */
 @ActionID(id = "org.netbeans.modules.cnd.classview.actions.SelectInClassesAction", category = "Window/SelectDocumentNode")
 @ActionRegistration(lazy = true, displayName = "#CTL_NavigateSelectInClasses")

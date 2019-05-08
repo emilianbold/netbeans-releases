@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
  *
- * @author Vladimir Voskresenky
+ *
  */
 public class TypedefTestCase extends CompletionBaseTestCase {
 

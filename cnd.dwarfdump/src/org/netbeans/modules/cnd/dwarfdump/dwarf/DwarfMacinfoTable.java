@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.dwarfdump.section.DwarfMacroInfoSection;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfMacinfoTable {
     private long baseSourceTableOffset = -1;

@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.utils.MutableObject;
  * utility class
  * used to find innermost statement inside CsmDeclaration and it's
  * context chain
- * @author vv159170
  */
 public class CsmStatementResolver {
 

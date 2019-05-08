@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface CsmFileLanguageProvider {
     // constant to be used for registration of provider

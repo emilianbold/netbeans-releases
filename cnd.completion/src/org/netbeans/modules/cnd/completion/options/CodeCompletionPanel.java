@@ -80,7 +80,7 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentListener {
 

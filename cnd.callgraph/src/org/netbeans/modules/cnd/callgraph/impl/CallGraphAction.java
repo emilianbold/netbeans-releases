@@ -55,7 +55,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Alexander Simon
  */
 @ActionID(id = "org.netbeans.modules.cnd.callgraph.impl.CallGraphAction", category = "Window")
 @ActionRegistration(lazy = true, displayName = "#CTL_CallGraphAction", iconBase=CallGraphTopComponent.ICON_PATH)

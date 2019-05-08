@@ -56,7 +56,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class CsmClassifierResolver {
     private static final CsmClassifierResolver DEFAULT = new Default();

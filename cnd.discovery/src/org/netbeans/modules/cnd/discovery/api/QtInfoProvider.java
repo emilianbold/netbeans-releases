@@ -83,7 +83,6 @@ import org.openide.util.Pair;
 /**
  * Utility to find Qt include directories for project configuration.
  *
- * @author Alexey Vladykin
  */
 public abstract class QtInfoProvider {
 

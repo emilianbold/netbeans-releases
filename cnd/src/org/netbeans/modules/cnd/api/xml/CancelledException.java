@@ -45,7 +45,6 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author alsimon
  */
 public class CancelledException extends SAXException {
     

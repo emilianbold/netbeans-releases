@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.api.model.deep;
 
 /**
  * Represents return statement
- * @author Vladimir Kvashin
  */
 public interface CsmReturnStatement extends CsmStatement {
 

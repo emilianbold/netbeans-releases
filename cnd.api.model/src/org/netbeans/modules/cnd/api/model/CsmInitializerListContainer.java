@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface CsmInitializerListContainer {
     Collection<CsmExpression> getInitializerList();

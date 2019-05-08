@@ -48,7 +48,6 @@ import org.openide.util.Lookup;
 
 /**
  * Utility class to get Object UID
- * @author Egor Ushakov
  */
 public final class UIDs {
     private static final UIDProvider provider;

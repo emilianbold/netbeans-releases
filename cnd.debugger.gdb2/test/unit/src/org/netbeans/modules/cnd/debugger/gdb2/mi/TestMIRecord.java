@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
 /**
  * For testing purpose
- * @author Egor Ushakov
  */
 public class TestMIRecord extends MIRecord {
 

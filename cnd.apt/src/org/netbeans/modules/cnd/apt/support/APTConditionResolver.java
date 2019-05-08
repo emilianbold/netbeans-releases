@@ -60,7 +60,6 @@ import org.openide.util.CharSequences;
 
 /**
  * evaluator to resolve preproc expressions of APT condition nodes
- * @author Vladimir Voskresensky
  */
 public final class APTConditionResolver {
     private static final boolean APT_EXPR_TRACE = Boolean.getBoolean("aptexpr.trace"); // NOI18N

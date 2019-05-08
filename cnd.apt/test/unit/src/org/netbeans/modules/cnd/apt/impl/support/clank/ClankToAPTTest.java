@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class ClankToAPTTest {
     

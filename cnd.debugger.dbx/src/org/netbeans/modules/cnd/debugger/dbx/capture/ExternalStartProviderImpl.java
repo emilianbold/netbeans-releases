@@ -51,7 +51,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author ivan
+ *≥
  */
 @ServiceProvider(service=ExternalStartProvider.class, position=1000)
 public class ExternalStartProviderImpl implements ExternalStartProvider {

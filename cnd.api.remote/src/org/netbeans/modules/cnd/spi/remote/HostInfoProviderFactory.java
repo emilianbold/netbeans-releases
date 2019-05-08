@@ -47,7 +47,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * A factory for HostInfoProvider
- * @author Vladimir Kvashin
  */
 public interface HostInfoProviderFactory {
 

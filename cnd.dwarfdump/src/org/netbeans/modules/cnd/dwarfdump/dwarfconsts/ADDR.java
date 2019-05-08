@@ -48,7 +48,6 @@ import java.util.HashMap;
 
 /**
  *
- * @author ak119685
  */
 public enum ADDR {
     DW_ADDR_none(0x0),

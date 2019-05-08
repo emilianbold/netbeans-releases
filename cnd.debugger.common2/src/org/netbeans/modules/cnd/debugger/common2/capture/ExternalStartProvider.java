@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 
 /**
  *
- * @author ivan
  */
 public interface ExternalStartProvider {
     boolean isSupported();

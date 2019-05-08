@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.dwarfdump.source.Driver;
 
 /**
  *
- * @author Alexander Simon
  */
 public class RelocatableImpl implements Relocatable {
 

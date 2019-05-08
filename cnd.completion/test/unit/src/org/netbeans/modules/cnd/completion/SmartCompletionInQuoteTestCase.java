@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class SmartCompletionInQuoteTestCase extends CompletionBaseTestCase {
 

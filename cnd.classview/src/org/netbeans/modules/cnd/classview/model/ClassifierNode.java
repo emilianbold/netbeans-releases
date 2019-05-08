@@ -51,7 +51,6 @@ import org.openide.nodes.Children;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class ClassifierNode  extends ObjectNode {
     

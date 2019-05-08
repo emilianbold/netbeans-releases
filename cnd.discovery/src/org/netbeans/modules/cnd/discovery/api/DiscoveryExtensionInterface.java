@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface DiscoveryExtensionInterface extends IteratorExtension {
     boolean canApply(Map<String,Object> map, Project project);

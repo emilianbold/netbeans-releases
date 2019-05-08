@@ -53,7 +53,6 @@ import javax.swing.event.ListDataListener;
 
 /**
  *
- * @author Alexander Simon
  */
 public class MacrosListModel implements ListModel<String> {
     private final NodeConfigurationImpl configuration;

@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**
  * base class for nodes handling tokens and children
- * @author Vladimir Voskresensky
  */
 public abstract class APTTokenAndChildBasedNode extends APTTokenBasedNode 
                                                 implements APTNodeBuilder, Serializable {

@@ -51,7 +51,6 @@ import org.openide.util.Lookup;
 
 /**
  * service for working with types
- * @author Vladimir Voskresensky
  */
 public final class CsmTypes {
 

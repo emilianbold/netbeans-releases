@@ -49,7 +49,6 @@ import org.openide.util.Cancellable;
  * RemoteSyncWorker is responsible for the synchronization between local and remomte host.
  * It is created by RemoteSyncFactory each time synchronization is needed
  * (for example, each time the project is built).
- * @author Vladimir Kvashin
  */
 public interface RemoteSyncWorker extends Cancellable {
 

@@ -55,7 +55,6 @@ import java.util.List;
  * Function template should be implemented by an instance,
  * which implements both CsmFunction and CsmTemplate interfaces;
  *
- * @author Vladimir Kvashin
  */
 public interface CsmTemplate extends CsmObject {
     /**

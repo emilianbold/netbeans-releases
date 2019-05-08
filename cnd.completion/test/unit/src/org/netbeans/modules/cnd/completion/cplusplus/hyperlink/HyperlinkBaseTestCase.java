@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.test.CndCoreTestUtils;
  * ${completion}/test/unit/data/org/netbeans/modules/cnd/completion/cplusplus/hyperlink/CsmHyperlinkProviderTestCase
  * and put there any C/C++ files
  *
- * @author Vladimir Voskresensky
+ *
  */
 public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         

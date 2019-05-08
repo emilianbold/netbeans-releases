@@ -67,7 +67,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class CallGraphTopComponent extends TopComponent {
 

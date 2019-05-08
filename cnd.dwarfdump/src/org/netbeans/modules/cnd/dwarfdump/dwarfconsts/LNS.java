@@ -48,7 +48,6 @@ import java.util.HashMap;
 
 /**
  *
- * @author ak119685
  */
 public enum LNS {
     DW_LNS_extended_op(0x00),

@@ -48,7 +48,6 @@ import org.netbeans.spi.debugger.ui.DebuggingView;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 @DebuggingView.DVSupport.Registration(path="netbeans-GdbSession")
 public class GdbDVSupportImpl extends NativeDVSupportImpl {

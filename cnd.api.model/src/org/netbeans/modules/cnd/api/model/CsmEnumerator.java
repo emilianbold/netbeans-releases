@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 
 /**
  * Represents enumerator
- * @author Vladimir Kvashin
  */
 public interface CsmEnumerator extends CsmOffsetableDeclaration {
 

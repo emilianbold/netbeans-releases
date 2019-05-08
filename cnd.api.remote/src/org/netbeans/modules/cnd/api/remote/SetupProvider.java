@@ -50,7 +50,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 /**
  * An interface to allow cnd modules to add binary and script files to the cnd.remote setup and initialization.
  *
- * @author gordonp
  */
 public interface SetupProvider {
     /**

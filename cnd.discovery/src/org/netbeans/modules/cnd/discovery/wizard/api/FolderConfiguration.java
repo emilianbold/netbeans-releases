@@ -48,7 +48,6 @@ import java.util.List;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface FolderConfiguration extends NodeConfiguration {
     

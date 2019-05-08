@@ -77,7 +77,6 @@ import org.netbeans.modules.cnd.antlr.collections.impl.BitSet;
  * This class provides a set of support utilities to handle argument
  * list parsing and so on.
  *
- * @author  Terence Parr, John Lilley
  * @version 2.00a
  * @see     org.netbeans.modules.cnd.antlr.JavaCodeGenerator
  * @see     org.netbeans.modules.cnd.antlr.DiagnosticCodeGenerator

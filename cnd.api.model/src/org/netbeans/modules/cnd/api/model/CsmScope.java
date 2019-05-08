@@ -48,7 +48,6 @@ import java.util.Collection;
 
 /**
  * Represents a scope
- * @author Vladimir Kvashin
  */
 public interface CsmScope extends CsmObject {
 

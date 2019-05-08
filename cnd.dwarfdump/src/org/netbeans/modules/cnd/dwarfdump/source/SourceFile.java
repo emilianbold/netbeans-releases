@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.dwarfdump.section.FileEntry;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class SourceFile implements CompilationUnitInterface {
     private final String compileLine;

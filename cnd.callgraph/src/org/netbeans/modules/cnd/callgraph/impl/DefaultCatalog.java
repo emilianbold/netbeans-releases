@@ -47,7 +47,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author mtishkov
  */
 public class DefaultCatalog implements Catalog{
 

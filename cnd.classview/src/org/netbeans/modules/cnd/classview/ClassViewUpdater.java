@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 
 /**
  * Deals with class view model updates
- * @author vk155633
  */
 public class ClassViewUpdater extends Thread {
     

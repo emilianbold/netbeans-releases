@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ResolverResultsCache {
     private static final Map<String, Map<APTIncludeResolverImpl, ResolvedPath>> cache = new HashMap<String, Map<APTIncludeResolverImpl, ResolvedPath>>();

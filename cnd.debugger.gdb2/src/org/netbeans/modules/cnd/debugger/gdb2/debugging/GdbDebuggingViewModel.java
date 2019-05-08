@@ -49,7 +49,6 @@ import org.netbeans.spi.viewmodel.TreeModel;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 @DebuggerServiceRegistration(path="netbeans-GdbSession/DebuggingView",
                              types={TreeModel.class/*, AsynchronousModelFilter.class*/},

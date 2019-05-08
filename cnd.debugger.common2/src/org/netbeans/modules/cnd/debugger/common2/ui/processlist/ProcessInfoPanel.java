@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ak119685
  */
 public class ProcessInfoPanel extends javax.swing.JPanel implements LookupListener {
 

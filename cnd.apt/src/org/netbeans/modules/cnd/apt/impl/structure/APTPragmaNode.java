@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  *
- * @author Alexander Simon
  */
 public class APTPragmaNode extends APTStreamBaseNode implements APTPragma, Serializable {
 

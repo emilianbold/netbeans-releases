@@ -46,7 +46,7 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 
 /**
  *
- * @author Vladimir Kvashin
+ *
  */
 public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
 

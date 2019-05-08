@@ -67,7 +67,6 @@ import org.netbeans.spi.editor.completion.CompletionDocumentation;
 
 /**
  *
- * @author Jan Lahoda
  */
 public class DoxygenDocumentation {
 

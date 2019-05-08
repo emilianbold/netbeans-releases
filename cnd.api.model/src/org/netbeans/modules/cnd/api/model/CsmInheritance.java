@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  * Represents inheritance - couple (base class, visibility)
- * @author Vladimir Kvashin
  */
 public interface CsmInheritance extends CsmOffsetable, CsmScopeElement {
 

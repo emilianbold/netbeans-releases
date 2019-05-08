@@ -54,7 +54,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CallNode extends AbstractNode {
     private final Call object;

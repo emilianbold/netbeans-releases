@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 /*package*/
 class ClankToAPTToken implements APTToken {

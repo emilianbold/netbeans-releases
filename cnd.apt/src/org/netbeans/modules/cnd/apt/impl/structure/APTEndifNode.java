@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * #endif directive implementation
- * @author Vladimir Voskresensky
  */
 public final class APTEndifNode extends APTTokenBasedNode 
                                 implements APTNodeBuilder, APTEndif, Serializable {

@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.api.project;
 import java.util.List;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public interface NativeProjectChangeSupport {
     

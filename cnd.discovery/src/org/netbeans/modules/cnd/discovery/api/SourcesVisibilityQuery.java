@@ -53,7 +53,6 @@ import org.openide.util.ChangeSupport;
 
 /**
  *
- * @author Alexander Simon
  */
 public class SourcesVisibilityQuery implements ChangeListener {
 

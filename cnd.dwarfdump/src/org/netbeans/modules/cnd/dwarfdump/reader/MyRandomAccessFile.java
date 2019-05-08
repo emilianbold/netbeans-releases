@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class MyRandomAccessFile extends RandomAccessFile {
     

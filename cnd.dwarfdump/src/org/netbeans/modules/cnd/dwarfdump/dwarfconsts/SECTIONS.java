@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.dwarfdump.dwarfconsts;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface SECTIONS {
 

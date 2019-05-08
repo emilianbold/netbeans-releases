@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.debugger.gdb2.GdbVersionPeculiarity;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 public class PeculiarityTestCase extends TestCase {
 

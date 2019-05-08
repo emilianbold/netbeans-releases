@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.api.model;
  * template <A> class C {
  *    A* a; // <- here A* is an example of this type
  * }
- * @author eu155513
  */
 public interface CsmTemplateParameterType extends CsmObject {
     CsmTemplateParameter getParameter();

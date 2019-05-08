@@ -44,7 +44,6 @@ import org.netbeans.modules.cnd.antlr.collections.impl.BitSet;
 
 /**
  *  The same as LLkParser but no recognition exception thrown
- * @author gorrus
  */
 public class LLkParserNoEx extends LLkParser {
     public LLkParserNoEx(int k_) {

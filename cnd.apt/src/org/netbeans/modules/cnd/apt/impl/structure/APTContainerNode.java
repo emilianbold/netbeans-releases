@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 /**
  * base implementation for APTContainer
  * - manage children
- * @author Vladimir Voskresensky
  */
 public abstract class APTContainerNode extends APTBaseNode implements Serializable {
     private static final long serialVersionUID = 8306600642459659574L;

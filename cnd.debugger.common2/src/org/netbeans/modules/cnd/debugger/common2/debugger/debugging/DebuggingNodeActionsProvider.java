@@ -53,7 +53,6 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 public abstract class DebuggingNodeActionsProvider implements NodeActionsProvider {
     private final NativeDebugger debugger;

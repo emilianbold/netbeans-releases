@@ -65,7 +65,6 @@ import org.openide.util.NbBundle;
  * <br>
  * The click action corresponds to performing the goto-declaration action.
  *
- * @author Nikolay Krasilnikov
  */
 public final class CsmDefineHyperlinkProvider extends CsmHyperlinkProvider {
 

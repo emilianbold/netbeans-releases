@@ -56,7 +56,6 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Alexander Simon
  */
 @Messages({
     "NotifyProjectProblem.action.text=Details"

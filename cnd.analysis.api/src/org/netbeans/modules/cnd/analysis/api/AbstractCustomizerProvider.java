@@ -45,7 +45,6 @@ import javax.swing.JComponent;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface AbstractCustomizerProvider {
     public JComponent createComponent(Preferences context);

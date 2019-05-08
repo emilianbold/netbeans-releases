@@ -95,7 +95,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public class MakeLogReader {
     private String workingDir;

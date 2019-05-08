@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 
 /**
  *
- * @author mtishkov
  */
 abstract public class GdbDebuggerInfoAccessor {
      private static volatile GdbDebuggerInfoAccessor DEFAULT;

@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 
 /**
  *
- * @author masha
  */
 public class ProjectComboBoxSupport {
 

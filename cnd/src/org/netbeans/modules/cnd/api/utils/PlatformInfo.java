@@ -67,8 +67,6 @@ import org.openide.util.Exceptions;
  * This class evolutioned from cnd.api.utils.Path
  * Now it handles all development host related information
  *
- * @author gordonp
- * @author Sergey Grinev
  */
 public final class PlatformInfo {
 

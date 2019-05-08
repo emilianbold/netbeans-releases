@@ -55,7 +55,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
     

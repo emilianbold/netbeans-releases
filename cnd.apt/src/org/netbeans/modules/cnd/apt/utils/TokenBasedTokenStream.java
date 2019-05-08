@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class TokenBasedTokenStream implements TokenStream, APTTokenStream {
     private APTToken token;

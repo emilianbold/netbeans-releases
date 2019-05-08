@@ -48,7 +48,6 @@ import java.util.Collection;
 
 /**
  * Common ancestor for compound types - classes and enums
- * @author Vladimir Kvashin
  */
 public interface CsmCompoundClassifier extends CsmClassifier, CsmOffsetableDeclaration, CsmScope, CsmValidable  {
     Collection<CsmTypedef> getEnclosingTypedefs();

@@ -47,7 +47,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author vkvashin
  */
 public interface APTBufferProvider {
     Collection<APTFileBuffer> getUnsavedBuffers();

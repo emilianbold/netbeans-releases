@@ -73,7 +73,6 @@ import org.openide.util.Parameters;
 /**
  * implementation of include handler based on clank's Preprocessor
  *
- * @author Vladimir Voskresensky
  */
 public class ClankIncludeHandlerImpl implements PPIncludeHandler {
 

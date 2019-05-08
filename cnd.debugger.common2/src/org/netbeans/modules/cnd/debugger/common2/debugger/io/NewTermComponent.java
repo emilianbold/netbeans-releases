@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.debugger.common2.utils.NotifyingInputSteam;
 import org.netbeans.modules.terminal.api.ui.IOTerm;
 /**
  *
- * @author ivan
  */
 public class NewTermComponent implements TermComponent {
 

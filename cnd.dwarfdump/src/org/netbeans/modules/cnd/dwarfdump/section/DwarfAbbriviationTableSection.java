@@ -65,7 +65,6 @@ import java.util.List;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfAbbriviationTableSection extends ElfSection {
     private final HashMap<Long, DwarfAbbriviationTable> tables = new HashMap<Long, DwarfAbbriviationTable>();

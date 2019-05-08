@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface NativeFileSearch {
     Collection<FSPath> searchFile(NativeProject project, String fileName);

@@ -40,7 +40,7 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
+ *
  */
 public class IncludesCompletionTestPerformer extends CompletionTestPerformer {
     

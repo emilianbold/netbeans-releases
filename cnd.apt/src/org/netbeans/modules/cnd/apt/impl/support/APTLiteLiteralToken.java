@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 
 /**
  *
- * @author Egor Ushakov
  */
 public final class APTLiteLiteralToken extends APTTokenAbstact {
     private static final int COL_BITS  = 10;

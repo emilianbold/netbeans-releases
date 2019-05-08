@@ -52,7 +52,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Egor Ushakov
  */
 @ServiceProvider(service = CreateFromTemplateHandler.class)
 public class AsmCreateFromTemplateHandler extends CreateFromTemplateHandler {

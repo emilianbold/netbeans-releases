@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  *
- * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public interface CsmClosureClassifier extends CsmFunctional, CsmClassifier {   
     

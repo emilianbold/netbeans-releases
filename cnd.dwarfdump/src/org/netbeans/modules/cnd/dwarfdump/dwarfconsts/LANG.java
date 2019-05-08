@@ -48,7 +48,6 @@ import java.util.HashMap;
 
 /**
  *
- * @author ak119685
  */
 public enum LANG {
     DW_LANG_C89(0x0001, "C 89"), // NOI18N

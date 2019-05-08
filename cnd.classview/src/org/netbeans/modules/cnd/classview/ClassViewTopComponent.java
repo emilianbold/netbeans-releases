@@ -71,7 +71,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class ClassViewTopComponent extends TopComponent implements CsmModelListener, CsmModelStateListener {
 

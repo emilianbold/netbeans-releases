@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.simpleunit.utils.CodeGenerationUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class CppUnitCodeGenerator {
 

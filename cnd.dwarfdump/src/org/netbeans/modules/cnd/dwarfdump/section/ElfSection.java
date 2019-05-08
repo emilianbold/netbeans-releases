@@ -61,7 +61,6 @@ import java.nio.charset.Charset;
 
 /**
  *
- * @author ak119685
  */
 public class ElfSection {
     final ElfReader reader;

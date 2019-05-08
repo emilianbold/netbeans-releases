@@ -48,7 +48,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class DiscoveryProviderFactory {
     public static DiscoveryProvider findProvider(String providerID) {

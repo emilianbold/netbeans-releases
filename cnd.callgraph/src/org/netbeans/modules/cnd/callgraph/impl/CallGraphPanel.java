@@ -100,7 +100,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider  {
 

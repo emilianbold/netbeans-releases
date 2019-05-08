@@ -66,9 +66,7 @@ import org.netbeans.api.visual.widget.Widget;
 
 /**
  *
- * @author Thomas Wuerthinger
  *
- * @author Alexander Simon (atempt to adapt algorith to horizontal hierarchy)
  *
  */
 public class HorizontalHierarchicalLayout<N, E> extends GraphLayout<N, E> {

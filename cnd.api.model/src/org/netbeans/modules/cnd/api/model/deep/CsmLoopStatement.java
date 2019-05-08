@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
  * Represents while(), do ... while() and for() statements
  * (for statement has a specialized interface)
  *
- * @author Vladimir Kvashin
  */
 public interface CsmLoopStatement extends CsmStatement, CsmScope {
 

@@ -48,7 +48,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 @ServiceProvider(service=CndFileExistSensitiveCache.class)
 public class FileExistsSensitiveCacheDriver implements CndFileExistSensitiveCache {

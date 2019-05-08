@@ -51,7 +51,6 @@ import java.util.logging.Level;
 
 /**
  * filter to print stream's tokens
- * @author Vladimir Voskresensky
  */
 public class APTTraceFilter implements TokenStream {
     private final TokenStream orig;

@@ -49,7 +49,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public interface CsmProject extends CsmNamedElement, CsmValidable {
 

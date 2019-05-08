@@ -57,7 +57,6 @@ package org.netbeans.modules.cnd.api.model;
  * }
  *
  * CsmFunctionParameterList object is offsetable starting at "(" and ending at ")"
- * @author Vladimir Voskresensky
  */
 public interface CsmFunctionParameterList extends CsmParameterList<CsmParameter> {
 

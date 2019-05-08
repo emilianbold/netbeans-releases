@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 
 /**
  *
- * @author eu155513
+ *155513
  */
 public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
     public InstantiationHyperlinkTestCase(String testName) {

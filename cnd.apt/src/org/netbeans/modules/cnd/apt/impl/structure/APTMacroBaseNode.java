@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * base class for #define/#undef impl
- * @author Vladimir Voskresensky
  */
 public abstract class APTMacroBaseNode extends APTTokenBasedNode
                                         implements Serializable {

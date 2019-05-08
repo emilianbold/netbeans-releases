@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
  * Represents some statement -
  * acts as a common ancestor for each of the particular statement interfaces
  *
- * @author Vladimir Kvashin
  */
 public interface CsmStatement extends CsmOffsetable, CsmObject, CsmScopeElement {
 

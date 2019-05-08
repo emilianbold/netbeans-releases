@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.apt.support.spi;
  * When indexing a file, determines, which tokens to index and how.
  * Initial need is Tuxedo, which needs to search for functions in tpcall() parameter strings.
  * Later use could be: search in comments
- * @author vkvashin
  */
 public interface CndTextIndexFilter {
     /**

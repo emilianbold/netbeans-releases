@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  *
- * @author nk220367
  */
 final class APTFortranFilterEx implements APTLanguageFilter {
     /**

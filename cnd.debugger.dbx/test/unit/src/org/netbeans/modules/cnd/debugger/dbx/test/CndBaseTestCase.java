@@ -82,7 +82,6 @@ import org.netbeans.junit.NbTestCase;
 /**
  * base class to isolate using of NbJUnit library
  * ${xtest.data} vallue is usually ${module}/test/unit/data folder
- * @author Vladimir Voskresensky
  */
 public abstract class CndBaseTestCase extends NbTestCase {
 

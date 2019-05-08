@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  * 
- * @author Vladimir Voskresensky
  */
 public interface CsmOffsetableName extends CsmNamedElement, CsmOffsetable {
     int getNameStartOffset();

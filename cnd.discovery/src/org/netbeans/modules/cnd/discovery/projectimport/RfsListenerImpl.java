@@ -54,7 +54,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Alexander Simon
  */
 final class RfsListenerImpl implements RfsListener {
     private final Map<String, File> storage = new HashMap<>();

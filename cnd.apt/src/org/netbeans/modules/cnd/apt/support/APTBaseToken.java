@@ -50,7 +50,6 @@ import org.openide.util.CharSequences;
 
 /**
  * token to be used in APT infrastructure
- * @author Vladimir Voskresensky
  */
 public class APTBaseToken implements APTToken {
     private static final long serialVersionUID = 2834353662691067170L;

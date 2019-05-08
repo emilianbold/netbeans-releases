@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelGlobalCustomizer;
 
 /**
  * service to hide some fields
- * @author Vladimir Voskresensky
  */
 //@org.openide.util.lookup.ServiceProvider(service=ToolsPanelGlobalCustomizer.class, position=100)
 public class ToolsPanelGlobalCustomizerImpl implements ToolsPanelGlobalCustomizer {

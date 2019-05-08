@@ -47,7 +47,6 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class GdbUtils {
     private GdbUtils() {

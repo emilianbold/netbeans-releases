@@ -45,7 +45,6 @@ import javax.swing.JPanel;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class AbstractHintsPanel extends JPanel {
 

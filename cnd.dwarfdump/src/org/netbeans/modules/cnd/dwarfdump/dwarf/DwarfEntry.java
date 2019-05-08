@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ByteStreamReader;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfEntry {
     private final CompilationUnit compilationUnit;

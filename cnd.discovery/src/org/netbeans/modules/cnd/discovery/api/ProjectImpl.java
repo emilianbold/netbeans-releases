@@ -71,7 +71,6 @@ import org.openide.util.Utilities;
  * Default implementation of ProjectProperties.
  * Enough in most cases.
  *
- * @author Alexander Simon
  */
 public final class ProjectImpl implements ProjectProperties {
     private static final boolean gatherFolders = true;

@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
  *
- * @author Alexey Vladykin
+ *
  */
 public class NamespaceUsingTestCase extends CompletionBaseTestCase {
     

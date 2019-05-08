@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 
 /**
  *
- * @author Vladimir Voskresensky
  * The <code>UIDProvider</code> should be registered using {@link org.openide.util.lookup.ServiceProvider}.
  */
 public interface UIDProvider {

@@ -45,7 +45,6 @@ import java.util.List;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class NativeProjectItemsAdapter implements NativeProjectItemsListener {
 

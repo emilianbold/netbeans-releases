@@ -110,7 +110,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ImportExecutable implements PropertyChangeListener {
     private static final boolean DLL_FILE_SEARCH = true;

@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FileMagic {
     private MyRandomAccessFile reader;

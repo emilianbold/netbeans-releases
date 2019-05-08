@@ -54,7 +54,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Alexander Simon
  */
 @ProjectServiceProvider(projectType="org-netbeans-modules-cnd-makeproject", service=AnalysisScopeProvider.class)
 public class ScopeProvider implements AnalysisScopeProvider {

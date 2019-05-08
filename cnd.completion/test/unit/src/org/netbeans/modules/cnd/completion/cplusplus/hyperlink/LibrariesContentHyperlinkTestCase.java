@@ -51,7 +51,7 @@ import java.util.List;
 /**
  * Test case for hyperlink to library content
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
+ *(nnnnnk@netbeans.org)
  */
 public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
 

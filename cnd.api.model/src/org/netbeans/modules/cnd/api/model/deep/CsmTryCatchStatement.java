@@ -48,7 +48,6 @@ import java.util.List;
 
 /**
  * Represents try ... catch statement
- * @author Vladimir Kvashin
  */
 public interface CsmTryCatchStatement extends CsmStatement {
 

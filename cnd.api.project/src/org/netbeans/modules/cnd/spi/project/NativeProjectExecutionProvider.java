@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.api.project.NativeProjectSupport.NativeExitStatu
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface NativeProjectExecutionProvider {
     /**

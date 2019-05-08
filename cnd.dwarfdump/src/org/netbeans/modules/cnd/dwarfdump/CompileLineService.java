@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 /**
  * Light weight service that gets command line from binary file in case Sun Studio compiler
  *
- * @author Alexander Simon
  */
 public class CompileLineService {
     private static final String COMPILE_DIRECTORY = "\"directory\": "; //NOI18N

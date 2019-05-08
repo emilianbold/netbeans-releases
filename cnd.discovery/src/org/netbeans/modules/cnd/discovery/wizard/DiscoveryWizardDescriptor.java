@@ -59,7 +59,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Alexander Simon
  */
 @SuppressWarnings("unchecked") // NOI18N
 public class DiscoveryWizardDescriptor extends WizardDescriptor implements DiscoveryDescriptor {

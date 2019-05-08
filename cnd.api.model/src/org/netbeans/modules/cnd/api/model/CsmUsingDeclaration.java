@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.api.model;
 /**
  * Represents a using declaration, such as
  *  using std::vector
- * @author Vladimir Kvasihn
  */
 public interface CsmUsingDeclaration extends CsmOffsetableDeclaration {
 

@@ -51,7 +51,6 @@ import org.openide.util.Lookup;
 
 /**
  * utility class to access Csm model
- * @author Vladimir Voskresensky
  */
 public final class CsmModelAccessor {
 

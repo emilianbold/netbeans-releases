@@ -85,7 +85,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public class DiscoveryProjectGeneratorImpl {
     private static final boolean DEBUG = Boolean.getBoolean("cnd.discovery.trace.project_update"); // NOI18N

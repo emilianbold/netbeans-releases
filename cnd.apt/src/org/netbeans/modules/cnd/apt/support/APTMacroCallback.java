@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.apt.support;
 
 /**
  * callback interface to get information about macros
- * @author Vladimir Voskresensky
  */
 public interface APTMacroCallback {
 

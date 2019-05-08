@@ -57,7 +57,6 @@ import java.util.List;
  *   st  end
  * for variable a getText() returns "int[5]"
  * for variable b getText() returns "int"
- * @author Vladimir Kvashin
  */
 public interface CsmType extends CsmOffsetable {
 

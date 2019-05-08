@@ -37,7 +37,6 @@ import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 
 /**
  * iterator which encapsulates two lists ans start index of combined collection
- * @author Vladimir Voskresensky
  */
 final class PathsCollectionIterator implements Iterator<IncludeDirEntry> {
     private final List<IncludeDirEntry> col1;

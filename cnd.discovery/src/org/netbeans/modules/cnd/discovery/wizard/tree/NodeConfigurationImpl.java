@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.discovery.wizard.api.NodeConfiguration;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class NodeConfigurationImpl implements NodeConfiguration {
     private boolean isOverrideIncludes;

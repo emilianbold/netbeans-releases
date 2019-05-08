@@ -57,7 +57,6 @@ import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CsmCodeTemplateFilter implements CodeTemplateFilter {
     private static boolean enabled = true;

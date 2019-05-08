@@ -81,7 +81,6 @@ import org.netbeans.modules.cnd.utils.MutableObject;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CompletionUtilities {
 

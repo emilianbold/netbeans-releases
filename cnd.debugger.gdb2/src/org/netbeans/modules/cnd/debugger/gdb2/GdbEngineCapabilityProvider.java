@@ -54,7 +54,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 @ServiceProvider(service=EngineCapabilityProvider.class, position=100)
 public final class GdbEngineCapabilityProvider implements EngineCapabilityProvider {

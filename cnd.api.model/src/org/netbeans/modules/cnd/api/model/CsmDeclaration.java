@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  * Common ancestor for all declarations
- * @author Vladimir Kvashin
  */
 
 public interface CsmDeclaration extends CsmQualifiedNamedElement, 

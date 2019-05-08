@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  * Represents include directive
- * @author Vladimir Kvashin
  */
 public interface CsmInclude extends CsmOffsetable {
     public enum IncludeState {

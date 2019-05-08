@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 
 /**
  *
- * @author vkvashin
  */
 public interface NativeProjectLayerDescriptorProvider {
     public List<URI> getLayerDescriptors(NativeProject nativeproject);

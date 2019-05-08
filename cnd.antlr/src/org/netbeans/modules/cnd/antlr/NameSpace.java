@@ -49,7 +49,6 @@ package org.netbeans.modules.cnd.antlr;
  * Container for a C++ namespace specification.  Namespaces can be
  * nested, so this contains a vector of all the nested names.
  *
- * @author David Wagner (JPL/Caltech) 8-12-00
  */
 
 import java.util.Vector;

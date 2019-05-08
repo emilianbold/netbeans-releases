@@ -63,7 +63,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteFileUtil {
 

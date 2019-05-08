@@ -56,7 +56,6 @@ import org.openide.util.WeakSet;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class NativeProjectRegistry {
 

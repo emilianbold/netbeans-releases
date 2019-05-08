@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 
 /**
  *
- * @author Egor Ushakov
+ *
  */
 public class DbxDisassembly extends Disassembly {
     private long address;

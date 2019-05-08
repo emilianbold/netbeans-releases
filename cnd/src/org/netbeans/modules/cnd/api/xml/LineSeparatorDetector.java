@@ -50,8 +50,6 @@ import org.openide.filesystems.FileObject;
 /**
  * Taken from LineSeparatorConversion.InitialSeparatorReader
  * 
- * @author Miloslav Metelka
- * @author Alexander Simon
  */
 public final class LineSeparatorDetector {
 

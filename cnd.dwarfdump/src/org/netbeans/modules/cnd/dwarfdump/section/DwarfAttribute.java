@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.VIS;
 
 /**
  *
- * @author ak119685
  */
 public class DwarfAttribute {
     public final ATTR attrName;

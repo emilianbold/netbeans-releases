@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 
 /**
  *
- * @author ak119685
  */
 public class StringTableSection extends ElfSection {
     private byte[] stringtable = null;

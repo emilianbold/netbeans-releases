@@ -58,7 +58,6 @@ import org.netbeans.modules.gsf.testrunner.api.Trouble;
 /**
  * Sample factory.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
 

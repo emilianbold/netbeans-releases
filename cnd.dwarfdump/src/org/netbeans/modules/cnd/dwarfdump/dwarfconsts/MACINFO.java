@@ -48,7 +48,6 @@ import java.util.HashMap;
 
 /**
  *
- * @author ak119685
  */
 public enum MACINFO {
     DW_MACINFO_define(0x1),

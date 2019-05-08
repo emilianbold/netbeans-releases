@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 /**
  * Filter for Fortran language.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 final class APTFortranFilter extends APTBaseLanguageFilter {
 

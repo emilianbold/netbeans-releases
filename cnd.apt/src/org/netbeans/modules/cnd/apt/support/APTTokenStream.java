@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.apt.support;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface APTTokenStream {
     APTToken nextToken();

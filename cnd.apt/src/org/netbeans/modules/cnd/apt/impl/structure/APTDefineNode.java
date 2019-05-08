@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
 
 /**
  * #define directive implementation
- * @author Vladimir Voskresensky
  */
 public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serializable {
     private static final long serialVersionUID = -99267816578145490L;

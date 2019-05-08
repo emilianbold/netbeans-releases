@@ -66,7 +66,6 @@ import org.openide.windows.InputOutput;
 
 /**
  * Creates two fifos for the process input and output and forward them to the specified io tab
- * @author Egor Ushakov
  */
 public abstract class IOProxy {
     private static final String FILENAME_PREFIX = "debuggerFifo"; // NOI18N

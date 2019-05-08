@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.support.Interrupter;
 
 /**
  *
- * @author Sergey Grinev
+ *
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmFileReferences.class)
 public final class FileReferencesImpl extends CsmFileReferences  {

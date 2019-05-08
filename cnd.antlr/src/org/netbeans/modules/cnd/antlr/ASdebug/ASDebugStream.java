@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 
 /**
  * Default implementation of <code>IASDebugStream</code> methods.
- * @author Prashant Deva
  */
 public final class ASDebugStream
 {

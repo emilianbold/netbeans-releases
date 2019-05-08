@@ -72,7 +72,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class BaseProvider implements DiscoveryProvider {
     

@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface APTFileCache {
     APTFile getCachedAPT();

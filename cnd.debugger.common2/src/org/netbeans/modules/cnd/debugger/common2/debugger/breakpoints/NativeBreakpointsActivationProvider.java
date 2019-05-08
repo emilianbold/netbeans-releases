@@ -48,7 +48,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 public class NativeBreakpointsActivationProvider implements BreakpointsActivationProvider {
 

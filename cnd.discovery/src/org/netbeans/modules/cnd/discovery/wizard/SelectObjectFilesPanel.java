@@ -56,7 +56,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class SelectObjectFilesPanel extends JPanel {
     private final SelectObjectFilesWizard wizard;

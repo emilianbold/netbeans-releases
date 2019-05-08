@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 
 /**
  *
- * @author Alexander Simon
  */
 public class SymTabSection extends ElfSection {
     // .symtab section index -> elf section index

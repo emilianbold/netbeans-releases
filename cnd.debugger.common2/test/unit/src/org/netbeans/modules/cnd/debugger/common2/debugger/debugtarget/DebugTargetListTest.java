@@ -54,7 +54,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class DebugTargetListTest extends CndBaseTestCase {
 

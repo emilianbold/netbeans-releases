@@ -48,7 +48,6 @@ import org.netbeans.spi.viewmodel.NodeModel;
 
 /**
  *
- * @author Nikolay Koldunov
  */
 @DebuggerServiceRegistration(path = "netbeans-GdbSession/DebuggingView",
             types = NodeModel.class,

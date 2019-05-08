@@ -67,7 +67,6 @@ import org.netbeans.modules.cnd.modelutil.NbCsmPaintComponent;
 
 /**
  *
- * @author  Vladimir Voskresensky
  * after NbJCResultItem
  */
 public abstract class NbCsmResultItem extends CsmResultItem{

@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.utils.ComponentType;
 
 /**
  * A common place for APT tracing flags that are used by several classes
- * @author Vladimir Voskresensky
  */
 public class APTTraceFlags {
 

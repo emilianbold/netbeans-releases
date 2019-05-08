@@ -50,7 +50,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author mtishkov
  */
 @ServiceProvider(service = DebuggerToolRecognizer.class, position = 1000)
 public class DebuggerToolRecognizerGdbImpl implements DebuggerToolRecognizer{

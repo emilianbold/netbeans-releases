@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * base impl for nodes with associated token
- * @author Vladimir Voskresensky
  */
 public abstract class APTTokenBasedNode extends APTBaseNode 
                                         implements Serializable {

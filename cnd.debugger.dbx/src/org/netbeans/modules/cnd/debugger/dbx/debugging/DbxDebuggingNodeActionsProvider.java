@@ -14,7 +14,7 @@ import org.netbeans.spi.viewmodel.NodeActionsProvider;
 
 /**
  *
- * @author Nikolay Koldunov
+ *
  */
 @DebuggerServiceRegistration(path="netbeans-DbxSession/DebuggingView",
                              types=NodeActionsProvider.class,

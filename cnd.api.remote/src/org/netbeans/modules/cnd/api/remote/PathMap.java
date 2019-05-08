@@ -48,7 +48,6 @@ import java.util.logging.Logger;
 /**
  * Interface for a path mapping utility which will be implemented in another module.
  * 
- * @author gordonp
  */
 public abstract class PathMap {
 

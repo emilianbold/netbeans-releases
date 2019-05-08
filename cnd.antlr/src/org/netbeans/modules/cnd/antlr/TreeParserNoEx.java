@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.antlr.collections.impl.BitSet;
 
 /**
  *
- * @author gorrus
  */
 public class TreeParserNoEx extends TreeParser {
     

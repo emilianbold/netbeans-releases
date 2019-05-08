@@ -58,7 +58,6 @@ import org.xml.sax.helpers.DefaultHandler;
  * ATM, this resolver is not used due to extensive changes in tests output
  * brought in by loading NetBeans FontColor settings profiles.
  *
- * @author Sergey Grinev
  */
 public class HelperMIMEResolver extends MIMEResolver {
 

@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  *
- * @author petrk
  */
 public interface CsmTypeAlias extends CsmTypedef, CsmTemplate {
 }

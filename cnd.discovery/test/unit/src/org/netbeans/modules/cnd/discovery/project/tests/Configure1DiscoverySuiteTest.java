@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author Alexander Simon
  */
 public class Configure1DiscoverySuiteTest extends CndBaseTestSuite {
 

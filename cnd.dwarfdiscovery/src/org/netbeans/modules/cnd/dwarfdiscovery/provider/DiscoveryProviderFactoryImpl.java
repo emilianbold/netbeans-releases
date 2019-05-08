@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory.class)
 public class DiscoveryProviderFactoryImpl extends DiscoveryProviderFactory {

@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.TestMIRecord;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class PidParserTestCase extends TestCase {
 
