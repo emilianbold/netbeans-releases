@@ -55,7 +55,6 @@ import java.util.zip.ZipOutputStream;
 /**
  * Creates a zip file, adds entries.
  * The clas is NOT thread safe
- * @author Vladimir Kvashin
  */
 public class Zipper {
 

@@ -52,7 +52,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * 
- * @author vk155633
  */
 public class RfsListenerSupportImpl {
 

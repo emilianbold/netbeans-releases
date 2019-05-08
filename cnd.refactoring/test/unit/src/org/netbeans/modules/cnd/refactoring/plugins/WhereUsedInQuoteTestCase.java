@@ -51,7 +51,6 @@ import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 
 /**
  * 
- * @author Vladimir Voskresensky
  */
 public class WhereUsedInQuoteTestCase extends CsmWhereUsedQueryPluginTestCaseBase {
 

@@ -48,7 +48,6 @@ import org.openide.util.CharSequences;
 
 /**
  * cache entry
- * @author Vladimir Voskresensky
  */
 public class TextCache extends APTStringManager {
     private static final APTStringManager manager = new TextCache();

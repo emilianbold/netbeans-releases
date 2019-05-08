@@ -49,7 +49,6 @@ import org.openide.util.Parameters;
 
 /**
  * Support methods for CND specific mime types
- * @author Vladimir Voskresensky
  */
 public final class MIMESupport {
 

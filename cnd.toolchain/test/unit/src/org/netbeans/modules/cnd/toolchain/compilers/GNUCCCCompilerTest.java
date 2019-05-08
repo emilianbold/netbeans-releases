@@ -63,7 +63,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  *
- * @author Alexander Simon
  */
 public class GNUCCCCompilerTest {
 

@@ -66,7 +66,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public abstract class CndFileSystemProvider {
 

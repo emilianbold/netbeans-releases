@@ -61,7 +61,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class RemoteActionPerformer implements ActionListener, DynamicMenuContent {
     protected RemoteOpenActionBase presenter;

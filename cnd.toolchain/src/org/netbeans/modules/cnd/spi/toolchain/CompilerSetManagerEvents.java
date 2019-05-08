@@ -56,7 +56,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * 
  * There is only one (and I hope there would be only one) such event -- Code Model Readiness
  *
- * @author Sergey Grinev
  */
 public final class CompilerSetManagerEvents {
 

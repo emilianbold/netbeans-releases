@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.search.Searcher;
 
 /**
  *
- * @author akrasny
  */
 public final class UnixFindBasedSearcher implements Searcher {
 

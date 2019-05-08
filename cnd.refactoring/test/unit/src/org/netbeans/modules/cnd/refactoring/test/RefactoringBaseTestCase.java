@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class RefactoringBaseTestCase extends ProjectBasedTestCase {
 

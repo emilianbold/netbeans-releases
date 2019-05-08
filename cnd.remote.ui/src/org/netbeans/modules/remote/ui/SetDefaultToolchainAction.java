@@ -50,7 +50,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
 /**
- * @author Alexey Vladykin
  */
 /*package*/ final class SetDefaultToolchainAction extends AbstractAction {
 

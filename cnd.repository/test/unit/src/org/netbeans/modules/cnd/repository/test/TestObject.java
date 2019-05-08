@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  * Test object to store in a SingleFileStorage
- * @author Vladimir Kvashin
  */
 public class TestObject implements Persistent {
     

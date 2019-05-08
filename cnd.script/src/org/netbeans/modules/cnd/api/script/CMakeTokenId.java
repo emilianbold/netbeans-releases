@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
  *
- * @author alsimon
  */
 public enum CMakeTokenId  implements TokenId {
 

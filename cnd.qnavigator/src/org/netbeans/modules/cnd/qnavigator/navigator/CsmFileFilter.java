@@ -39,7 +39,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CsmFileFilter {
     

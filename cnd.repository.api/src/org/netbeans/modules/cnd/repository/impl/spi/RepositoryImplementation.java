@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
  *
  * - no encoding is done here. Encoding is 'done' in repostreams....
  *
- * @author vkvashin
  */
 public interface RepositoryImplementation {
 

@@ -62,7 +62,6 @@ import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProviders({
     @ServiceProvider(service = CodeAuditProvider.class, position = 1200)

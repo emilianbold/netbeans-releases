@@ -47,7 +47,6 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
 
 /**
  *
- * @author Alexey Vladykin
  */
 public class MakefileParserFactory extends ParserFactory {
 

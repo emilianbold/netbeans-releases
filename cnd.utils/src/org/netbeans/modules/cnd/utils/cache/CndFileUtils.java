@@ -85,7 +85,6 @@ import org.openide.util.Utilities;
 
 /**
  * some file utilities used by CND modules due to performance reasons or other
- * @author Vladimir Voskresensky
  */
 public final class CndFileUtils {
     private static final String CASE_SENSITIVE_SYSTEM_PROP = "cnd.case.sensitive.fs"; // NOI18N

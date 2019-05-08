@@ -62,7 +62,6 @@ import org.openide.filesystems.LocalFileSystem;
 
 /**
  * A test for DoubleFileStorage defragmentation
- * @author Vladimir Kvashin
  */
 public class DefragmentationTest extends NbTestCase {
 

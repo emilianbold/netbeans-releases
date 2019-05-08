@@ -67,7 +67,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author akrasny
  */
 public final class CNDSearchPanel extends javax.swing.JPanel {
 

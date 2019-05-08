@@ -59,7 +59,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author akrasny
  */
 public final class ProxySettingsPanel extends javax.swing.JPanel {
 

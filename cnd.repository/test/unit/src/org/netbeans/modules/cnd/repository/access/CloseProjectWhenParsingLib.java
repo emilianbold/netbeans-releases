@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 /**
  * Tries to close project as soon as it is parsed -
  * while its libraries are still being parsed
- * @author Vladimir Kvashin
  */
 public class CloseProjectWhenParsingLib extends RepositoryAccessTestBase  {
 

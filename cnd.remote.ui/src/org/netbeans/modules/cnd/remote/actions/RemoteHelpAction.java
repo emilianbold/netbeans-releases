@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author vk155633
  */
 public class RemoteHelpAction  extends AbstractAction {
 

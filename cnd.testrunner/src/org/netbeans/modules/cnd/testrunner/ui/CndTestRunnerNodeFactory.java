@@ -50,7 +50,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Erno Mononen
  */
 public class CndTestRunnerNodeFactory extends TestRunnerNodeFactory {
 

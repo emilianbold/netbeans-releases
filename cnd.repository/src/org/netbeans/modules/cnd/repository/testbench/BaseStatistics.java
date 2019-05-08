@@ -49,7 +49,6 @@ import java.util.*;
 
 /**
  * Base class for collecting simple statistics
- * @author Vladimir Kvashin
  */
 public class BaseStatistics<K extends Comparable<?>> {
 

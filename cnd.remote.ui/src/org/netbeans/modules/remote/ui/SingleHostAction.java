@@ -48,7 +48,6 @@ import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public abstract class SingleHostAction extends NodeAction {
 

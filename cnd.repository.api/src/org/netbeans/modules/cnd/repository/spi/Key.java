@@ -48,7 +48,6 @@ package org.netbeans.modules.cnd.repository.spi;
 
 /**
  * interface for repository keys, must be implemented in client of repository
- * @author Sergey Grinev, Vladimir Voskresensky
  */
 public interface Key {
     /** returns associated factory

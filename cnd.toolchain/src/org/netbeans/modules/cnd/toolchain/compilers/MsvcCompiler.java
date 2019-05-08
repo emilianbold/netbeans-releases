@@ -51,7 +51,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Alexander Simon
  */
 /*package*/ final class MsvcCompiler extends GNUCCompiler {
    /** Creates a new instance of GNUCCompiler */

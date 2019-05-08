@@ -54,7 +54,6 @@ import java.util.Map.Entry;
 
 /**
  * A class for gathering recent write statistics
- * @author Vladimir Kvashin
  */
 public final class WriteStatistics {
     

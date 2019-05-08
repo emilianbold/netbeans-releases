@@ -48,7 +48,6 @@ import org.netbeans.junit.NbTestSuite;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ExecutionTest extends NbTestSuite {
 

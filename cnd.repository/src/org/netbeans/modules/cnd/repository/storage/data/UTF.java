@@ -55,7 +55,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Utility class for reading and writing UTF
- * @author Vladimir Kvashin
  */
 public final class UTF {
     /**

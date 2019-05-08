@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * managing defragmentation: while one file is active (recent changes are
  * written into it), other one might be defragmented
  *
- * @author Vladimir Kvashin
  */
 public final class DoubleFileStorage implements FileStorage {
 

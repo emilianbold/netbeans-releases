@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class CompilerFlavor {
     

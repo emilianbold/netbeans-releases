@@ -60,7 +60,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class IntroduceVariableBaseFix implements Fix {
     protected final CsmOffsetable expression;

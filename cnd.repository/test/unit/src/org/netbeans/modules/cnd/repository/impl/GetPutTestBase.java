@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 /**
  * Tests Repository.tryGet()
  *
- * @author Vladimir Kvashin
  */
 public abstract class GetPutTestBase extends CndBaseTestCase implements PersistentFactoryListener {
 

@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.search;
 
 /**
  *
- * @author akrasny
  */
 public interface Searcher {
 

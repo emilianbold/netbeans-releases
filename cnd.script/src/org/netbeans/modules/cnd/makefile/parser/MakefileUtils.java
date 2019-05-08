@@ -48,7 +48,6 @@ import java.util.Set;
 
 /**
  *
- * @author Alexey Vladykin
  */
 public final class MakefileUtils {
 

@@ -58,7 +58,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplementation 
         implements FiltersManager.Filterable {

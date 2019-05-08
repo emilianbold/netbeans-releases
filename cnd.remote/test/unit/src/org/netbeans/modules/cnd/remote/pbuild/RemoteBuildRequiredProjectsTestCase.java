@@ -54,7 +54,6 @@ import org.netbeans.spi.project.ActionProvider;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteBuildRequiredProjectsTestCase extends RemoteBuildTestBase {
 

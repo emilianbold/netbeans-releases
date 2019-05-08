@@ -59,7 +59,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Alexander Simon
  */
 public class WriteRegistryTestCase extends NbTestCase {
     private static final boolean TRACE = false;

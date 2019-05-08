@@ -71,7 +71,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author akrasny
  */
 public final class NetworkRegistry {
 

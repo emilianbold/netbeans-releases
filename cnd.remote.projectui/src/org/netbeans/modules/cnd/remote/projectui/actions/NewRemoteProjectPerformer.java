@@ -80,7 +80,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(path="CND/Toobar/Services/NewRemoteProject", service=ActionListener.class)
 public class NewRemoteProjectPerformer extends RemoteActionPerformer {

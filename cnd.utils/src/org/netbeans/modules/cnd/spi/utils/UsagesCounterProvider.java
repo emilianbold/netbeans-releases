@@ -45,7 +45,6 @@ import java.util.Map;
 
 /**
  *
- * @author inikiforov
  */
 public interface UsagesCounterProvider {
 

@@ -52,7 +52,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Nickolay Dalmatov
  */
 /*package*/class RepositoryListenersManager {
     private static final RepositoryListenersManager instance = new RepositoryListenersManager();

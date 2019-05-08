@@ -54,7 +54,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
- * @author Vladimir Kvashin
  */
 public class RemoteBinaryServiceTestCase extends RemoteTestBase {
 

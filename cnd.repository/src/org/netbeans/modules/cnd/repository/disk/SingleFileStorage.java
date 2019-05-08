@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 
 /**
  *
- * @author akrasny
  */
 public final class SingleFileStorage implements FileStorage {
 

@@ -46,7 +46,6 @@ import java.util.List;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class RepositoryValidationFinal extends RepositoryValidationBase {
 

@@ -52,7 +52,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author vk155633
  */
 /**
  * This factory creates "LayerProxies" that have WritableDiskLayerImpl

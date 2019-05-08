@@ -50,7 +50,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(path="CND/Toobar/Services/OpenRemoteFile", service=ActionListener.class)
 public class OpenRemoteFilePerformer extends RemoteActionPerformer {

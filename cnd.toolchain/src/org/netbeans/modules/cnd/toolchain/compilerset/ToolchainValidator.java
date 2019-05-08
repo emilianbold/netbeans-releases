@@ -72,7 +72,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class ToolchainValidator {
     private static final boolean DISABLED = Boolean.getBoolean("cnd.toolchain.validator.disabled") || CompilerSetManagerImpl.DISABLED; // NOI18N

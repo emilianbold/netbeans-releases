@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescript
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainManagerImpl;
 
 /**
- * @author Alexey Vladykin
  */
 public class ScannerTestCase extends NbTestCase {
 

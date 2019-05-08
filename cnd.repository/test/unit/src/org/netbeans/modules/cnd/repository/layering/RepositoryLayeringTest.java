@@ -69,7 +69,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author vkvashin
  */
 public class RepositoryLayeringTest extends TraceModelTestBase {
 

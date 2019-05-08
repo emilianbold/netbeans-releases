@@ -46,7 +46,6 @@ import org.openide.nodes.Children;
 
 /**
  *
- * @author Alexander Simon
  */
 class StaticLibraryNode extends CndDataNode {
 

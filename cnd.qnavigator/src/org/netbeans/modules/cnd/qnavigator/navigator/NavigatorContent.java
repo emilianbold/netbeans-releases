@@ -49,7 +49,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Alexander Simon
  */
 public class NavigatorContent {
     private NavigatorModel curModel;

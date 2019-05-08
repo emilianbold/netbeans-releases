@@ -54,7 +54,6 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.spi.project.ActionProvider;
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RfsSunStudioRemoteBuildTestCase extends RemoteBuildTestBase {
 

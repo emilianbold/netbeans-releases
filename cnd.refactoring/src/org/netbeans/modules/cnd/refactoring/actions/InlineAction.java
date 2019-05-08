@@ -47,7 +47,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Danila Sergeyev
  */
 public class InlineAction extends CsmRefactoringGlobalAction {
     

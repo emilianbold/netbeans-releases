@@ -94,7 +94,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author alsimon
  */
 public class StatementFinder {
     private final Document doc;

@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.repository.impl.spi;
 
 /**
  * [AbsFilePath<->Index] conversion in a layer
- * @author Vladimir Voskresensky
  */
 public interface FilePathConverter {
     public CharSequence layerToClient(int fileIdx);

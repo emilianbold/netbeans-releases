@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
 
 /**
  *
- * @author thp
  */
 public interface Save {
     public void save(ToolsCacheManager cacheManager);

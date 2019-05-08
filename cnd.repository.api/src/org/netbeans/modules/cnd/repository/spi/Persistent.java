@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.repository.spi;
 
 /**
  * Interface which classes should implement to be persistable
- * @author Sergey Grinev, Vladimir Voskresensky
  */
 public interface Persistent 
 {

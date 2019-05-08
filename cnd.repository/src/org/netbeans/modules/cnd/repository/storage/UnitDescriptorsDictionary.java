@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
  *
  * clientUnitDescriptor --- clientShortUnitID
  *
- * @author akrasny
  */
 /* package */ final class UnitDescriptorsDictionary {
 

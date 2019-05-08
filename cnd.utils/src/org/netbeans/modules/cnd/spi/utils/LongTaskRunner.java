@@ -46,7 +46,6 @@ import org.openide.util.Cancellable;
 
 /**
  *
- * @author masha
  */
 abstract public class LongTaskRunner {
 

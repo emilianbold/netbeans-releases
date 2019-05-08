@@ -52,7 +52,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class MakeDataObjectTestCase extends NbTestCase {
     public MakeDataObjectTestCase(String testName) {

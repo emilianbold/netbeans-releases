@@ -52,7 +52,6 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteFileSystemViewTestCase extends NativeExecutionBaseTestCase {
 

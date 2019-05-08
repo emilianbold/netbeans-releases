@@ -46,7 +46,6 @@ import java.util.List;
 
 /**
  *
- * @author akrasny
  */
 public final class MatchingFileData {
 

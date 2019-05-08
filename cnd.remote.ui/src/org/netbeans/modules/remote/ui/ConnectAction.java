@@ -56,7 +56,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.ConnectAction", category = "NativeRemote")
 @ActionRegistration(displayName = "#ConnectMenuItem", lazy = false)

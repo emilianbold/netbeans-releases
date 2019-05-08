@@ -58,10 +58,6 @@ import org.openide.util.lookup.Lookups;
  * @see org.netbeans.modules.refactoring.api.AbstractRefactoring
  * @see org.netbeans.modules.refactoring.api.RefactoringSession
  *
- * @author  Pavel Flaska
- * @author  Tomas Hurka
- * @author  Jan Becicka
- * @author  Vladimir Voskresensky
  */
 public final class ChangeParametersRefactoring extends AbstractRefactoring {
     

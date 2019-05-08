@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
  * infrastructure itself, so no need to return them in collection, class is enough.
  * The same for files, it's enough to return file and all corresponding includes will be handled by
  * infrastructure.
- * @author Vladimir Voskresensky
  */
 public interface CsmWhereUsedExtraObjectsProvider {
     Collection<CsmObject> getExtraObjects(CsmObject orig);

@@ -68,7 +68,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @SuppressWarnings("rawtypes") // UI editor produces code with tons of rawtypes warnings
 public class HostPropertiesDialog extends JPanel {

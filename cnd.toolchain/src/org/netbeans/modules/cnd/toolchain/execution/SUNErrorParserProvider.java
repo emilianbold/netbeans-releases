@@ -50,7 +50,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.class)
 public class SUNErrorParserProvider extends ErrorParserProvider {

@@ -81,7 +81,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class StatementNode implements BreadcrumbsElement {
     private final List<CsmTrueElement> trueCsmElements;

@@ -55,7 +55,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
- * @author Alexey Vladykin
  */
 public class MakefileUtils {
 

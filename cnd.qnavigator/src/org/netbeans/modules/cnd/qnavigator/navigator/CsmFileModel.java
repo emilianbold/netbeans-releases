@@ -56,7 +56,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CsmFileModel {
     static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.qnavigator"); // NOI18N

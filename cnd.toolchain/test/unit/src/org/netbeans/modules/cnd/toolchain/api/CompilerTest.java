@@ -51,7 +51,6 @@ import org.netbeans.junit.NbTestSuite;
 
 /**
  *
-* @author Alexander Simon
   */
 public class CompilerTest extends NbTestSuite {
     

@@ -59,7 +59,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
- * @author Vladimir Kvashin
  */
 public class ShowToolchainsAction extends AbstractAction {
 

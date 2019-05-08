@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public final class BufferedRWAccess implements FileRWAccess {
 

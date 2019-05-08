@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.toolchain.support.CompilerDefinition;
 
 /**
  *
- * @author Alexander Simon
  */
 public class SPICompilerAccesor {
     private final Tool compiler;

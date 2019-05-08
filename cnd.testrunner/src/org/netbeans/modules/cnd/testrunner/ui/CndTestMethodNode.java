@@ -58,7 +58,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Marian Petras, Erno Mononen
  */
 public final class CndTestMethodNode extends TestMethodNode {
 

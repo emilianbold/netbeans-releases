@@ -62,7 +62,6 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
  *
- * @author Vladimir Kvashintrace
  */
 public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
 

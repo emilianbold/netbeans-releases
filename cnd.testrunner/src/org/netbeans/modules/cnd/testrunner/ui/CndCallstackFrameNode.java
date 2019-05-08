@@ -52,7 +52,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Marian Petras
  */
 public final class CndCallstackFrameNode extends CallstackFrameNode {
     private final String displayName;

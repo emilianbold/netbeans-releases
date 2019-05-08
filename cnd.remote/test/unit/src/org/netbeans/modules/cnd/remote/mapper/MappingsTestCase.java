@@ -65,7 +65,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Sergey Grinev
  */
 public class MappingsTestCase extends RemoteTestBase {
 

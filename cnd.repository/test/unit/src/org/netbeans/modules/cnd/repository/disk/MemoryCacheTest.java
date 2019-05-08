@@ -53,7 +53,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 public class MemoryCacheTest extends NbTestCase {
 

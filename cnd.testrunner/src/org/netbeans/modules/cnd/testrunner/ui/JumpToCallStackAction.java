@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
 /**
  * Jump to action for call stack lines.
  *
- * @author Marian Petras, Erno Mononen
  */
 final class JumpToCallStackAction extends AbstractAction {
 

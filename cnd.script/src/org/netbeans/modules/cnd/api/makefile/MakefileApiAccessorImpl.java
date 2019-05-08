@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.makefile.MakefileApiAccessor;
 import org.openide.filesystems.FileObject;
 
 /**
- * @author Alexey Vladykin
  */
 /*package*/ final class MakefileApiAccessorImpl extends MakefileApiAccessor {
 

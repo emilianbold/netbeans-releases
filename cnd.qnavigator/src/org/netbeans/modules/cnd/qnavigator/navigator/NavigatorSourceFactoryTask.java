@@ -67,7 +67,6 @@ import org.netbeans.modules.parsing.spi.support.CancelSupport;
 
 /**
  *
- * @author Alexander Simon
  */
 public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<Parser.Result> {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N

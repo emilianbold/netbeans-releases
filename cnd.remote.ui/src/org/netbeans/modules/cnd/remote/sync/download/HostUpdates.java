@@ -66,7 +66,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class HostUpdates {
 

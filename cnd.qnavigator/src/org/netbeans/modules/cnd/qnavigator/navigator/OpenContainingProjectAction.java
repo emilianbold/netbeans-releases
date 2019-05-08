@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Egor Ushakov
  */
 public class OpenContainingProjectAction extends AbstractAction {
     

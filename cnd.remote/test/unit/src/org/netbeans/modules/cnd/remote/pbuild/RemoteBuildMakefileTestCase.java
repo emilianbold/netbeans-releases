@@ -53,7 +53,6 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.spi.project.ActionProvider;
 
 /**
- * @author Vladimir Kvashin
  */
 public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
     static final boolean ENABLE_SCP = CndUtils.getBoolean("cnd.remote.scp", false); // NOI18N

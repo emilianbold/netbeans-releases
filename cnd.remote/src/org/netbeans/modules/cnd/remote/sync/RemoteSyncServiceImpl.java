@@ -63,7 +63,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @ServiceProvider(service=RemoteSyncService.class)
 public class RemoteSyncServiceImpl implements RemoteSyncService {

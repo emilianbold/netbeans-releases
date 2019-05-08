@@ -60,8 +60,6 @@ import org.netbeans.spi.lexer.TokenFactory;
  * <a href="http://www.opengroup.org/onlinepubs/009695399/utilities/make.html">standard makefiles</a>
  * and some extensions.
  *
- * @author Jan Jancura
- * @author Alexey Vladykin
  */
 /*package*/ final class MakefileLexer implements Lexer<MakefileTokenId> {
 

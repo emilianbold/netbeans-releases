@@ -48,7 +48,6 @@ import java.io.PrintStream;
 
 /**
  * Collects a simple statistics
- * @author Vladimir Kvashin
  */
 public class SimpleStatistics extends BaseStatistics<Integer> {
 

@@ -52,7 +52,6 @@ import static org.netbeans.modules.cnd.api.script.ShTokenId.*;
 import static org.netbeans.lib.lexer.test.LexerTestUtilities.assertNextTokenEquals;
 
 /**
- * @author Alexey Vladykin
  */
 public class ShLexerTest extends NbTestCase {
 

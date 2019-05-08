@@ -57,8 +57,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Lahoda, Dusan Balek
- * @author Vladimir Voskresensky
  */
 public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeListener {
 

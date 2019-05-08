@@ -51,8 +51,6 @@ import java.util.Set;
 
 /**
  * map for one entry set (only two fields to reduce memory) - 16 bytes on 32bit system.
- * @author Alexandr Simon
- * @author Vladimir Voskresensky
  */
 final class TinySingletonMap<K, V> implements Map<K, V>, TinyMaps.CompactMap<K, V> {
 

@@ -72,7 +72,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author vkvashin
  */
 public class FullRemoteCodeModelTestCase extends RemoteBuildTestBase {
 

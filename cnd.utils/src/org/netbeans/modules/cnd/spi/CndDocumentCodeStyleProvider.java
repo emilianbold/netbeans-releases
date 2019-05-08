@@ -45,7 +45,6 @@ import javax.swing.text.Document;
 
 /**
  *
- * @author alsimon
  */
 public interface CndDocumentCodeStyleProvider {
 

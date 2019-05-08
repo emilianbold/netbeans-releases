@@ -49,7 +49,6 @@ import static org.junit.Assert.*;
 import static org.netbeans.modules.cnd.makefile.editor.ShellEmbeddingHighlightContainer.*;
 
 /**
- * @author Alexey Vladykin
  */
 public class ShellEmbeddingHighlightContainerTest {
 

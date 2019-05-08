@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=200)
 public class FullRemoteSyncFactory extends BaseSyncFactory {

@@ -90,7 +90,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author akrasny
  */
 /* package */ final class Storage {
 

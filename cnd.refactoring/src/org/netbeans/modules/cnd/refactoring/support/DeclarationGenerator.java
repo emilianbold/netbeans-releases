@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 
 /**
  * utilities to create declarations
- * @author Vladimir Voskresensky
  */
 public final class DeclarationGenerator {
 

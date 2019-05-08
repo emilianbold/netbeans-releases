@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.refactoring.test.RefactoringBaseTestCase;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class InstantRenamePerformerTestCase extends RefactoringBaseTestCase {
 

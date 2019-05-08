@@ -48,7 +48,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface CndDiagnosticProvider {
     public String getDisplayName();

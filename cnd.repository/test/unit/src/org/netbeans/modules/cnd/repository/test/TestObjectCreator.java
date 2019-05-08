@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 /**
  * Creates a set of TestObject objects
  * that correspond to file by the given path
- * @author Vladimir Kvashin
  */
 public class TestObjectCreator {
 

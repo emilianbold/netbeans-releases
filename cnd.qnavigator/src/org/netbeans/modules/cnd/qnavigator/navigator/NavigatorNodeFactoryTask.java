@@ -69,7 +69,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
- * @author Alexander Simon
  */
 public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<Parser.Result> {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N

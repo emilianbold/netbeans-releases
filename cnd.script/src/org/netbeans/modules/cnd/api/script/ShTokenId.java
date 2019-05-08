@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.script.lexer.ShLanguageHierarchy;
 
 /**
  *
- * @author Jan Jancura
  */
 public enum ShTokenId implements TokenId {
 

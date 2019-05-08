@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
  * Activates encapsulate field refactoring.
  * (based on org.netbeans.modules.refactoring.java.ui.EncapsulateFieldAction)
  *
- * @author Vladimir Voskresensky
  */
 public final class EncapsulateFieldsAction extends CsmRefactoringGlobalAction {
 

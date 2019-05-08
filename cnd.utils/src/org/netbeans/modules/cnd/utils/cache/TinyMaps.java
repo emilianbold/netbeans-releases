@@ -47,7 +47,6 @@ import java.util.Map;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class TinyMaps {
     private static final Map<?,?> NO_CONTENT = Collections.emptyMap();

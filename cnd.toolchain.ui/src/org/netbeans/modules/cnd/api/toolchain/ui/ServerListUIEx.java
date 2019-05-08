@@ -58,7 +58,6 @@ import org.openide.util.Lookup;
  * they share ToolsCacheManager.
  * That's why we had to extend ServerListDisplayer.
  *
- * @author Vladimir Kvashin
  */
 public abstract class ServerListUIEx extends ServerListUI {
 

@@ -65,7 +65,6 @@ import org.openide.util.Utilities;
 
 /**
  * Misc. utiliy finctions
- * @author Vladimir Kvashin
  */
 public class RemoteUtil {
 

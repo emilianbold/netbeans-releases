@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexey Vladykin
  */
 /*package*/ final class RestoreToolchainsAction extends AbstractAction {
 

@@ -56,7 +56,6 @@ import org.openide.loaders.DataObject;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CndDataObjectTestCase extends NbTestCase {
     

@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexey Vladykin
  */
 /*package*/ final class RemoveToolchainAction extends AbstractAction {
 

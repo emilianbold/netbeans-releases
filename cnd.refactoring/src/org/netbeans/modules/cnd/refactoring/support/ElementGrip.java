@@ -56,7 +56,6 @@ import org.openide.filesystems.FileObject;
  * This wrapper is used to create composition of scopes which is 
  * remembered once and is not affected by the following changes in code
  * based on ElementGrip from java refactoring
- * @author Vladimir Voskresensky
  */
 public final class ElementGrip implements Openable {
     private static final boolean LAZY = false;

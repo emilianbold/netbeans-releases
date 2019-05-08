@@ -45,7 +45,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
- * @author Alexey Vladykin
  */
 public final class MakefileMacro extends MakefileElement {
 

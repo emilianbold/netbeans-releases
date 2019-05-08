@@ -48,7 +48,6 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Egor Ushakov
  */
 public final class UIGesturesSupport {
     

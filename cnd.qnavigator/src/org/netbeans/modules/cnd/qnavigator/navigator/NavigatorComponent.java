@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class NavigatorComponent implements NavigatorPanel, LookupListener {
 

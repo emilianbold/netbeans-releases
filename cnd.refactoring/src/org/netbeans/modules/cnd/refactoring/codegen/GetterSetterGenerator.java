@@ -71,8 +71,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Dusan Balek
- * @author Vladimir Voskresensky
  */
 public class GetterSetterGenerator implements CodeGenerator {
 

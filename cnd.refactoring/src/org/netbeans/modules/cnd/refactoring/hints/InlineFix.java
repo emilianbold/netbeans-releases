@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Danila Sergeyev
  */
 public class InlineFix implements Fix {
     private final BaseDocument doc;

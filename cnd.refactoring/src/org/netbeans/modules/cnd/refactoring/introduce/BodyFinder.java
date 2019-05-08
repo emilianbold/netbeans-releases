@@ -84,7 +84,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Alexander Simon
  */
 public class BodyFinder {
     private final Document doc;

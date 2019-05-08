@@ -46,7 +46,6 @@ import javax.swing.JPanel;
 
 /**
  *
- * @author vkvashin
  */
 public class CreateHostVisualPanelBase extends JPanel {
 

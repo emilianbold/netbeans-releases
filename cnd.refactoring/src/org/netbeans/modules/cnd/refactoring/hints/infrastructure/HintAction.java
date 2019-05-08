@@ -50,7 +50,6 @@ import org.openide.windows.TopComponent;
 
 /**
  * based on org.netbeans.modules.java.hints.infrastructure.HintAction
- * @author Vladimir Voskresensky
  */
 public abstract class HintAction extends TextAction implements PropertyChangeListener {
 

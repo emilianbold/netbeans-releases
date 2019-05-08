@@ -60,7 +60,6 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  * based on RenameHandlerImpl from refactoring.java
- * @author Vladimir Voskresensky
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.source.spi.RenameHandler.class)
 public class RenameHandlerImpl implements RenameHandler {

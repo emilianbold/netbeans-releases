@@ -66,7 +66,6 @@ import org.openide.util.Utilities;
  * {@link OpenCookie} implementation that launches external program
  * with DataObject's primary file.
  *
- * @author Alexey Vladykin
  */
 /*package*/ final class ExternalProgramOpenCookie implements OpenCookie {
 

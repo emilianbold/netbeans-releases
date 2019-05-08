@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorKit;
 
 /**
- * @author Alexey Vladykin
  */
 public class ShellKit extends NbEditorKit {
     private static final String COMMENT_LINE = "#"; //NOI18N

@@ -51,7 +51,6 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ToolsUtils {
     private ToolsUtils() {

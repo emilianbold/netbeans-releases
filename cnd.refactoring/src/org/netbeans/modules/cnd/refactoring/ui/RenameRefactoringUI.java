@@ -67,7 +67,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     private final AbstractRefactoring refactoring;

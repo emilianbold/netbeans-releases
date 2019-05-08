@@ -58,8 +58,6 @@ import org.openide.util.NbBundle;
 /**
  * (based on Java version)
  *
- * @author  Tomas Hurka, Pavel Flaska, Jan Pokorsky
- * @author Vladimir Voskresensky
  */
 public final class EncapsulateFieldUI implements RefactoringUI {
 

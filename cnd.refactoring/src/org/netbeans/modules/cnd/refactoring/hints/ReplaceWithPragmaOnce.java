@@ -58,7 +58,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 /**
  *
- * @author Danila Sergeyev
  */
 public class ReplaceWithPragmaOnce implements Fix {
     private final BaseDocument doc;

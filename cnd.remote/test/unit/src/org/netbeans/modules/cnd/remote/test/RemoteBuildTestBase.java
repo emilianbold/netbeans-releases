@@ -100,7 +100,6 @@ import org.openide.nodes.Node;
 
 /**
  * A common base class for tests that build remote project
- * @author Vladimir Kvashin
  */
 public class RemoteBuildTestBase extends RemoteTestBase {
 

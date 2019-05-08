@@ -53,7 +53,6 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 /**
  * Base class for test recognizer handlers. 
  * 
- * @author Erno Mononen
  */
 public abstract class TestRecognizerHandler {
 

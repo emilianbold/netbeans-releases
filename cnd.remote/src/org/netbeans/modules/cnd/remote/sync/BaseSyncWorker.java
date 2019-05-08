@@ -53,7 +53,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  * A common base class for RemoteSyncWorker implementations
- * @author Vladimir Kvashin
  */
 /*package-local*/ abstract class BaseSyncWorker implements RemoteSyncWorker {
 

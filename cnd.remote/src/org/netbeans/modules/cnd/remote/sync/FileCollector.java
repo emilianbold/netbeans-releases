@@ -87,7 +87,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author vkvashin
  */
 /*package*/ class FileCollector {
 

@@ -63,7 +63,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class ToolchainListRootNode extends AbstractNode {
 

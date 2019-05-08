@@ -62,7 +62,6 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author Alexey Vladykin
  */
 public class MakefileParserTest extends NbTestCase {
 

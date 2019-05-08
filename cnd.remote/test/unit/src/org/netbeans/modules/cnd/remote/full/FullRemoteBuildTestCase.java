@@ -64,7 +64,6 @@ import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 
 /**
- * @author Vladimir Kvashin
  */
 public class FullRemoteBuildTestCase extends RemoteBuildTestBase {
 

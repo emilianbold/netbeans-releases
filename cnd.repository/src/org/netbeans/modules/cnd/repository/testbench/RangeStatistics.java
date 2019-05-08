@@ -49,7 +49,6 @@ import java.util.*;
 
 /**
  * Collects a simple statistics
- * @author Vladimir Kvashin
  */
 public class RangeStatistics extends BaseStatistics<Integer> {
 

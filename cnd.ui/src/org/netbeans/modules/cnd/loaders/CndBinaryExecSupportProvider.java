@@ -52,7 +52,6 @@ import org.openide.util.lookup.InstanceContent.Convertor;
  * Source data objects do not need binary support.
  * Remove class or migrate binaries data objects from CookieSet to Lookup.
  *
- * @author Alexey Vladykin
  */
 public final class CndBinaryExecSupportProvider extends CndCookieProvider {
     static final BinaryExecSupportFactory staticFactory = new BinaryExecSupportFactory();

@@ -59,7 +59,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
 /**
- * @author Alexey Vladykin
  */
 /*package*/ class NewQtFormPanelGUI extends CndPanelGUI implements ActionListener {
 

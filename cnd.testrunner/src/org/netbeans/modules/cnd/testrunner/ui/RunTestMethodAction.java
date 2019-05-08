@@ -54,7 +54,6 @@ import org.openide.util.lookup.Lookups;
 /**
  * An action for running/debugging a singe test method.
  *
- * @author Erno Mononen
  */
 class RunTestMethodAction extends BaseTestMethodNodeAction {
 

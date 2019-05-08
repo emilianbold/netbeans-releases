@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.remote.ui.networkneighbour;
 
 /**
  *
- * @author akrasny
  */
 public final class NeighbourHost {
 

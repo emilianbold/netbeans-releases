@@ -48,7 +48,6 @@ import org.openide.text.DataEditorSupport;
  * If such a provider is defined, then for C/C++ data objects pane creation
  * is delegated to the provider. It can anyhow return null,
  * in which case standard pane will be created.
- * @author Vladimir Kvashin
  */
 public interface CndPaneProvider {
 

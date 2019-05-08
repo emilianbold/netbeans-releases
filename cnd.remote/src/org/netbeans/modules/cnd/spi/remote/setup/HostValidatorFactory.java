@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
 
 /**
  *
- * @author masha
  */
 public final class HostValidatorFactory {
 

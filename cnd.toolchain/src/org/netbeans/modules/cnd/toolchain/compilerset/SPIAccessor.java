@@ -48,7 +48,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class SPIAccessor {
 

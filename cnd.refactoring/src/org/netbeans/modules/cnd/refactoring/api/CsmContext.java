@@ -72,7 +72,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class CsmContext {
     private final JTextComponent component;

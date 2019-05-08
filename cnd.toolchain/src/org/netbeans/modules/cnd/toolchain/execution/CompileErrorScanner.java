@@ -69,7 +69,6 @@ import org.openide.windows.OutputListener;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service = PushTaskScanner.class, path = "TaskList/Scanners")
 public class CompileErrorScanner extends PushTaskScanner {

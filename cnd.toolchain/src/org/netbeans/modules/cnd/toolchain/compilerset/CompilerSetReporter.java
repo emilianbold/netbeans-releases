@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
  * Sometimes we need to make process of setting up compiler set verbose.
  * This class allows to plug in a writer to report the process of
  * compiler set setup to
- * @author Vladimir Kvashin
  */
 public class CompilerSetReporter {
 

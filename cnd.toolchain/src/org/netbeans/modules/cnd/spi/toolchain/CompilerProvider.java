@@ -53,7 +53,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author gordonp
  */
 public abstract class CompilerProvider {
     private static final CompilerProvider INSTANCE = new Default();

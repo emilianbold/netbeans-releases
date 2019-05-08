@@ -47,7 +47,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author akrasny
  */
 @ServiceProvider(service = RepositoryImplementationFactory.class, position = 1000)
 public class RepositoryImplFactory implements RepositoryImplementationFactory {

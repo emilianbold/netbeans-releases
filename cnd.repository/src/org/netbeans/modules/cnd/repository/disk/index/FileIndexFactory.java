@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  *
- * @author Nickolay Dalmatov
  */
 public class FileIndexFactory extends AbstractObjectFactory {
     private static FileIndexFactory theFactory;

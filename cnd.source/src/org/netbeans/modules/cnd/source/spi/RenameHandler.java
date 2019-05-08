@@ -52,7 +52,6 @@ import org.openide.nodes.Node;
  * instance found, it's handleRename(...) method is called to handle rename
  * request. More than one instance of RenameHandler is not allowed.
  *
- * @author Jan Becicka, Vladimir Voskresensky
  * @since 1.8.0
  */
 public interface RenameHandler {

@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 /**
  * PersistentFactory implementation
  * for tests
- * @author Vladimir Kvashin
  */
 public class TestFactory implements PersistentFactory {
 

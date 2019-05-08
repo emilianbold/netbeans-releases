@@ -98,7 +98,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  tom
  */
 public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyChangeListener {
     

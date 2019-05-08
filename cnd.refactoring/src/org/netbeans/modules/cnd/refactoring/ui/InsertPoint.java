@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class InsertPoint {
     public static final InsertPoint DEFAULT = new InsertPoint(null, null, null, Integer.MIN_VALUE,

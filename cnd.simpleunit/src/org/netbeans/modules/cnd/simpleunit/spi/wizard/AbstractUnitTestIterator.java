@@ -67,7 +67,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- * @author Vladimir Voskresensky
  */
 public abstract class AbstractUnitTestIterator implements TemplateWizard.Iterator {
     private final ChangeSupport cs;

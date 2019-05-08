@@ -64,7 +64,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FixCodeAssistancePanel extends javax.swing.JPanel {
 

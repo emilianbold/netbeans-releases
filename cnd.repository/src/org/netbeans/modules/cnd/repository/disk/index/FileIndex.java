@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 
 /**
  * Keeps an index that maps keys to file extents.
- * @author Vladimir Kvashin
  */
 public interface FileIndex {
 

@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.support;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface ReadOnlySupport {
     boolean isReadOnly();

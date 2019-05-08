@@ -46,7 +46,6 @@ import java.util.concurrent.TimeoutException;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteSyncTestSupport {
 

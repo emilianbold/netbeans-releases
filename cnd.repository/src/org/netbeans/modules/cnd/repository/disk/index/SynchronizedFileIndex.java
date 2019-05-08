@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 /**
  * Synchronized index wrapper:
  * Delegate work to the given index, is responsible for synchronization
- * @author Vladimir Kvashin
  */
 class SynchronizedFileIndex implements FileIndex {
     

@@ -50,7 +50,6 @@ import org.openide.windows.OutputEvent;
 
 /**
  *
- * @author masha
  */
 public abstract class OutputListenerProvider {
 

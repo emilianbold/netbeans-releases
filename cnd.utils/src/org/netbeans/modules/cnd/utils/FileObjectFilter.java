@@ -46,7 +46,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Analog of java.io.FileFilter for file objects
- * @author Vladimir Kvashin
  */
 public interface FileObjectFilter {
     boolean accept(FileObject fileObject);

@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainManagerImpl;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ReadRegistryTestCase extends NbTestCase {
 

@@ -58,7 +58,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author petrk
  */
 public class GlobalRenamePerformerTestCase extends RefactoringBaseTestCase {
     

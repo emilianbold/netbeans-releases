@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.repository.util.IntToValueList;
 
 /**
  * The factory to write/read FilePathsDictionary object
- * @author mtishkov
  */
 public class FilePathsDictionaryPersistentFactory implements PersistentFactory {
 

@@ -65,7 +65,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class SelectHostWizardPanel implements
         WizardDescriptor.Panel<WizardDescriptor>,

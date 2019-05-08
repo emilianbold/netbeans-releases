@@ -62,7 +62,6 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
 
 /**
- * @author Alexey Vladykin
  */
 public class MakefileParser extends Parser {
 

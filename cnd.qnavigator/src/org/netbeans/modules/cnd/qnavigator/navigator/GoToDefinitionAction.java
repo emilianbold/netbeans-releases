@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public class GoToDefinitionAction extends AbstractAction {
 

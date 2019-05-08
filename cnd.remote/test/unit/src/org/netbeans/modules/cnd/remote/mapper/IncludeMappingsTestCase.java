@@ -57,7 +57,6 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.openide.util.Utilities;
 
 /**
- * @author Vladimir Kvashin
  */
 public class IncludeMappingsTestCase extends RemoteTestBase {
 

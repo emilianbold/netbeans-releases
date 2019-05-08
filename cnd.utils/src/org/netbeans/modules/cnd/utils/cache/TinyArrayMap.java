@@ -53,7 +53,6 @@ import java.util.Set;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 class TinyArrayMap<K, V> implements Map<K, V> {
 

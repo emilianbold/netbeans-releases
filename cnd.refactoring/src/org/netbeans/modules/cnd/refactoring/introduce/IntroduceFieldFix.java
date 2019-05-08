@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 final class IntroduceFieldFix implements Fix {
     private final String guessedName;

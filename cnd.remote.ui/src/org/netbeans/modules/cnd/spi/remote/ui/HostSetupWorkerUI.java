@@ -48,7 +48,6 @@ import org.openide.WizardDescriptor;
 
 /**
  *
- * @author masha
  */
 public interface HostSetupWorkerUI extends HostSetupWorker{
     public List<WizardDescriptor.Panel<WizardDescriptor>> getWizardPanels(HostValidator validator);

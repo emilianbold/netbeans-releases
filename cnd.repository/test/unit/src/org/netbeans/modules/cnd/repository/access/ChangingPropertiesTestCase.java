@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class ChangingPropertiesTestCase extends RepositoryAccessTestBase {
 

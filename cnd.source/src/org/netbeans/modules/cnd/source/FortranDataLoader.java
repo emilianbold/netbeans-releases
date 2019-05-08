@@ -52,7 +52,6 @@ import org.openide.loaders.MultiDataObject;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FortranDataLoader extends SourceAbstractDataLoader {
 

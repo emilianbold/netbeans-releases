@@ -65,7 +65,6 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase {
 

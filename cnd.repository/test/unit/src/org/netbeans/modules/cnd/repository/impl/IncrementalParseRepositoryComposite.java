@@ -56,7 +56,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
  */
 @RandomlyFails
 public class IncrementalParseRepositoryComposite extends RepositoryValidationBase {

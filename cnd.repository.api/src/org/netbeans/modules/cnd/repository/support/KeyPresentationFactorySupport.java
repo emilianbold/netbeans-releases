@@ -50,7 +50,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class KeyPresentationFactorySupport {
     private final static Collection<? extends KeyPresentationFactory> factories = Lookup.getDefault().lookupAll(KeyPresentationFactory.class);

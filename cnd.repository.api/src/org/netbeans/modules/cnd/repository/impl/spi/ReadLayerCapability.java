@@ -45,7 +45,6 @@ import java.nio.ByteBuffer;
 
 /**
  *
- * @author vkvashin
  */
 public interface ReadLayerCapability extends LayerCapability {
 

@@ -57,8 +57,6 @@ import org.openide.util.lookup.Lookups;
 /**
  * Refactoring used for encapsulating one field.
  * It creates getter and setter for given field and replaces all references.
- * @author Tomas Hurka, Jan Becicka, Jan Pokorsky
- * @author Vladimir Voskresensky
  */
 public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
     private String getterName;

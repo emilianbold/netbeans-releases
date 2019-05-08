@@ -69,7 +69,6 @@ import org.openide.util.NbBundle;
 
 /**
  * An implementation of SetupProvider that nandles RFS related binaries
- * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.api.remote.SetupProvider.class)
 public class RfsSetupProvider implements SetupProvider {

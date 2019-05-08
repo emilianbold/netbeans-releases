@@ -52,7 +52,6 @@ import org.openide.util.lookup.InstanceContent;
  * {@link CndCookieProvider}. <code>cnd.source</code> should not depend
  * on other CND modules.
  *
- * @author Alexey Vladykin
  */
 public abstract class CndCookieProvider {
     public interface InstanceContentOwner {

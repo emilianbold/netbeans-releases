@@ -55,7 +55,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  *
- * @author Jan Jancura
  */
 class ShLexer implements Lexer<ShTokenId> {
 

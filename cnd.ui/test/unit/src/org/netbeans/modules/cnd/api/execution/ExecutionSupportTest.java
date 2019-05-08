@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.api.utils.ImportUtils;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ExecutionSupportTest extends NbTestCase {
     private static final boolean TRACE = false;

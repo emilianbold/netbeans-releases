@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
  * synchronize in any case - for example, when it tries getting cache element,
  * gets null, then creates new value and puts it into cache)
  *
- * @author Nickolay Dalmatov
  */
 public class RepositoryCacheMap<K, V> {
 

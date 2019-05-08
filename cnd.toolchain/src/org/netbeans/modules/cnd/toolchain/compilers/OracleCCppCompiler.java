@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author alsimon
  */
 /*package*/ abstract class OracleCCppCompiler  extends CCCCompiler {
     

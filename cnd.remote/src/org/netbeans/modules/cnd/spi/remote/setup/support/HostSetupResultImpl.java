@@ -47,7 +47,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * A trivial HostSetupWorker.Result implementation
- * @author Vladimir Kvashin
  */
 public class HostSetupResultImpl implements HostSetupWorker.Result {
 

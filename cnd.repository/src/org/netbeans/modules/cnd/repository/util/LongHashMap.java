@@ -129,10 +129,6 @@ import java.util.TreeMap;
  * <a href="{@docRoot}/../guide/collections/index.html">
  * Java Collections Framework</a>.
  * 
- * @author Doug Lea
- * @author Josh Bloch
- * @author Arthur van Hoff
- * @author Neal Gafter
  * @version 1.65, 03/03/05
  * @see Object#hashCode()
  * @see Collection

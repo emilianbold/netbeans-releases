@@ -55,7 +55,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service=CreateFromTemplateAttributesProvider.class)
 public class SourceTemplateAttributesProvider implements CreateFromTemplateAttributesProvider {

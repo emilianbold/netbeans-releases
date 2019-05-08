@@ -80,7 +80,6 @@ import org.openide.util.RequestProcessor;
 /**
  * Test for FilesAccessStrategyImpl
  *
- * @author Vladimir Kvashin
  */
 public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
 

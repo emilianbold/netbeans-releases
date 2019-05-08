@@ -39,7 +39,6 @@ package org.netbeans.modules.cnd.repository.impl;
 
 /**
  *
- * @author vv159170
  */
 public class ReopenRepositoryValidationFinal extends RepositoryValidationFinal {
 

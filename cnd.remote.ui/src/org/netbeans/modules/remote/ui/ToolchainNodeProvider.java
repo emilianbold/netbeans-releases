@@ -46,7 +46,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.nodes.Node;
 
 /**
- * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service = HostNodesProvider.class, position=50)
 public class ToolchainNodeProvider extends HostNodesProvider {

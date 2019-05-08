@@ -62,7 +62,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author akrasny
  */
 /*package*/ final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
 

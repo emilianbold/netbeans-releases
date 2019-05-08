@@ -50,8 +50,6 @@ import java.util.Collections;
 /**
  * A LongHashMap that is sliced by several chunks to reduce concurrency
  *
- * @author Alexander Simon
- * @author Vladimir Kvashin
  */
 public class SlicedLongHashMap<K> {
 

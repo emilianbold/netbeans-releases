@@ -47,7 +47,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author akrasny
  */
 public final class SearchResult {
 

@@ -73,7 +73,6 @@ import org.openide.util.actions.NodeAction;
 
 /**
  * Root node for remote hosts list in Services tab
- * @author Vladimir Kvashin
  */
 public final class HostListRootNode extends AbstractNode {
 

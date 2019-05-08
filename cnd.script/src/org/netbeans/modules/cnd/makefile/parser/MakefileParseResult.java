@@ -50,7 +50,6 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * @author Alexey Vladykin
  */
 public class MakefileParseResult extends ParserResult {
 

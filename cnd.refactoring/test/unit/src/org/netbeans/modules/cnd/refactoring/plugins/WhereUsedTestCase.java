@@ -45,7 +45,6 @@ import java.util.Arrays;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class WhereUsedTestCase extends CsmWhereUsedQueryPluginTestCaseBase {
 

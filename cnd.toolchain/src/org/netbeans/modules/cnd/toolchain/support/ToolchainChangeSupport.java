@@ -45,7 +45,6 @@ import org.openide.util.WeakSet;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class ToolchainChangeSupport {
     protected final static Set<ChangeListener> listenerModified = new WeakSet<ChangeListener>();

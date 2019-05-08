@@ -119,7 +119,6 @@ import org.openide.util.NbPreferences;
  * parameters, you can add parameters, reorder parameteres or remove not
  * used paramaters (not available yet). You can also change access modifier.
  *
- * @author  Pavel Flaska, Jan Becicka
  */
 public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPanel {
 

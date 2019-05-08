@@ -50,7 +50,6 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import static org.netbeans.lib.lexer.test.LexerTestUtilities.assertNextTokenEquals;
 
 /**
- * @author Alexey Vladykin
  */
 public class MakefileLexerTest extends NbTestCase {
 

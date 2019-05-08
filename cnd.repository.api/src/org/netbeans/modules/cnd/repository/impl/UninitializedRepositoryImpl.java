@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 /**
  *
- * @author akrasny
  */
 public final class UninitializedRepositoryImpl implements RepositoryImplementation {
 

@@ -68,7 +68,6 @@ import org.openide.text.Line;
 import org.openide.util.Exceptions;
 
 /**
- * @author Alexey Vladykin
  */
 public class MakefileHyperlinkProvider implements HyperlinkProvider {
 

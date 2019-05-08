@@ -79,7 +79,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  thp
  */
 public final class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentListener, Runnable {
 

@@ -63,7 +63,6 @@ import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Alexey Vladykin
  */
 public final class MakefileStructureScanner implements StructureScanner {
 

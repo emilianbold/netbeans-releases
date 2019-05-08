@@ -64,7 +64,6 @@ import org.openide.windows.WindowManager;
 
 /** The util methods for projectui module.
  *
- * @author  Jiri Rechtacek
  */
 public class ProjectUtilities {
     

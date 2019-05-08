@@ -53,7 +53,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author masha
  */
 public abstract class CSMNotifier {
 

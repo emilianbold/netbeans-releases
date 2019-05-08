@@ -55,7 +55,6 @@ import org.openide.util.RequestProcessor;
 /**
  * Test for accessing project while it is being closed
  * (iz #115491, http://www.netbeans.org/issues/show_bug.cgi?id=115491)
- * @author Vladimir Kvashin
  */
 public class FindFileWhileClosingProject extends RepositoryAccessTestBase {
 

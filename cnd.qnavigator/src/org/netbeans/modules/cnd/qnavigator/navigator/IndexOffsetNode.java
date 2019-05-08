@@ -48,7 +48,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Alexander Simon
  */
 public class IndexOffsetNode implements Comparable<IndexOffsetNode>{
     private final Node node;

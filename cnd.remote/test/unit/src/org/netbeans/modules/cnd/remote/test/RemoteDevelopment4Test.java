@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author Sergey Grinev
  */
 public class RemoteDevelopment4Test extends CndBaseTestSuite {
 

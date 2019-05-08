@@ -56,7 +56,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author vkvashin
  */
 public class RemoteInvalidFileObjectSupportTest extends RemoteTestBase {
 

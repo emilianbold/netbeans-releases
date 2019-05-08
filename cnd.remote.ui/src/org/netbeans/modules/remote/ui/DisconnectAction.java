@@ -52,7 +52,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.DisconnectAction", category = "NativeRemote")
 @ActionRegistration(displayName = "#DisconnectMenuItem", lazy = false)

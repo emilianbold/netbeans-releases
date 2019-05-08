@@ -103,7 +103,6 @@ import org.openide.util.lookup.Lookups;
  * 
  * @todo Perform index lookups to determine the set of files to be checked!
  * 
- * @author Vladimir Voskresensky
  */
 public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements FiltersDescription.Provider {
     private final WhereUsedQuery refactoring;

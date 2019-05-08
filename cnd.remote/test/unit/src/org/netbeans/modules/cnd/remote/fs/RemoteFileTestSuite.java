@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
- * @author Vladimir Kvashin
  */
 public class RemoteFileTestSuite extends CndBaseTestSuite {
 

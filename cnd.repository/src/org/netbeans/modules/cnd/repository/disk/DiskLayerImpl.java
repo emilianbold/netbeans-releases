@@ -58,7 +58,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author akrasny
  */
 public final class DiskLayerImpl {
 

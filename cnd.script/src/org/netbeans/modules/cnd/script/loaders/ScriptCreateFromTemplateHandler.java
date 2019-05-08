@@ -66,7 +66,6 @@ import org.openide.util.lookup.ServiceProvider;
  * It also tweaks standard template parameters for compatibility
  * with previous CND versions.
  *
- * @author Alexey Vladykin
  */
 @ServiceProvider(service = CreateFromTemplateHandler.class)
 public class ScriptCreateFromTemplateHandler extends CreateFromTemplateHandler {

@@ -51,7 +51,6 @@ import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 
 /**
  * based on ElementGripTreeElement from java refactoring
- * @author Vladimir Voskresensky
  */
 public class ElementGripTreeElement implements TreeElement {
     

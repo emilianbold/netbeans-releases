@@ -58,7 +58,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class ScriptAndMakeTokenList implements TokenList {
 

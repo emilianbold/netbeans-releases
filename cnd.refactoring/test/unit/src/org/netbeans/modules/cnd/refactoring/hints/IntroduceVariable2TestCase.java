@@ -55,7 +55,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Alexander Simon
  */
 public class IntroduceVariable2TestCase extends ProjectBasedTestCase {
 

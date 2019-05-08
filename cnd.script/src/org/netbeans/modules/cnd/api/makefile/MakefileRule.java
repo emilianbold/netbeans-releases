@@ -46,7 +46,6 @@ import java.util.List;
 import org.openide.filesystems.FileObject;
 
 /**
- * @author Alexey Vladykin
  */
 public final class MakefileRule extends MakefileElement {
 

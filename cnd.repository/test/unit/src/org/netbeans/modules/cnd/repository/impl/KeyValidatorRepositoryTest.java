@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.FileModelTest;
 /**
  * Test for Key uniquity 
  *
- * @author Sergey Grinev
  */
 public class KeyValidatorRepositoryTest extends FileModelTest {
     

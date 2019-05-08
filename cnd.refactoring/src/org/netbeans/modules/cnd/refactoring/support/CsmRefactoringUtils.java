@@ -88,7 +88,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class CsmRefactoringUtils {
     public static final String USG_CND_REFACTORING = "USG_CND_REFACTORING"; // NOI18N

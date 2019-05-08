@@ -92,7 +92,6 @@ import org.openide.windows.IOProvider;
 
 /**
  * A common base class for remote "unit" tests
- * @author Sergey Grinev
  */
 public abstract class RemoteTestBase extends CndBaseTestCase {
 

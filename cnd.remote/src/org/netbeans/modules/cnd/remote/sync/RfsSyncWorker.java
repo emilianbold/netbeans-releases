@@ -84,7 +84,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 /*package*/ final class RfsSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
 

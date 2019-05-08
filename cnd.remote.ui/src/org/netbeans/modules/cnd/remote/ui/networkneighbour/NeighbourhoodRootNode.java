@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author akrasny
  */
 final class NeighbourhoodRootNode extends AbstractNode {
 

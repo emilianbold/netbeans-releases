@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.repository.impl.spi;
 
 /**
  *
- * @author mtishkov
  */
 public interface LayerListener {
      /**

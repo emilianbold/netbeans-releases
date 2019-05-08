@@ -78,7 +78,6 @@ import org.openide.windows.TopComponent;
 /**
  * provides support for refactoring actions
  * 
- * @author Vladimir Voskresensky
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position = 150)
 public class RefactoringActionsProvider extends ActionsImplementationProvider {

@@ -43,8 +43,6 @@
 package org.netbeans.modules.cnd.spi.toolchain;
 
 /**
- * @author gordonp
- * @author vkvashin
  */
 public interface CompilerSetProvider {
 

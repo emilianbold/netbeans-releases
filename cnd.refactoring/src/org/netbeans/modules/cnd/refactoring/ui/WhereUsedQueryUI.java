@@ -67,7 +67,6 @@ import org.openide.util.lookup.Lookups;
 /**
  * WhereUsedQueryUI for C/C++
  * 
- * @author Vladimir Voskresensky
  */
 public class WhereUsedQueryUI implements RefactoringUI {
     private WhereUsedQuery query;

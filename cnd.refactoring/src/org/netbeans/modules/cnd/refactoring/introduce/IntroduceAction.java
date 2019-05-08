@@ -61,7 +61,6 @@ import org.openide.windows.TopComponent;
 
 /**
  * based on  org.netbeans.modules.java.hints.introduce.IntroduceAction
- * @author Vladimir Voskresensky
  */
 public class IntroduceAction extends HintAction {
 

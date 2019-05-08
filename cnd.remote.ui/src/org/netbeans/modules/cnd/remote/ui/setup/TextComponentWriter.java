@@ -53,7 +53,6 @@ import org.openide.util.Exceptions;
  * An utility class that prints into text component;
  * all calls to this component are performed in the UI thread.
  *
- * @author Vladimir Kvashin
  */
 public final class TextComponentWriter extends PrintWriter {
 

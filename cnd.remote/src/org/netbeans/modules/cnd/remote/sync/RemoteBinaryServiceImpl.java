@@ -68,7 +68,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  * RemoteBinaryService implementation
- * @author Vladimir Kvashin
  */
 @ServiceProvider(service = RemoteBinaryService.class)
 public class RemoteBinaryServiceImpl extends RemoteBinaryService {

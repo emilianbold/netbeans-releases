@@ -95,7 +95,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author  Sergey Grinev
  */
 public class EditPathMapDialog extends JPanel implements ActionListener {
 

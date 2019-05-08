@@ -47,7 +47,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public interface HostValidator {
     boolean validate(ExecutionEnvironment env, boolean searchForTools, final PrintWriter writer);

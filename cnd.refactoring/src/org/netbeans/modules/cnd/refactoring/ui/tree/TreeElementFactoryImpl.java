@@ -63,7 +63,6 @@ import org.openide.util.Lookup;
 /**
  * factory of tree elements for C/C++ refactorings
  * 
- * @author Vladimir Voskresensky
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation.class, position=50)
 public class TreeElementFactoryImpl implements TreeElementFactoryImplementation {

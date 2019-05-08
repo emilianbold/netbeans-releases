@@ -47,7 +47,6 @@ import org.openide.util.Lookup;
 
 /**
  * Implement this to notify about the errors
- * @author masha
  */
 public abstract class  CndNotifier {
     

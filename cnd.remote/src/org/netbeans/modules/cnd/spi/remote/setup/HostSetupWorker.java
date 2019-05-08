@@ -50,7 +50,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * Each time user wants to set up a new remote host,
  * an instance of HostSetupWorker is created (via HostSetupProvider)
  * 
- * @author Vladimir Kvashin
  */
 public interface HostSetupWorker {
 

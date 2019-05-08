@@ -71,8 +71,6 @@ import org.openide.util.Lookup;
  * For help on creating and registering actions
  * See <a href=http://wiki.netbeans.org/wiki/view/RefactoringFAQ>Refactoring FAQ</a>
  * 
- * @author Jan Becicka
- * @author Vladimir Voskresensky
  */
 public class CsmActionsImplementationProvider {
 

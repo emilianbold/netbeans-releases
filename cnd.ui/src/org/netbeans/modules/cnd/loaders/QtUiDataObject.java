@@ -51,7 +51,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- * @author Alexey Vladykin
  */
 public class QtUiDataObject extends MultiDataObject {
 

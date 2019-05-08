@@ -46,7 +46,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  * service which is sensitive to file existence cache
- * @author Vladimir Voskresensky
  */
 public interface CndFileExistSensitiveCache {
     /**

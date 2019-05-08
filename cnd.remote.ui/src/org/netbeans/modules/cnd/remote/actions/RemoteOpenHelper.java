@@ -80,7 +80,6 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
- * @author Vladimir Kvashin
  */
 public class RemoteOpenHelper {
 

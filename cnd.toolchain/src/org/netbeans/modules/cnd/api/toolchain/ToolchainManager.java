@@ -46,7 +46,6 @@ import java.util.Map;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class ToolchainManager {
     public interface ToolchainDescriptor {

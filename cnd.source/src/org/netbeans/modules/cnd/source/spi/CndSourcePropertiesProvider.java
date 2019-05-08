@@ -46,7 +46,6 @@ import org.openide.loaders.DataObject;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface CndSourcePropertiesProvider {
     // constant to be used for registration of provider

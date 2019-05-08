@@ -49,7 +49,6 @@ import org.openide.util.Lookup;
 
 /**
  * An factory for creation CompilerSetProvider instances
- * @author Vladimir Kvashin
  */
 public class CompilerSetProviderFactoryImpl {
     /**

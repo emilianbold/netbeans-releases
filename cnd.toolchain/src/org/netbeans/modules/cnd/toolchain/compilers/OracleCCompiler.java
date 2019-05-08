@@ -48,7 +48,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author alsimon
  */
 public class OracleCCompiler extends OracleCCppCompiler {
     /** 

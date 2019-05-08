@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 //@ActionID(id = "com.sun.tools.ide.remote.actions.OpenRemoteFileAction", category = "System")
 //@ActionRegistration(iconInMenu = true, displayName = "#OpenRemoteFileAction.submenu.title")

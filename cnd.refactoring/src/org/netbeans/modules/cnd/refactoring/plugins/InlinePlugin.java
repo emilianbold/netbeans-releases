@@ -79,7 +79,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Danila Sergeyev
  */
 public class InlinePlugin extends CsmModificationRefactoringPlugin {
     private final InlineRefactoring refactoring;

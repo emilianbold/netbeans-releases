@@ -60,7 +60,6 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
  * Pseudo-test for download speed measurements
- * @author Vladimir Kvashin
  */
 public class DownloadSpeedTestCase extends RemoteTestBase {
 

@@ -53,7 +53,6 @@ import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /**
- * @author Alexey Vladykin
  */
 public class QtResourceDataObject extends MultiDataObject {
 

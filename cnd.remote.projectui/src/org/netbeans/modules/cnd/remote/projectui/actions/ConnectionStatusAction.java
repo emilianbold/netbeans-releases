@@ -60,7 +60,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Alexander Simon
  */
 @ActionID(id = "org.netbeans.modules.cnd.remote.projectui.actions.ConnectionStatusAction", category = "Project")
 @ActionRegistration(iconInMenu = true, displayName = "#ConnectionStatusAction.submenu.title", lazy = false)

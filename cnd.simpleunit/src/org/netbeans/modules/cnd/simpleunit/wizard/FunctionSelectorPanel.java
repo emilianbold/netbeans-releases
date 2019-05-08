@@ -58,8 +58,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Petr Hrebejk, Dusan Balek
- * @author Vladimir Voskresensky
  */
 public final class FunctionSelectorPanel extends JPanel implements ExplorerManager.Provider {
 

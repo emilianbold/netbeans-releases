@@ -56,7 +56,6 @@ import org.netbeans.modules.spellchecker.spi.language.TokenList;
 
 /**
  * based on JavaTokenListTest
- * @author Vladimir Voskresensky
  */
 public class CndTokenListTest extends NbTestCase {
     

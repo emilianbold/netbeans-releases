@@ -58,7 +58,6 @@ import org.netbeans.modules.spellchecker.spi.language.support.MultiTokenList;
 
 /**
  * based on JavaTokenListProvider
- * @author Vladimir Voskresensky
  */
 @MimeRegistrations({
     // cnd source files

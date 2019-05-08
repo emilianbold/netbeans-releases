@@ -55,7 +55,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author masha
  */
 @ServiceProvider(service = CSMInitializationTaskRunner.class, position = 100)
 public class CSMIntializationTaskRunnerImpl extends CSMInitializationTaskRunner {

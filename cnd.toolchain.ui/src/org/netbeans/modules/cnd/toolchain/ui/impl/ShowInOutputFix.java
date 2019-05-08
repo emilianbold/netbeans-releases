@@ -51,7 +51,6 @@ import org.openide.windows.InputOutput;
 
 /**
  *
- * @author igromov
  */
 public class ShowInOutputFix implements EnhancedFix {
 

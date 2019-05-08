@@ -64,7 +64,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author akrasny
  */
 public final class LayerIndex {
 

@@ -47,7 +47,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author vkvashin
  */
 public final class UnitDescriptor {
 

@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
- * @author Sergey Grinev
  */
 public abstract class AbstractObjectFactory {
 

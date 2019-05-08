@@ -60,7 +60,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  * Base test for different RemoteSyncWorker implementations
- * @author Vladimir Kvashin
  */
 public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
 

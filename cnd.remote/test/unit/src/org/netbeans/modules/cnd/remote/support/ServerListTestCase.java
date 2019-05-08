@@ -61,7 +61,6 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  * There hardly is a way to unit test remote operations.
  * This is just an entry point for manual validation.
  *
- * @author Sergey Grinev
  */
 public class ServerListTestCase extends RemoteTestBase {
 

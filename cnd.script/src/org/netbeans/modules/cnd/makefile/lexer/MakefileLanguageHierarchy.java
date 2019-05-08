@@ -54,7 +54,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  *
- * @author Jan Jancura
  */
 public class MakefileLanguageHierarchy extends LanguageHierarchy<MakefileTokenId> {
 

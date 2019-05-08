@@ -48,7 +48,6 @@ import org.netbeans.api.search.SearchRoot;
 
 /**
  *
- * @author akrasny
  */
 public final class SearchParams {
 

@@ -46,7 +46,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * See #199750 - "Sharing" is not default value of "Synchronization" property of Host dialog for solstudio
- * @author Vladimir Kvashin
  */
 public interface RemoteSyncFactoryDefaultProvider {
     /**

@@ -46,7 +46,6 @@ import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 
 /**
- * @author Alexey Vladykin
  */
 public class QtUiDataNode extends DataNode {
 

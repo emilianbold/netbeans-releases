@@ -51,7 +51,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  * A FileSystem / path pair
- * @author Vladimir Kvashin
  */
 public final class FSPath {
 

@@ -46,7 +46,6 @@ import java.util.List;
 
 /**
  *
- * @author Erno Mononen
  */
 public interface TestHandlerFactory {
 

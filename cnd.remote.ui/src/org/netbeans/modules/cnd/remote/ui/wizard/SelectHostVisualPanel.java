@@ -71,7 +71,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @SuppressWarnings("rawtypes") // UI editor produces code with tons of rawtypes warnings
 final class SelectHostVisualPanel extends javax.swing.JPanel {

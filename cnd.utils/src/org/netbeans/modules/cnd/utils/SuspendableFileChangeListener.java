@@ -59,8 +59,6 @@ import org.openide.util.RequestProcessor;
  * merged with add events into change event when in suspend mode.
  * Also it redirects all notifications into other thread.
  * fileAttributeChanged is not delivered by this class.
- * @author Vladimir Voskresensky
- * @author Vladimir Kvashin
  */
 public final class SuspendableFileChangeListener implements FileChangeListener {
     private static final RequestProcessor RP = new RequestProcessor("CND FileEvents redispatcher"); // NOI18N

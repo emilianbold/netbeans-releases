@@ -47,7 +47,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author akrasny
  */
 @ServiceProvider(service = SearchProvider.class)
 public class CNDSearchProvider extends SearchProvider {

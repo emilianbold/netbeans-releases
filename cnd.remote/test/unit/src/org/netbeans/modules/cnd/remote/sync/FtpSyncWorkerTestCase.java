@@ -57,7 +57,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  * Test for ScpSyncWorker
- * @author Vladimir Kvashin
  */
 public class FtpSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
 

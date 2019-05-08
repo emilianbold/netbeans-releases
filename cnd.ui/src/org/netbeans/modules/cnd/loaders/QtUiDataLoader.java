@@ -70,7 +70,6 @@ import org.openide.util.Lookup;
 /**
  * This class is introduced to reuse CndFormat defined in CndAbstractDataLoader.
  *
- * @author Alexey Vladykin
  */
 public class QtUiDataLoader extends UniFileLoader {
 

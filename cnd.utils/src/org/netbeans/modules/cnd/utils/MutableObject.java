@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.utils;
 
 /**
  *
- * @author petrk
  */
 public class MutableObject<T> {
     

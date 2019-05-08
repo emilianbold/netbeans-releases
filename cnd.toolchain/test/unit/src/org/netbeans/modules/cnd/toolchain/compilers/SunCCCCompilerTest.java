@@ -60,7 +60,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Thomas Preisler
  */
 public class SunCCCCompilerTest {
 

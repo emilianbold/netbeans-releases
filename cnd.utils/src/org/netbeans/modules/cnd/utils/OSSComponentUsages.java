@@ -48,7 +48,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author inikiforov
  */
 public final class OSSComponentUsages {
 

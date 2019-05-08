@@ -48,7 +48,6 @@ import java.awt.Dimension;
 
 /**
  *
- * @author  thp
  */
 public class NoCompilersPanel extends javax.swing.JPanel {
 

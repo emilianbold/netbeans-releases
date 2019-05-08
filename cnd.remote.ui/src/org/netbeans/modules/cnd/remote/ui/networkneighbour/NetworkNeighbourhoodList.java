@@ -58,7 +58,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author akrasny
  */
 public final class NetworkNeighbourhoodList extends JPanel implements ExplorerManager.Provider {
 

@@ -97,10 +97,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Hurka
- * @author Jan Becicka
- * @author Jan Pokorsky
- * @author Vladimir Voskresensky
  */
 public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefactoringPlugin {
     

@@ -48,7 +48,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Alexander Simon
  */
 public class StaticLibraryObject extends ExeObject {
 

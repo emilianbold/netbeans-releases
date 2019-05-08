@@ -43,7 +43,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author vv159170
  */
 public class ReopenBrokenRepositoryValidationTest extends CndBaseTestSuite {
 

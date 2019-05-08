@@ -96,7 +96,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CsmImplementsMethodCompletionItem implements CompletionItem {
 

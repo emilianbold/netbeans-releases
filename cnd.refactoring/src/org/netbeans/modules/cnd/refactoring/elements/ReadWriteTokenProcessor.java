@@ -53,7 +53,6 @@ import org.openide.text.CloneableEditorSupport;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ReadWriteTokenProcessor {
     

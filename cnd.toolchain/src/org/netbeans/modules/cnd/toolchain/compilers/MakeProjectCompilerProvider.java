@@ -54,7 +54,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * Override the cnd default compiler type "Tool". MakeProjects uses classes derived from Tool but cnd/core
  * can't depend on makeproject classes. So this allows makeproject to provide a tool creator factory.
  *
- * @author gordonp
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.toolchain.CompilerProvider.class, position=1000)
 public class MakeProjectCompilerProvider extends CompilerProvider {

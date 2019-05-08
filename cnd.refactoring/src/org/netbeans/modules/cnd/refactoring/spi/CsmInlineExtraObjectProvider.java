@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 
 /**
  *
- * @author Danila Sergeyev
  */
 public interface CsmInlineExtraObjectProvider {
     Collection<CsmObject> getExtraObjects(CsmObject orig);

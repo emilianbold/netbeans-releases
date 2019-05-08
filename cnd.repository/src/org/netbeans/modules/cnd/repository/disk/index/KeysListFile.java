@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  *
- * @author masha
  */
 public final class KeysListFile implements SelfPersistent {
     //will be used from one thread onle: writing thread,

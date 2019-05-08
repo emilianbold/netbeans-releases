@@ -58,7 +58,6 @@ import org.netbeans.modules.refactoring.spi.ui.*;
 /**
  * presentation of element for Project in C/C++ refactorings
  * 
- * @author Vladimir Voskresensky
  */
 public class ProjectTreeElement implements TreeElement {
 

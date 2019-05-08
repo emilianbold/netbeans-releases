@@ -47,7 +47,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Utility methods related to character sequences.
- * @author Vladimir Kvashin
  */
 public class CharSequenceUtils {
 

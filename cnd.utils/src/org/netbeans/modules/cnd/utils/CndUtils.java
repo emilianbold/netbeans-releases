@@ -58,7 +58,6 @@ import org.openide.util.CharSequences;
 
 /**
  *
- * @author Alexey Vladykin
  */
 public class CndUtils {
 

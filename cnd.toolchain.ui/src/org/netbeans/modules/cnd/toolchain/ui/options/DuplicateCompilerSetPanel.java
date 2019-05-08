@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  thp
  */
 /*package-local*/ final class DuplicateCompilerSetPanel extends javax.swing.JPanel implements DocumentListener {
     private DialogDescriptor dialogDescriptor = null;

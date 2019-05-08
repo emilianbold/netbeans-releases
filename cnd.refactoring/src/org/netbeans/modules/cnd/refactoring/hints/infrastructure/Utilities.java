@@ -57,8 +57,6 @@ import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 
 /**
  * based on org.netbeans.modules.java.hints.errors.Utilities
- * @author Jan Lahoda
- * @author Vladimir Voskresensky
  */
 public class Utilities {
 

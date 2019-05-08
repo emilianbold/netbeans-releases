@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.toolchain.support.CompilerDefinition;
 
 /**
  *
- * @author masha
  */
 abstract public class CompilerDefinitionAccessor {
  

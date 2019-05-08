@@ -66,7 +66,6 @@ import org.openide.util.Utilities;
 
 /**
  * Wizard panel for New Project.
- * @author  tom
  */
 public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescriptor> {
     public static final String PRESELECT_CATEGORY = "PRESELECT_CATEGORY"; //NOI18N

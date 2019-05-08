@@ -100,7 +100,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Alexander Simon
  */
 /*package-local*/ class ToolCollectionPanel extends javax.swing.JPanel implements DocumentListener, ItemListener  {
 

@@ -49,7 +49,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 
 /**
  * List of projects open in the GUI.
- * @author Petr Hrebejk
  */
 public final class OpenProjectList {
     private static OpenProjectList INSTANCE = new OpenProjectList();

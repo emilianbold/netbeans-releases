@@ -32,7 +32,6 @@ package org.netbeans.modules.cnd.refactoring.actions;
 
 /**
  *
- * @author Jan Lahoda
  */
 public enum RefactoringKind {
     CHANGE_FUNCTION_PARAMETERS("change-function-parameters"), //NOI18N

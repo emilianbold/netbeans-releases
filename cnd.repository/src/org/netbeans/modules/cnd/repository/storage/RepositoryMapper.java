@@ -52,7 +52,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author akrasny
  */
 public final class RepositoryMapper {
 

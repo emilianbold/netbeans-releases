@@ -47,7 +47,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public abstract class HostNodesProvider {
 

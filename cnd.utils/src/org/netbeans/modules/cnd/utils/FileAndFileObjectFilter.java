@@ -48,7 +48,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Alexander Simon
  */
 /* A combination of FileFilter and FileObjectFilter */
 public abstract class FileAndFileObjectFilter extends AbstractFileAndFileObjectFilter {

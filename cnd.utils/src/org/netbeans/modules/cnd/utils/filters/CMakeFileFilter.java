@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author alsimon
  */
 public class CMakeFileFilter extends FileAndFileObjectFilter {
 

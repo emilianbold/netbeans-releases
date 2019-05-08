@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.repository.impl.spi.UnitDescriptorsList;
 
 /**
  *
- * @author mtishkov
  */
 public final class UnitDescriptorsListImpl implements UnitDescriptorsList{
 

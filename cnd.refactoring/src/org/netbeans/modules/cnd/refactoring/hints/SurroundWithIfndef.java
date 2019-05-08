@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Danila Sergeyev
  */
 public class SurroundWithIfndef implements Fix {
     private final BaseDocument doc;

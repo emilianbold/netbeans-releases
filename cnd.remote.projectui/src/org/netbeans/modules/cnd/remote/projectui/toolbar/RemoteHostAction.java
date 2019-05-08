@@ -73,8 +73,6 @@ import org.openide.util.lookup.Lookups;
 /**
  * Action permitting selection of a default remote host.
  * 
- * @author Greg Crawley, Adam Sotona, Jesse Glick
- * @author Alexander Simon
  */
 @ActionID(id = "org.netbeans.modules.cnd.remote.projectui.toolbar.RemoteHostAction", category = "Project")
 @ActionRegistration(displayName = "#RemoteHostAction.label", lazy = false)

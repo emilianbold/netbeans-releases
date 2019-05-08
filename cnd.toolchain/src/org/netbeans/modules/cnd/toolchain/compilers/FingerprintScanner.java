@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.toolchain.compilers;
 
 /**
  *
- * @author Alexander Simon
  */
 public class FingerprintScanner {
     public static final String OUTPUT_FORMAT_VERSION = "__output_format_version"; //NOI18N

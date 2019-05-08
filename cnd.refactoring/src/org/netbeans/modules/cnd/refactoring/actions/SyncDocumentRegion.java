@@ -59,7 +59,6 @@ import org.openide.ErrorManager;
  * 
  * Maintain the same text in the selected regions of the text document.
  *
- * @author Miloslav Metelka
  */
 public final class SyncDocumentRegion {
 

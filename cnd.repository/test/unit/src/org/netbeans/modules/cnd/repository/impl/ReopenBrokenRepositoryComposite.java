@@ -52,7 +52,6 @@ import static org.netbeans.modules.cnd.repository.impl.RepositoryValidationBase.
 
 /**
  *
- * @author Alexander Simon
  */
 //@RandomlyFails
 public class ReopenBrokenRepositoryComposite extends RepositoryValidationBase {

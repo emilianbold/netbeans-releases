@@ -47,7 +47,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface RepositoryDataInput extends DataInput {
     CharSequence readCharSequenceUTF() throws IOException;

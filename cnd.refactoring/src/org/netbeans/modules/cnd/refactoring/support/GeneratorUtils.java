@@ -99,8 +99,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Jan Lahoda, Dusan Balek
- * @author Vladimir Voskresensky
  */
 public class GeneratorUtils {
 

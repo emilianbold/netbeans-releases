@@ -55,7 +55,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class ToolchainScriptGenerator {
     private static final boolean TRACE = true;

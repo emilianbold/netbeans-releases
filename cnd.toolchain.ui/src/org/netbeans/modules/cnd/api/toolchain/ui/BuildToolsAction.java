@@ -67,7 +67,6 @@ import org.openide.util.actions.CallableSystemAction;
 /**
  * Post the ToolsPanel as a standalone dialog.
  *
- * @author gordonp
  */
 public class BuildToolsAction extends CallableSystemAction implements PropertyChangeListener {
     

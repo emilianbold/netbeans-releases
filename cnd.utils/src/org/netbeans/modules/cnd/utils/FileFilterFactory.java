@@ -74,7 +74,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class FileFilterFactory {
 

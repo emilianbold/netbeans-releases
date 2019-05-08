@@ -58,7 +58,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class NotConnectedNode extends AbstractNode implements ConnectionListener {
 

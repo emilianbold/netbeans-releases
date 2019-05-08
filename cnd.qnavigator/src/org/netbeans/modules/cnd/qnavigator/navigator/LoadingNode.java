@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
 
 
 /**
- * @author Alexander Simon
  */
 public final class LoadingNode extends AbstractNode {
 

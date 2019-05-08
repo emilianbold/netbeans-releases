@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.debug;
 
 /**
  * A common place for APT tracing flags that are used by several classes
- * @author Vladimir Voskresensky
  */
 public class DebugUtils {
 

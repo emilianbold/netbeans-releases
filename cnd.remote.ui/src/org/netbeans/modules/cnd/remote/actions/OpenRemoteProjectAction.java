@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.cnd.remote.actions.OpenRemoteProjectAction", category = "Project")
 @ActionRegistration(iconInMenu = true, 

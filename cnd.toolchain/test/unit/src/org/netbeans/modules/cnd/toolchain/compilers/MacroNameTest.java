@@ -52,7 +52,6 @@ import org.junit.Test;
 
 /**
  *
- * @author Alexander Simon
  */
 public class MacroNameTest {
     @BeforeClass

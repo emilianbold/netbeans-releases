@@ -75,7 +75,6 @@ import org.openide.util.WeakSet;
 /**
  * we use own manager to unify work with extensions and support default extension
  * + unfortunately implementation of FileUtil.getMIMETypeExtensions is extremely slow
- * @author Vladimir Voskresensky
  */
 @MIMEResolver.Registration(displayName = "#ExtBasedResolver", position = 215, resource = "resources/mime-resolver-ext-based.xml") // NOI18N
 @Messages({

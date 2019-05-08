@@ -80,7 +80,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author alsimon
  */
 public class ExpressionFinder {
     private final Document doc;

@@ -54,7 +54,6 @@ import org.openide.util.Lookup;
 
 /**
  * presentation of a leaf for refactoring element
- * @author Vladimir Voskresensky
  */
 public class RefactoringTreeElement implements TreeElement { 
     

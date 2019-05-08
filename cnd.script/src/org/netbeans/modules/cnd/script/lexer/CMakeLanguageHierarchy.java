@@ -52,7 +52,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  *
- * @author alsimon
  */
 public class CMakeLanguageHierarchy  extends LanguageHierarchy<CMakeTokenId> {
     private final String mime;

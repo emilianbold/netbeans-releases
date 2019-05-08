@@ -50,7 +50,6 @@ import org.openide.windows.IOPosition;
 
 /**
  *
- * @author masha
  */
 @ServiceProvider (service = OutputListenerProvider.class, position = 100)
 public class OutputListenerProviderImpl extends OutputListenerProvider{

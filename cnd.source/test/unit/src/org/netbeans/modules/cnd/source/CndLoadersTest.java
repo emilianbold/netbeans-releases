@@ -47,7 +47,6 @@ import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 
 /**
- * @author Alexey Vladykin
  */
 public class CndLoadersTest extends NbTestSuite {
 

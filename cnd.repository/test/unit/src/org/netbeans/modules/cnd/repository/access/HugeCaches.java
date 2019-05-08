@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 /**
  * A test that reproduces the situation described in the IZ #124767
  * http://www.netbeans.org/issues/show_bug.cgi?id=124767
- * @author Vladimir Kvashin
  */
 public class HugeCaches extends RepositoryAccessTestBase {
 

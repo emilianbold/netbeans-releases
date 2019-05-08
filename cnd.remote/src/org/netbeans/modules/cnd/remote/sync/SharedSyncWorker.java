@@ -57,7 +57,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 /*package-local*/ class SharedSyncWorker implements RemoteSyncWorker {
 

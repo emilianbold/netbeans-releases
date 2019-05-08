@@ -57,7 +57,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public abstract class CsmModificationRefactoringPlugin extends CsmRefactoringPlugin {
     // the context object where refactoring starts

@@ -59,7 +59,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author akrasny
  */
 public final class CNDSearchPresenter extends Presenter {
 

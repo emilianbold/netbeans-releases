@@ -51,7 +51,6 @@ import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class ContextProvider implements CodeGeneratorContextProvider {
     

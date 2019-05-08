@@ -61,8 +61,6 @@ import org.openide.util.lookup.Lookups;
  * Implementatation of RefactoringElementImplementation specific to refactoring
  * in c/c++ files.
  * 
- * @author Jan Becicka
- * @author Vladimir Voskresensky
  */
 public class DiffElement extends SimpleRefactoringElementImplementation {
     private final PositionBounds bounds;

@@ -68,8 +68,6 @@ import org.openide.windows.TopComponent;
  * 
  * CsmRefactoringGlobalAction
  * This class is copy of RefactoringGlobalAction, which is not in public packages
- * @author Jan Becicka
- * @author Vladimir Voskresensky
  */
 public abstract class CsmRefactoringGlobalAction extends NodeAction {
 

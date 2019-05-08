@@ -58,7 +58,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  * based on JavaTokenList
- * @author Vladimir Voskresensky
  */
 public class CndTokenList implements TokenList {
 

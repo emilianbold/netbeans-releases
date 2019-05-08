@@ -51,7 +51,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Nickolay Dalmatov
  */
 public abstract class  KeyFactory extends AbstractObjectFactory {
     

@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 
 /**
  *
- * @author akrasny
  */
 public interface RepositoryPathMapperImplementation {
 

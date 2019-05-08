@@ -44,7 +44,6 @@
 package org.netbeans.modules.cnd.refactoring.api;
 
 /**
- * @author Jan Becicka
  */
 public enum WhereUsedQueryConstants {
     FIND_OVERRIDING_METHODS,

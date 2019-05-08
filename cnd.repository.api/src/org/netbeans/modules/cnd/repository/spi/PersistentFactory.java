@@ -48,7 +48,6 @@ import java.io.IOException;
 
 /**
  * factory which can create/read/write persistent objects
- * @author Sergey Grinev, Vladimir Voskresensky
  */
 public interface PersistentFactory
 {

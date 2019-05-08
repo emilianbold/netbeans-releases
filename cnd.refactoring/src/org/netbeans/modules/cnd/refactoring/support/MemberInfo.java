@@ -57,8 +57,6 @@ import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 /**
  * Wrapper class for ElementHandles, TreePathHandles and TypeMirrorHandles.
  * It contains referemce to appropriste handle + name and icon
- * @author Jan Becicka
- * @author Vladimir Voskresensky
  */
 public final class MemberInfo<H> {
 

@@ -61,7 +61,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
 /**
- * @author Alexey Vladykin
  */
 public class QtFormFileIterator extends CCFSrcFileIterator {
 

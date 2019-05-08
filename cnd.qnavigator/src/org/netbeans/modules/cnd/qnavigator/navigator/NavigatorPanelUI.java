@@ -60,7 +60,6 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author Alexander Simon
  */
 public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider, PropertyChangeListener {
     private final NavigatorContent content;

@@ -58,7 +58,6 @@ import org.openide.util.Utilities;
 
 /**
  * A common base class for GNU C and C++  compilers
- * @author vk155633
  */
 /*package*/abstract class GNUCCCCompiler extends CCCCompiler {
 

@@ -52,7 +52,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author sg155630
  */
 public class RepositoryValidationBase extends TraceModelTestBase {
 

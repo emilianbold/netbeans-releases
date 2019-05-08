@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.api.toolchain.ui;
  * service to manage Tools panel customization
  * FIXME: only isDebuggerCustomizable is supported now
  * 
- * @author Vladimir Voskresensky
  */
 public interface ToolsPanelGlobalCustomizer {
     public boolean isHostCustomizable();

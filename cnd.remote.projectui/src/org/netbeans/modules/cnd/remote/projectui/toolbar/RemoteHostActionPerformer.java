@@ -82,7 +82,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(path="CND/Toobar/Services/RemoteHost", service=ActionListener.class)
 public class RemoteHostActionPerformer implements ActionListener, PropertyChangeListener, Presenter.Menu {

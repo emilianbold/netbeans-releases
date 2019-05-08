@@ -65,7 +65,6 @@ import org.openide.util.Exceptions;
 /**
  * Provides shell fragments embedded into makefile.
  *
- * @author Alexey Vladykin
  */
 public class ShellEmbeddingProvider extends EmbeddingProvider {
 

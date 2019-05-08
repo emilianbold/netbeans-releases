@@ -53,7 +53,6 @@ import org.openide.loaders.UniFileLoader;
 /**
  * Data loader for batch scripts (<code>text/bat</code>)
  *
- * @author Alexey Vladykin
  */
 public final class BatDataLoader extends UniFileLoader {
 

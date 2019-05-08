@@ -46,7 +46,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * An SPI for creation CompilerSetProvider instances
- * @author Vladimir Kvashin
  */
 public interface CompilerSetProviderFactory {
     /**

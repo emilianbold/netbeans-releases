@@ -49,7 +49,6 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
 /**
  * Allows to redefine places where local->remote and remote->local mirrors are located
- * @author Vladimir Kvashin
  */
 public interface MirrorPathProvider {
 

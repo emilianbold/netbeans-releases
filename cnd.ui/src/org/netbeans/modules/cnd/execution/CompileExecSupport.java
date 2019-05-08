@@ -59,7 +59,6 @@ import org.openide.util.NbBundle;
  * Looks for the class with the same base name as the primary file,
  * locates a main method in it, and starts it.
  * 
- * @author Alexander Simon
  */
 public final class CompileExecSupport extends ExecutionSupport {
 

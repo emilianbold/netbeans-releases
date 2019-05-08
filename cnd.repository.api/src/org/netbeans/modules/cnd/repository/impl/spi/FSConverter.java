@@ -45,7 +45,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author akrasny
  */
 public interface FSConverter {
 

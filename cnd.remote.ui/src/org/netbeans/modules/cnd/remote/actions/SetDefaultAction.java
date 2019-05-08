@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author gordonp
  */
 public class SetDefaultAction extends AbstractAction {
     

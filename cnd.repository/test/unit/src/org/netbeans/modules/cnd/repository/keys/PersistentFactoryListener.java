@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.repository.keys;
 
 /**
  *
- * @author akrasny
  */
 public interface PersistentFactoryListener {
 

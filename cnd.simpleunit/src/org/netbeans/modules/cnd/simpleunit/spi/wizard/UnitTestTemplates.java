@@ -48,7 +48,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Vladimir Voskrsensky
  */
 public final class UnitTestTemplates {
 

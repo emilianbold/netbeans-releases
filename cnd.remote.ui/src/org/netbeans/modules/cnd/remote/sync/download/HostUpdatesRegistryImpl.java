@@ -51,7 +51,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author masha
  */
 @ServiceProvider(service= HostUpdatesRegistry.class, position = 100)
 public final class HostUpdatesRegistryImpl extends HostUpdatesRegistry{

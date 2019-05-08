@@ -64,8 +64,6 @@ import org.openide.util.NbBundle;
  *
  * Closely based on the TestUnitHandlerFactory for Ruby by Erno.
  *
- * @author Erno Mononen
- * @author Tor Norbye
  */
 public class CndUnitHandlerFactory implements TestHandlerFactory {
 

@@ -46,7 +46,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author inikiforov
  */
 public enum ComponentType {
 

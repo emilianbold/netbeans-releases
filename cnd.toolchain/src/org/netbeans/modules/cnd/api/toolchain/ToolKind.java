@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.api.toolchain;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface ToolKind {
     int ordinal();

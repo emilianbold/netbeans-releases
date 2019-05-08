@@ -63,8 +63,6 @@ import org.openide.util.NbBundle;
 /**
 * (based on Java version)
  * 
- * @author  Pavel Flaska, Jan Becicka
- * @author Vladimir Voskresensky
  */
 public class ChangeParametersUI implements RefactoringUI {
     

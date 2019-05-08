@@ -58,7 +58,6 @@ import org.openide.util.CharSequences;
 
 /**
  * Base class for Maps 
- * @author Egor Ushakov
  */
 public abstract class MapSnapshot<V> implements Iterable<Entry<CharSequence, V>>{
     /**

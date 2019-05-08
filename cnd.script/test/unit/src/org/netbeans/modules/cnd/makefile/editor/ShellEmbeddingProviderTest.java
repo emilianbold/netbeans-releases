@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorDocument;
 
 /**
- * @author Alexey Vladykin
  */
 public class ShellEmbeddingProviderTest extends NbTestCase {
 

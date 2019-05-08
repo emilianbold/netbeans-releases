@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.refactoring.support.MemberInfo;
 /** Class containing various utility methods and inner classes
  * useful when creating refactoring UI.
  *
- * @author Martin Matula, Jan Becicka
  */
 public final class UIUtilities {
     // not to be instantiated

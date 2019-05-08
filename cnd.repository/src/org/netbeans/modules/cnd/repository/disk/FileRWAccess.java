@@ -50,7 +50,6 @@ import java.nio.ByteBuffer;
  * The most simple interface for random file access. The purpose is to hide all
  * details that concerns file access and have several pluggable implementations
  *
- * @author Vladimir Kvashin
  */
 public interface FileRWAccess {
 

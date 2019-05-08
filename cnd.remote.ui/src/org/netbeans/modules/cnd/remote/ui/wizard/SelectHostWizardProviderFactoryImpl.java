@@ -52,7 +52,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @ServiceProvider(service=SelectHostWizardProviderFactory.class)
 public class SelectHostWizardProviderFactoryImpl implements SelectHostWizardProviderFactory {

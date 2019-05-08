@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CheckGetAfterRemoveTest extends GetPutTestBase {
 

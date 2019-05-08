@@ -54,7 +54,6 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.indent.api.Indent;
 
 /**
- * @author Alexey Vladykin
  */
 public class MakefileIndentTest extends NbTestCase {
 

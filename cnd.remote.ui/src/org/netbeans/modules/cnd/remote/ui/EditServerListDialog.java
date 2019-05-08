@@ -80,7 +80,6 @@ import org.openide.util.RequestProcessor;
 /**
  * Mange the removeServer development hosts list.
  * 
- * @author  gordonp
  */
 @SuppressWarnings("rawtypes") // UI editor produces code with tons of rawtypes warnings
 public class EditServerListDialog extends JPanel implements ActionListener, PropertyChangeListener, ListSelectionListener, Save {

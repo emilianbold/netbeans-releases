@@ -74,7 +74,6 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
 /**
  * Represents the data file with the indexed access
  *
- * @author Nickolay Dalmatov
  */
 /* package */ final class IndexedStorageFile {
 

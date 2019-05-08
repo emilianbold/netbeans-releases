@@ -51,7 +51,6 @@ import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
 
 /**
- * @author Alexey Vladykin
  */
 @LanguageRegistration(mimeType = "text/x-make", useCustomEditorKit = true)
 public class MakefileLanguageConfig extends DefaultLanguageConfig {

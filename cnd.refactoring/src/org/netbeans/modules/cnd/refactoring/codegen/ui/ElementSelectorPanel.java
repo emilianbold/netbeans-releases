@@ -62,8 +62,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author  Petr Hrebejk, Dusan Balek
- * @author Vladimir Voskresensky
  */
 public class ElementSelectorPanel extends JPanel implements ExplorerManager.Provider {
 

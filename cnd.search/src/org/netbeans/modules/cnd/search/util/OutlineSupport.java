@@ -60,7 +60,6 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author akrasny
  */
 public final class OutlineSupport implements TableColumnModelListener {
 

@@ -59,7 +59,6 @@ import org.openide.NotifyDescriptor;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class DownloadUtils {
 

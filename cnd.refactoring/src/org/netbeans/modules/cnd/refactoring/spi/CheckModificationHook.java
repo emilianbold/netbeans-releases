@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public abstract class CheckModificationHook {
     

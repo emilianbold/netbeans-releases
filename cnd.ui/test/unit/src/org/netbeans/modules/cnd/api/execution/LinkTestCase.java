@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  *
- * @author Alexander Simon
  */
 public class LinkTestCase extends CndBaseTestCase {
 

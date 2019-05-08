@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
 import org.openide.util.NbBundle;
 
 /**
- * @author Alexey Vladykin
  */
 public class QtFileFilter extends FileAndFileObjectFilter {
 

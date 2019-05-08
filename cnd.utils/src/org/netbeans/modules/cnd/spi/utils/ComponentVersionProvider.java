@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.spi.utils;
 
 /**
  *
- * @author inikiforov
  */
 public interface ComponentVersionProvider {
     

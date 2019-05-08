@@ -62,7 +62,6 @@ import org.xml.sax.SAXParseException;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ValidateRegistryTestCase extends NbTestCase {
     

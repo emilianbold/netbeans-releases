@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.script.lexer.BatLanguageHierarchy;
 
 /**
  *
- * @author Jan Jancura
  */
 public enum BatTokenId implements TokenId {
 

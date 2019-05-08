@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
  *
- * @author akrasny
  */
 public final class TestLargeKey extends TestAbstractKey {
 

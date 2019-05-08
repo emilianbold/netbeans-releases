@@ -55,7 +55,6 @@ import org.openide.util.ImageUtilities;
  * A special label that displays an error message if the text in the document it is
  * tracking is not valid.
  * 
- * @author S. Aubrecht
  */
 class ErrorLabel extends JLabel {
     

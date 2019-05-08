@@ -48,7 +48,6 @@ import org.openide.modules.Places;
 
 /**
  *
- * @author vkvashin
  */
 public final class RepositoryTestUtils {
 

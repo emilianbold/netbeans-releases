@@ -48,7 +48,6 @@ import javax.swing.JFormattedTextField;
 
 /**
  *
- * @author ak119685
  */
 public final class PortTextField extends JFormattedTextField {
 

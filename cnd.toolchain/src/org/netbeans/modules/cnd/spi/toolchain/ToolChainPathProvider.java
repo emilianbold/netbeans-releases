@@ -47,7 +47,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class ToolChainPathProvider {
     private static final ToolChainPathProvider DEFAULT = new DefaultToolChainPathProvider();

@@ -51,7 +51,6 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
- * @author Vladimir Kvashin
  */
 public class DownloadTestCase extends RemoteTestBase {
 

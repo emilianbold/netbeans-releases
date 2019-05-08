@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
  * These tests use "official" repository access, 
  * so they don't need to reside in org.netbeans.modules.cnd.repository.impl
  * 
- * @author Vladimir Kvashin
  */
 public class RepositoryAccessTestBase  extends ModelImplBaseTestCase {
 

@@ -76,7 +76,6 @@ import org.openide.windows.InputOutput;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 /* package-local */
 class RemoteBuildProjectActionHandler implements ProjectActionHandler {

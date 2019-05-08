@@ -51,7 +51,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Alexander Simon
  */
 /*package*/ final class GeneralTool extends Tool {
     private GeneralTool(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {

@@ -50,7 +50,6 @@ import java.util.Objects;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class CndCollectionUtils {
 

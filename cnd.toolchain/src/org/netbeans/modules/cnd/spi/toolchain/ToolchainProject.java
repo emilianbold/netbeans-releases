@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 /**
  * Interface is returned by project lookup.
  *
- * @author Alexander Simon
  */
 public interface ToolchainProject {
 

@@ -53,7 +53,6 @@ import org.openide.util.Lookup;
 /**
  * Base class for actions associated with a test method node.
  *
- * @author Erno Mononen
  */
 abstract class BaseTestMethodNodeAction extends TestNodeAction {
 

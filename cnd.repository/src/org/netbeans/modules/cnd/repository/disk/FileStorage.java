@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public interface FileStorage {
     

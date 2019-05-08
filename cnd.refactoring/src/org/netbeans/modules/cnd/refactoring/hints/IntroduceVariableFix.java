@@ -61,7 +61,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Alexander Simon
  */
 public class IntroduceVariableFix extends IntroduceVariableBaseFix {
     final CsmStatement st;

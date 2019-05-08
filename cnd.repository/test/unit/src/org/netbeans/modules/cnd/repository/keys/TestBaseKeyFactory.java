@@ -50,7 +50,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author akrasny
  */
 @ServiceProvider(service = KeyFactory.class, position = 1)
 public class TestBaseKeyFactory extends KeyObjectFactory {

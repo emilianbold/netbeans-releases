@@ -51,8 +51,6 @@ import org.netbeans.editor.BaseAction;
  * action for in-place rename
  * (copy of  org.netbeans.modules.java.editor.rename.InstantRenameAction)
  * 
- * @author Jan Lahoda
- * @author Vladimir Voskresensky
  */
 public class InstantRenameAction extends BaseAction {
 

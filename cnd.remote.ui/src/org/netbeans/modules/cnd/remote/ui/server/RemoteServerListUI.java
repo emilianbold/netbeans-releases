@@ -70,7 +70,6 @@ import org.openide.windows.WindowManager;
 
 /**
  * ServerListDisplayer implementation
- * @author Vladimir Kvashin
  */
 @ServiceProvider(service = ServerListUI.class)
 public class RemoteServerListUI extends ServerListUIEx {

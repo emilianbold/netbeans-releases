@@ -70,7 +70,6 @@ import org.openide.util.Lookup;
 /**
  * C++ specific actions provider (based on org.netbeans.modules.refactoring.java.ui.JavaRefactoringActionsProvider)
  *
- * @author Vladimir Voskresensky
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.refactoring.spi.CsmActionsImplementationProvider.class, position=100)
 public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvider {

@@ -58,7 +58,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Alexander Simon
+ *
  */
 public final class BreadCrumbsFactory {
     private static final RequestProcessor RP = new RequestProcessor("C/C++ BreadCrumbsFactory", 1, false, false); //NOI18N

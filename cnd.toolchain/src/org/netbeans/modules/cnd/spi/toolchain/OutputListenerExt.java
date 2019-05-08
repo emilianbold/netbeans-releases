@@ -46,7 +46,6 @@ import org.openide.windows.OutputListener;
 
 /**
  *
- * @author masha
  */
 abstract public class OutputListenerExt implements OutputListener {
 

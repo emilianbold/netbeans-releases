@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
 /**
  * Rename refactoring parameters panel
  *
- * @author  Pavel Flaska
  */
 public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 

@@ -50,7 +50,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Alexander Simon
  */
 public class NavigatorChildren extends Children.SortedArray {
 

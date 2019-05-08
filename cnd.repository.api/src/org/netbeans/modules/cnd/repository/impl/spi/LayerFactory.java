@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.repository.impl.spi;
 
 /**
  *
- * @author vkvashin
  */
 public interface LayerFactory {
 

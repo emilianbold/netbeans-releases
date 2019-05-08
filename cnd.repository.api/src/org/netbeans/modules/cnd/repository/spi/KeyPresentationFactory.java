@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.repository.spi;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface KeyPresentationFactory {
     Key create(KeyDataPresentation presentation);

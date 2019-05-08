@@ -54,8 +54,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
 /**
  *
- * @author gordonp
- * @author Alexey Vladykin
  */
 /*package-local*/ final class VersionCommand {
 

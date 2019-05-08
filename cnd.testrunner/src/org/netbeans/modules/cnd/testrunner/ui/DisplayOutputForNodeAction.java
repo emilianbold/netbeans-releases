@@ -50,7 +50,6 @@ package org.netbeans.modules.cnd.testrunner.ui;
 //
 ///**
 // *
-// * @author Erno Mononen
 // */
 //final class DisplayOutputForNodeAction extends AbstractAction {
 //

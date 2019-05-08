@@ -50,7 +50,6 @@ import org.openide.nodes.Node;
 import org.openide.util.lookup.InstanceContent.Convertor;
 
 /**
- * @author Alexey Vladykin
  */
 public final class CppEditorSupportProvider extends CndCookieProvider {
     static final CppEditorSupportFactory staticFactory = new CppEditorSupportFactory();

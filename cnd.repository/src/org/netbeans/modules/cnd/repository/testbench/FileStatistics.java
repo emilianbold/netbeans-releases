@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 
 /**
  * Responsible for collecting file-level statistics
- * @author Vladimir Kvashin
  */
 public class FileStatistics {
     

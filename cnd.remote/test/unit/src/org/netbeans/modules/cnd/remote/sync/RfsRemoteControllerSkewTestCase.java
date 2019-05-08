@@ -57,7 +57,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RfsRemoteControllerSkewTestCase extends RemoteTestBase {
 

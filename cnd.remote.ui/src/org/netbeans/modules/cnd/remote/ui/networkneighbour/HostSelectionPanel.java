@@ -53,7 +53,6 @@ import org.openide.util.ChangeSupport;
 
 /**
  *
- * @author akrasny
  */
 public final class HostSelectionPanel extends JPanel {
 

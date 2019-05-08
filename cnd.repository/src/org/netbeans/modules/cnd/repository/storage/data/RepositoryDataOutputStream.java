@@ -54,7 +54,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class RepositoryDataOutputStream extends DataOutputStream implements RepositoryDataOutput {
     private final LayerConvertersProvider layersConverterProvider;

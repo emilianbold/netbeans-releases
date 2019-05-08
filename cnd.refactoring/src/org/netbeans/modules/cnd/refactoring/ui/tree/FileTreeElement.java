@@ -59,7 +59,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 /**
  * TreeElement to represent Files
  * 
- * @author Vladimir Voskresensky
  */
 public class FileTreeElement implements TreeElement {
 

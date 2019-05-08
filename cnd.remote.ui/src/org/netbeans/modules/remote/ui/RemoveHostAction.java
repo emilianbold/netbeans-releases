@@ -59,7 +59,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.RemoveHostAction", category = "NativeRemote")
 @ActionRegistration(displayName = "#RemoveHostMenuItem", lazy = false)

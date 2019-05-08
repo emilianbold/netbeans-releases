@@ -55,7 +55,6 @@ import org.junit.Test;
 
 /**
  *
- * @author alsimon
  */
 public class DiscoverFlagsTest {
      @BeforeClass

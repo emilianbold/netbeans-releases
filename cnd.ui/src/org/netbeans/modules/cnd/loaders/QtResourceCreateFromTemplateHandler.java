@@ -64,7 +64,6 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Handler correctly remove double extension and write right new line 
  * 
- * @author Alexander Simon
  */
 @ServiceProvider(service = CreateFromTemplateHandler.class)
 public class QtResourceCreateFromTemplateHandler extends CreateFromTemplateHandler {

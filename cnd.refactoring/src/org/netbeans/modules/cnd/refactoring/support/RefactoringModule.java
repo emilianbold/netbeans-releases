@@ -38,7 +38,6 @@ import org.openide.util.NbPreferences;
  * Module installation class for Refactoring module.
  * based on org.netbeans.modules.refactoring.java.RefactoringModule
  * 
- * @author Vladimir Voskresensky
  */
 public class RefactoringModule {
 

@@ -47,7 +47,6 @@ import org.openide.filesystems.FileSystem;
  *
  * TODO: there SHOULD be similar class somewhere already...
  *
- * @author akrasny
  */
 public final class FilePath {
 

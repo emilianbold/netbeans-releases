@@ -99,7 +99,6 @@ import org.openide.awt.Mnemonics;
 
 /**
  * Based on the WhereUsedPanel in Java refactoring by Jan Becicka.
- * @author Vladimir Voskresensky
  */
 public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 

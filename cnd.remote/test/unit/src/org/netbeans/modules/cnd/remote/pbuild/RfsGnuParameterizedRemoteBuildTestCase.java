@@ -66,7 +66,6 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase {
 

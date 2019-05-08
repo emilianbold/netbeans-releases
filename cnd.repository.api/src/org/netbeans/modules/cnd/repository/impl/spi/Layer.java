@@ -50,7 +50,6 @@ import org.openide.filesystems.FileSystem;
 /**
  *
  *
- * @author vkvashin
  */
 public interface Layer {
 

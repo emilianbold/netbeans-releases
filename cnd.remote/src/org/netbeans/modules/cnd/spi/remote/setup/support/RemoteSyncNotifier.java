@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author masha
  */
 abstract public class RemoteSyncNotifier {
 

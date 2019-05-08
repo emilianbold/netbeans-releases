@@ -75,7 +75,6 @@ import org.openide.xml.XMLUtil;
 
 /**
  *
- * @author akrasny
  */
 public final class SearchResultNode extends AbstractNode {
 

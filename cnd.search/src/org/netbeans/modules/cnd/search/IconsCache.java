@@ -56,7 +56,6 @@ import org.openide.util.RequestProcessor.Task;
 /**
  * NOT thread safe
  *
- * @author akrasny
  */
 public final class IconsCache {
 

@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.HostPropertiesAction", category = "NativeRemote")
 @ActionRegistration(displayName = "#PropertiesMenuItem", lazy = false)

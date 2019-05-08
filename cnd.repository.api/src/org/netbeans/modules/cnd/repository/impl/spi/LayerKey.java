@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.repository.support.KeyFactory;
 
 /**
  *
- * @author vkvashin
  */
 public final class LayerKey implements Key {
     

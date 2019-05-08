@@ -51,7 +51,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * It's a factory that creates instances of HostSetupWorker
  * (which carries up the work of setting up a host)
  *
- * @author Vladimir Kvashin
  */
 public interface HostSetupProvider {
 

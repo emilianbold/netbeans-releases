@@ -80,7 +80,6 @@ import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author vkvashin
  */
 public class RepositoryRelocationTest extends TraceModelTestBase {
 

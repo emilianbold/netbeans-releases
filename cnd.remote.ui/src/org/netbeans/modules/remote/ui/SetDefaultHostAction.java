@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.SetDefaultHostAction", category = "NativeRemote")
 @ActionRegistration(displayName = "#SetDefaultMenuItem", lazy = false)

@@ -45,7 +45,6 @@ import java.util.EventListener;
 
 /**
  *
- * @author akrasny
  */
 public interface RepositoryExceptionListener extends EventListener {
 

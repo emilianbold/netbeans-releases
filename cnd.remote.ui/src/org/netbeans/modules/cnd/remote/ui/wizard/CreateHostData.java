@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.api.toolchain.ToolsCacheManager;
 /**
  * A structure that contains data used by wizard components
  * (a replacements for WizardDescriptor.getProperty() and WizardDescriptor.setProperty())
- * @author Vladimir Kvashin
  */
 /*package*/ class CreateHostData extends HostSetupResultImpl {
 

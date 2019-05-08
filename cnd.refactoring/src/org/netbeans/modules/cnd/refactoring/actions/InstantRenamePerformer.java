@@ -110,8 +110,6 @@ import org.openide.util.lookup.InstanceContent;
 /**
  * perform instant rename action
  * 
- * @author Jan Lahoda
- * @author Vladimir Voskresensky
  */
 public class InstantRenamePerformer implements DocumentListener, KeyListener, FocusListener {
     private static final String POSITION_BAG = "CndInstantRenamePerformer"; // NOI18N

@@ -49,7 +49,6 @@ import org.openide.text.CloneableEditorSupport;
 
 /**
  *
- * @author vv159170
  */
 public class CndSourceTestUtilities {
 

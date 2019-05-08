@@ -51,7 +51,6 @@ import org.openide.filesystems.FileSystem;
  *
  * clientFileSystem --- clientFileSystemID
  *
- * @author akrasny
  */
 /* package */ final class FileSystemsDictionary {
 

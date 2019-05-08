@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 
 /**
  *
- * @author Alexander Simon
  */
 public class SuperConstructorSelectorPanel extends JPanel {
     private final Map<JRadioButton,ElementNode.Description> buttons = new LinkedHashMap<>();

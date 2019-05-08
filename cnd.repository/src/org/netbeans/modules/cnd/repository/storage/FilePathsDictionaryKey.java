@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  *
- * @author mtishkov
  */
 final  class FilePathsDictionaryKey implements Key, SelfPersistent {
     private static final String UNITS_INDEX_FILE_NAME = "project-index";//NOI18N

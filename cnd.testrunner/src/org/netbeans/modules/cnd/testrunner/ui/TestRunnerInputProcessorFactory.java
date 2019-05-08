@@ -55,7 +55,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Erno Mononen
  */
 public final class TestRunnerInputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
 

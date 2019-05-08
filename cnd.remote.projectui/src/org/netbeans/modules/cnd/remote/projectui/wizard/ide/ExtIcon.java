@@ -57,7 +57,6 @@ import org.openide.util.ImageUtilities;
 
 /**
  * Class for persisting icons
- * @author Milan Kubec, mkleint
  */
 public class ExtIcon {
 

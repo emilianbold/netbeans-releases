@@ -51,7 +51,6 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Source data objects need binary support to compile and run source with main method.
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service = CndCookieProvider.class)
 public final class CndCompileSupportProvider extends CndCookieProvider {

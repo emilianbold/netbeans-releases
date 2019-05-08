@@ -85,10 +85,6 @@ import org.openide.util.NbBundle;
  * Refactoring used for changing method signature. It changes method declaration
  * and also all its references (callers). Based on Java refactoring
  *
- * @author  Pavel Flaska
- * @author  Tomas Hurka
- * @author  Jan Becicka
- * @author  Vladimir Voskresensky
  */
 public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
 

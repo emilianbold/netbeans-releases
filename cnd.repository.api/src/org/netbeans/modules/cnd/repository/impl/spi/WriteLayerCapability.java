@@ -49,7 +49,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author vkvashin
  */
 public interface WriteLayerCapability extends LayerCapability {
 

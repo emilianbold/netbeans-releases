@@ -59,7 +59,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author akrasny
  */
 final class DiskLayerImplDelegate implements Layer {
 

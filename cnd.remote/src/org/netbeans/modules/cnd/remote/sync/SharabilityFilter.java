@@ -53,7 +53,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  * FileFilter implementation that is based on file sharability
- * @author Vladimir Kvashin
  */
 public final class SharabilityFilter implements FileFilter, FileObjectFilter {
 

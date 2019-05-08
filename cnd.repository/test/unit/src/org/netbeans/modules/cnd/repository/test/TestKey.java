@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 /**
  * Test interface Implementation 
  * for tests
- * @author Vladimir Kvashin
  */
 public class TestKey implements Key, SelfPersistent {
     

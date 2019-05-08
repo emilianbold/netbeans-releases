@@ -52,7 +52,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  *
- * @author alsimon
  */
 public class CMakeLexer implements Lexer<CMakeTokenId> {
 

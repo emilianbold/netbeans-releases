@@ -70,7 +70,6 @@ import org.openide.util.Lookup;
  * StorageManager is the manager that deals with several storages and proxies
  * queries from Repository Client to the right Storage (associated with the Key)
  *
- * @author akrasny
  */
 public final class StorageManager {
 

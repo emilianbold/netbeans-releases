@@ -52,7 +52,6 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.openide.filesystems.FileUtil;
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
 

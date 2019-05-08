@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
  *
- * @author masha
  */
 public interface RemoveKeySupport {
     void removeKey(Key key);

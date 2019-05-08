@@ -53,7 +53,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author vkvashin
  */
 public final class Repository {
 

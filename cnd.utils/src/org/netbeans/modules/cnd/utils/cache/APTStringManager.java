@@ -58,7 +58,6 @@ import org.openide.util.WeakSet;
  *  - only one instance per String object
  *  - based on weak references to allow GC of unused strings
  * 
- * @author Vladimir Voskresensky
  */
 public abstract class APTStringManager  {
     public enum CacheKind {

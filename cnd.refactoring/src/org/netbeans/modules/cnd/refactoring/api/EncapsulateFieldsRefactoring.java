@@ -59,8 +59,6 @@ import org.openide.util.lookup.Lookups;
 /** Encapsulate fields refactoring. This is a composed refactoring (uses instances of {@link org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring}
  * to encapsulate several fields at once.
  *
- * @author Pavel Flaska, Jan Becicka, Jan Pokorsky
- * @author  Vladimir Voskresensky
  */
 public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
     

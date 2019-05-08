@@ -58,8 +58,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Dusan Balek
- * @author Vladimir Voskresensky
  */
 public class ConstructorPanel extends JPanel {
 

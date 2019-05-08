@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * A simple FileIndex implementation
- * @author Vladimir Kvashin
  */
 public class SimpleFileIndex implements FileIndex, SelfPersistent {
     private static final int DEFAULT_INDEX_CAPACITY = 53711;

@@ -72,7 +72,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author vk155633
  */
 @ServiceProvider(service=RemoteSyncNotifier.class, position = 500)
 public class RemoteSyncNotifierImpl extends RemoteSyncNotifier {

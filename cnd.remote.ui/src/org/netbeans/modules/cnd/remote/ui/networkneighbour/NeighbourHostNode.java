@@ -59,7 +59,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author akrasny
  */
 final class NeighbourHostNode extends AbstractNode {
 

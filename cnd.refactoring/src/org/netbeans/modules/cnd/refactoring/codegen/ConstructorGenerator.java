@@ -78,7 +78,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class ConstructorGenerator implements CodeGenerator {
     

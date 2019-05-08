@@ -52,7 +52,6 @@ import org.netbeans.modules.editor.NbEditorKit;
 /**
  * Forces Unix-style end-of-line for Makefiles.
  *
- * @author Alexey Vladykin
  */
 public class MakefileKit extends NbEditorKit {
     private static final String COMMENT_LINE = "#"; //NOI18N

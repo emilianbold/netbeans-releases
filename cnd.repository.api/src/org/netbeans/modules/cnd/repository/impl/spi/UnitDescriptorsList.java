@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
  *
  * clientUnitDescriptor --- clientShortUnitID
  *
- * @author akrasny
  */
 public interface UnitDescriptorsList {
     public UnitDescriptor getUnitDescriptor(Integer layerUnitID);

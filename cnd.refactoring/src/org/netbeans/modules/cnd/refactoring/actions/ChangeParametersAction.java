@@ -52,8 +52,6 @@ import org.openide.util.NbBundle;
  * Activates change function signature refactoring. It is possible to do it
  * on methods and constructors. (based on org.netbeans.modules.refactoring.java.ui.ChangeParametersAction)
  *
- * @author Jan Becicka
- * @author Vladimir Voskresensky
  */
 public class ChangeParametersAction extends CsmRefactoringGlobalAction {
 

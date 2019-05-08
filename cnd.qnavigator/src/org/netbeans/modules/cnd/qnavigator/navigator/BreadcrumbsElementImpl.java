@@ -65,7 +65,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Alexander Simon
  */
 class BreadcrumbsElementImpl implements BreadcrumbsElement {
     private final Node node;

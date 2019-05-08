@@ -62,7 +62,6 @@ import org.openide.windows.OutputListener;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class ErrorParserProvider {
     // id of error parser provider which handles any output

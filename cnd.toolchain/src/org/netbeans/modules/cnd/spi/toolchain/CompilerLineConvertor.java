@@ -73,7 +73,6 @@ import org.openide.windows.InputOutput;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class CompilerLineConvertor implements LineConvertor, ChangeListener {
 

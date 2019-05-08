@@ -48,7 +48,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author masha
  */
 public abstract class CSMInitializationTaskRunner {
      private static final CSMInitializationTaskRunner DEFAULT = new CSMInitializationTaskRunnerDefault();

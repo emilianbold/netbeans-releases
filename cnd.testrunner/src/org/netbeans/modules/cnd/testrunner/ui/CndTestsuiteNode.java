@@ -56,7 +56,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Marian Petras, Erno Mononen
  */
 public final class CndTestsuiteNode extends TestsuiteNode {
 

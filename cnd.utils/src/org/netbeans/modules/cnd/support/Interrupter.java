@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.support;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface Interrupter {
 

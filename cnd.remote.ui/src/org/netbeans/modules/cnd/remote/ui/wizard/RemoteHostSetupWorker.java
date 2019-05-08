@@ -52,7 +52,6 @@ import org.openide.WizardDescriptor.Panel;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class RemoteHostSetupWorker implements HostSetupWorkerUI {
 

@@ -61,7 +61,6 @@ import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.openide.text.NbDocument;
 
 /**
- * @author Alexey Vladykin
  */
 public class ShellEmbeddingHighlightContainer extends AbstractHighlightsContainer {
 

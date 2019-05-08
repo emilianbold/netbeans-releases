@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  * test case for RepositoryCacheMap
- * @author Vladimir Kvashin
  */
 public class RepositoryCacheMapTest extends CndBaseTestCase {
 

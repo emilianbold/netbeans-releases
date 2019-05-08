@@ -78,7 +78,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.OpenRemoteProjectAction", category = "NativeRemote")
 @ActionRegistration(displayName = "#OpenRemoteProjectActionMenuItem", lazy = false)

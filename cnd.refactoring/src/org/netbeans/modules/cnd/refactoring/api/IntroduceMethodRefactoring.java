@@ -57,7 +57,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class IntroduceMethodRefactoring extends AbstractRefactoring {
 

@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
- * @author akrasny
  */
 public final class RepositoryExceptions {
 

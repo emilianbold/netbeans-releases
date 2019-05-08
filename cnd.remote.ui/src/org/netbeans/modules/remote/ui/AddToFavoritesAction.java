@@ -79,7 +79,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 @ActionID(id = "org.netbeans.modules.remote.ui.AddToFavoritesAction", category = "NativeRemote")
 @ActionRegistration(displayName = "#AddToFavoritesMenuItem", lazy = false)

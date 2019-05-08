@@ -57,7 +57,6 @@ import org.openide.util.Exceptions;
 
 /**
  * Tests for setting up a remote host
- * @author vk155633
  */
 public class HostSetupTestCase extends RemoteTestBase {
 

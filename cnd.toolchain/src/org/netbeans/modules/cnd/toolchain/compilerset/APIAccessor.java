@@ -50,7 +50,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author as204739
  */
 public abstract class APIAccessor {
 

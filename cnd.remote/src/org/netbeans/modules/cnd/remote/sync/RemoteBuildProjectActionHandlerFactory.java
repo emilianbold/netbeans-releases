@@ -55,7 +55,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  * ProjectActionHandlerFactory for remote builds using RFS
- * @author Vladimir Kvashin
  */
 @ServiceProvider(service=ProjectActionHandlerFactory.class, position=3000)
 public class RemoteBuildProjectActionHandlerFactory implements ProjectActionHandlerFactory {

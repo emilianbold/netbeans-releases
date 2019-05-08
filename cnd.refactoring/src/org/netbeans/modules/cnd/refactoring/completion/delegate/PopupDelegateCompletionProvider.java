@@ -68,7 +68,6 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
 /**
  *
- * @author Alexander Simon
  */
 public class PopupDelegateCompletionProvider implements CompletionProvider {
 

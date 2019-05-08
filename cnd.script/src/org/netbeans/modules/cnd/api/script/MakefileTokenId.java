@@ -52,8 +52,6 @@ import org.netbeans.modules.cnd.makefile.lexer.MakefileLanguageHierarchy;
  *
  * @see org.netbeans.modules.cnd.script.lexer.ShTokenId
  *
- * @author Jan Jancura
- * @author Alexey Vladykin
  */
 public enum MakefileTokenId implements TokenId {
 

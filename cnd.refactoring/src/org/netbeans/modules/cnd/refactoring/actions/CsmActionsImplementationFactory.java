@@ -48,8 +48,6 @@ import org.netbeans.modules.cnd.refactoring.spi.CsmActionsImplementationProvider
 import org.openide.util.Lookup;
 
 /**
- * @author Jan Becicka
- * @author Vladimir Voskresensky
  */
 public final class CsmActionsImplementationFactory {
     

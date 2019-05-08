@@ -63,7 +63,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class CompilerSetFactory {
 

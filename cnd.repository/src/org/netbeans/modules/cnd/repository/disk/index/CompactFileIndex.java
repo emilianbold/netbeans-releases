@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.repository.util.SlicedLongHashMap;
 /**
  * LongHashMap based implementation of FileIndex
  *
- * @author Vladimir Kvashin
  */
 public class CompactFileIndex implements FileIndex, SelfPersistent {
 

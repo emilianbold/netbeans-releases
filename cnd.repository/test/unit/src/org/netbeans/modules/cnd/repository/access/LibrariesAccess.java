@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 
 /**
  * Tests accessing libraries
- * @author Vladimir Kvashin
  */
 public class LibrariesAccess extends RepositoryAccessTestBase {
     

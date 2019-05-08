@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 /**
  * Tests Repository.tryGet()
  *
- * @author Vladimir Kvashin
  */
 public class TryGetTest extends GetPutTestBase {
 

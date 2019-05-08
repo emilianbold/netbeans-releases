@@ -54,7 +54,6 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 
 /**
- * @author Alexey Vladykin
  */
 public class MakefileTargetProviderImpl implements MakefileTargetProvider {
 

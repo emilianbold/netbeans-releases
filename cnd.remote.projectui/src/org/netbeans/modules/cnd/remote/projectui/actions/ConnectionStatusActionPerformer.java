@@ -62,7 +62,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(path="CND/Toobar/Services/ConnectionStatus", service=ActionListener.class)
 public class ConnectionStatusActionPerformer implements ActionListener, PropertyChangeListener, ConnectionListener {

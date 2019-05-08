@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  *      }
  * }
  *
- * @author Sergey Grinev
  */
 public interface SelfPersistent {
     public void write (RepositoryDataOutput output) throws IOException;

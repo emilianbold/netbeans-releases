@@ -35,7 +35,6 @@ import java.util.List;
 
 /**
  *
- * @author sg155630
  */
 public class RepositoryValidationFirstParse extends RepositoryValidationBase {
 

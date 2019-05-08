@@ -69,7 +69,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public final class HostNode extends AbstractNode implements ConnectionListener, PropertyChangeListener {
 

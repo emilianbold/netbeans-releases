@@ -60,7 +60,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 /*package-local*/ class FullRemoteSyncWorker implements RemoteSyncWorker {
 

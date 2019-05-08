@@ -48,7 +48,6 @@ import org.netbeans.modules.editor.indent.spi.IndentTask;
 /**
  * IndentTask factory for Makefiles.
  *
- * @author Alexey Vladykin
  */
 public class MakefileIndentTaskFactory implements IndentTask.Factory {
 

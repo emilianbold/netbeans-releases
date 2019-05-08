@@ -61,7 +61,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 final class SyncUtils {
     

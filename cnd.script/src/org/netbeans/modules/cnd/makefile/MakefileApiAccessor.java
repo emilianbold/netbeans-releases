@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.api.makefile.MakefileSupport;
 import org.openide.filesystems.FileObject;
 
 /**
- * @author Alexey Vladykin
  */
 public abstract class MakefileApiAccessor {
 

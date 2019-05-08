@@ -60,7 +60,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
- * @author Sergey Grinev
  */
 public class UploadTestCase extends RemoteTestBase {
 

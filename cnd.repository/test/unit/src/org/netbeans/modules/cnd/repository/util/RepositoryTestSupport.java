@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
- * @author vkvashin
  */
 public class RepositoryTestSupport {
 

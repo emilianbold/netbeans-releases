@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.utils;
 
 /**
  * An extension of Runnable that sets thread name
- * @author Vladimir Kvashin
  */
 public abstract class NamedRunnable implements Runnable {
 

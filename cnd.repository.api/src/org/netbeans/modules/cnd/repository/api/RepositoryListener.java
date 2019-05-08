@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.repository.api;
 
 /**
  *
- * @author Nickolay Dalmatov
  */
 public interface RepositoryListener {
     

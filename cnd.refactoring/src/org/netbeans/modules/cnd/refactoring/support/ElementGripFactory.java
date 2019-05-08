@@ -56,7 +56,6 @@ import org.openide.filesystems.FileObject;
  * it wrappers protect from removed or changed elements
  * 
  * based on Java's ElementGripFactory
- * @author Vladimir Voskresenky
  */
 public class ElementGripFactory {
 

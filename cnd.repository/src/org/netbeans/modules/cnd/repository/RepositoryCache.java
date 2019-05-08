@@ -64,8 +64,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 /**
  * An in-memory cache for storing repository objects
  *
- * @author Nickolay Dalmatov
- * @author Vladimir Kvashin
  */
 public final class RepositoryCache {
 

@@ -47,7 +47,6 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public interface CsmRefactoringNameProvider {
     /**

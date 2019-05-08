@@ -50,7 +50,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProvider(service=CndPropertiesProvider.class)
 public class CndPropertiesProviderImpl extends CndPropertiesProvider {

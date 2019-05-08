@@ -102,7 +102,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.Result> {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N

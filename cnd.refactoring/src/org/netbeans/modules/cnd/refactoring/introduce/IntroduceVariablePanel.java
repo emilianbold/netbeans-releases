@@ -41,8 +41,6 @@ import org.openide.util.NbPreferences;
 
 /**
  * based on org.netbeans.modules.java.hints.introduce.IntroduceVariablePanel
- * @author Jan Lahoda
- * @author Vladimir Voskresensky
  */
 public class IntroduceVariablePanel extends javax.swing.JPanel {
 

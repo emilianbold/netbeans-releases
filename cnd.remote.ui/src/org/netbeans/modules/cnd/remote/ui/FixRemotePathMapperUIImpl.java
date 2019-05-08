@@ -48,7 +48,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author masha
  */
 @ServiceProvider(service=FixRemotePathMapper.class, position = 500)
 public class FixRemotePathMapperUIImpl extends FixRemotePathMapper{

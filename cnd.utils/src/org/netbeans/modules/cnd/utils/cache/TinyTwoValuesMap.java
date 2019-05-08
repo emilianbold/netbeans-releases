@@ -54,7 +54,6 @@ import java.util.Set;
 
 /**
  * map for one entry set (only four fields to reduce memory) - 24 bytes on 32 system.
- * @author Vladimir Voskresensky
  */
 final class TinyTwoValuesMap<K, V> implements Map<K, V>, TinyMaps.CompactMap<K, V> {
 

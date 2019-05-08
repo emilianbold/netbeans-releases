@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
-* @author Sergey Grinev
  */
 public class ReopenRepositoryValidationTest extends CndBaseTestSuite {
 

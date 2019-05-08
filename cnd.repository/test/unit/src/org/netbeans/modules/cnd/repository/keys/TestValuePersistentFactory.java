@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
- * @author akrasny
  */
 public final class TestValuePersistentFactory implements PersistentFactory {
 

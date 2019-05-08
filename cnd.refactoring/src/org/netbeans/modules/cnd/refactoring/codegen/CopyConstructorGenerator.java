@@ -71,7 +71,6 @@ import org.openide.util.Pair;
 
 /**
  *
- * @author Alexander Simon
  */
 public class CopyConstructorGenerator implements CodeGenerator {
 

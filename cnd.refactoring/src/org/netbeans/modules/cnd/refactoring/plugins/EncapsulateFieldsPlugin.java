@@ -80,9 +80,6 @@ import org.openide.util.NbBundle;
 /** Encapsulate fields refactoring. This is a composed refactoring (uses instances of {@link org.netbeans.modules.refactoring.api.EncapsulateFieldRefactoring}
  * to encapsulate several fields at once.
  *
- * @author Pavel Flaska
- * @author Jan Becicka
- * @author Jan Pokorsky
  */
 public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlugin {
 

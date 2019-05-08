@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author akrasny
  */
 public final class SearchResultPropertySet extends Node.PropertySet {
 

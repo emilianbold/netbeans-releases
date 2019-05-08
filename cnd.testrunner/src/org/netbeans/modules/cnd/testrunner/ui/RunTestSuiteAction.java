@@ -53,7 +53,6 @@ import org.openide.util.lookup.Lookups;
 /**
  * Action for running all tests in a file.
  *
- * @author Erno Mononen
  */
 final class RunTestSuiteAction extends BaseTestMethodNodeAction {
 

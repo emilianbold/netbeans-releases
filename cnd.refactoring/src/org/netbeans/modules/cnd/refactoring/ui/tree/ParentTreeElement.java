@@ -54,7 +54,6 @@ import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 
 /**
  * 
- * @author Vladimir Voskresensky
  */
 public class ParentTreeElement implements TreeElement {
     

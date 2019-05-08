@@ -57,7 +57,6 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 
 /**
  *
- * @author Erno Mononen
  */
 public final class TestRunnerLineConvertor implements LineConvertor {
 

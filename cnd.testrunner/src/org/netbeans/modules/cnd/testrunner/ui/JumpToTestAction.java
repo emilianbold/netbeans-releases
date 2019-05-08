@@ -60,7 +60,6 @@ import org.openide.text.PositionBounds;
 /**
  * Jump to action for test methods.
  *
- * @author Erno Mononen
  */
 final class JumpToTestAction extends BaseTestMethodNodeAction {
 

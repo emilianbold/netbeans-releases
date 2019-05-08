@@ -61,7 +61,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author akrasny
  */
 public final class SearchBrowseHostScope {
 

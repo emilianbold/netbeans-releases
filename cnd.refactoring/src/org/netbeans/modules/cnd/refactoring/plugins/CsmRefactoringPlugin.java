@@ -71,7 +71,6 @@ import org.openide.util.NbBundle;
 /**
  * base class for C/C++ refactoring plug-ins
  * 
- * @author Vladimir Voskresensky
  */
 public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
     static final Logger LOG = Logger.getLogger(CsmWhereUsedQueryPlugin.class.getName());

@@ -77,7 +77,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public class HostUpdatesRequestPanel extends JPanel {
 

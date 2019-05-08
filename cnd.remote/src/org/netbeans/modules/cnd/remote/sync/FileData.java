@@ -63,7 +63,6 @@ import org.openide.util.Exceptions;
  *
  * NB: the class is NOT thread safe
  *
- * @author Vladimir Kvashin
  */
 public final class FileData {
 

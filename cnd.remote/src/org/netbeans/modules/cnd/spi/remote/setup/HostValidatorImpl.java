@@ -62,7 +62,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 class HostValidatorImpl implements HostValidator {
 

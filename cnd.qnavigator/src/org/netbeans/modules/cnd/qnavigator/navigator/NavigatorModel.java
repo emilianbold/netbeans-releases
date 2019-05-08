@@ -74,7 +74,6 @@ import org.openide.util.actions.Presenter;
 
 /**
  *
- * @author Alexander Simon
  */
 public class NavigatorModel {
 

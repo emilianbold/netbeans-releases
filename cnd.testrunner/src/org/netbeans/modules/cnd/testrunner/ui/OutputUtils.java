@@ -53,7 +53,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Marian Petras, Erno Mononen
  */
 final class OutputUtils {
 

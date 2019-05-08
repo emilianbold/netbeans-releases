@@ -71,7 +71,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ToolsPanelSupport extends ToolchainChangeSupport {
     private static CompilerSet currentCompilerSet;

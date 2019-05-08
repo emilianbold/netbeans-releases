@@ -57,7 +57,6 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 
 /**
- * @author Alexey Vladykin
  */
 public class MakefileSupport {
 

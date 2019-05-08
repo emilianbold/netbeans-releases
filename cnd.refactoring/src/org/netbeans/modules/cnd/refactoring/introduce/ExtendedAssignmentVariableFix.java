@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ExtendedAssignmentVariableFix extends AssignmentVariableFix {
     private int numDuplicates;

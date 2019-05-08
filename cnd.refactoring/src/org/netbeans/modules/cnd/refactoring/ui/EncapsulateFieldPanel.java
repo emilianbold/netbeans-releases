@@ -92,8 +92,6 @@ import org.openide.util.NbPreferences;
  * Panel used by Encapsulate Field refactoring. Contains components to
  * set parameters for the refactoring.
  *
- * @author  Pavel Flaska, Jan Pokorsky
- * @author  Vladimir Voskresensky
  */
 public final class EncapsulateFieldPanel extends javax.swing.JPanel implements CustomRefactoringPanel {
     private static final String ALWAYS_USE_ACCESSORS_PROPERTY = "always_use_accessors"; // NOI18N

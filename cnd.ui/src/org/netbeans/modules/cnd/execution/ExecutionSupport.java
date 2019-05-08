@@ -58,7 +58,6 @@ import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 
 /** Support for execution of a data object.
- * @author Jaroslav Tulach, Jesse Glick
  * @since 3.14
  */
 public class ExecutionSupport implements Node.Cookie {

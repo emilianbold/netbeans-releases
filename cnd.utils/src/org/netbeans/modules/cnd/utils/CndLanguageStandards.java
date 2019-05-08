@@ -47,7 +47,6 @@ import java.util.Collections;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class CndLanguageStandards {
     public enum CndLanguageStandard {

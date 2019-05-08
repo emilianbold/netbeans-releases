@@ -55,7 +55,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author masha
  */
 @ServiceProvider(service = CSMNotifier.class, position = 100)
 public class CSMNotifierUIImpl extends CSMNotifier {

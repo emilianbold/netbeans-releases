@@ -49,7 +49,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class NamedOption {
     public static final String HIGHLIGTING_CATEGORY = "CND/options/highlighting"; //NOI18N

@@ -81,8 +81,6 @@ import org.openide.util.Utilities;
 /**
  * Implements FilesAccessStrategy
  *
- * @author Nickolay Dalmatov
- * @author Vladimir Kvashin
  */
 public final class FilesAccessStrategyImpl implements ReadLayerCapability, WriteLayerCapability {
     private static final boolean TRACE_CONFLICTS = Boolean.getBoolean("cnd.repository.trace.conflicts");

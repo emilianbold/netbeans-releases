@@ -46,7 +46,6 @@ import java.net.URISyntaxException;
 
 /**
  *
- * @author vkvashin
  */
 public final class LayerDescriptor {
 

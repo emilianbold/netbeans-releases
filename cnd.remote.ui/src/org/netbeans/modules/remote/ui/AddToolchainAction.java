@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexey Vladykin
  */
 /*package*/ final class AddToolchainAction extends AbstractAction {
 

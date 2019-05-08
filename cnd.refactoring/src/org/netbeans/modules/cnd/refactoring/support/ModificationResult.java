@@ -64,8 +64,6 @@ import org.openide.text.PositionRef;
  *
  * Class that collects changes for one project
  *
- * @author Dusan Balek
- * @author Vladimir Voskresensky
  */
 public final class ModificationResult implements org.netbeans.modules.refactoring.spi.ModificationResult {
 

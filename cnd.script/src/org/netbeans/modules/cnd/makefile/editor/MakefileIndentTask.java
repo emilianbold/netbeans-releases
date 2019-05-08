@@ -52,7 +52,6 @@ import org.netbeans.modules.editor.indent.spi.IndentTask;
 /**
  * Indentation support for Makefiles.
  *
- * @author Alexey Vladykin
  */
 class MakefileIndentTask implements IndentTask {
 
