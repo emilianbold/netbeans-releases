@@ -449,7 +449,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
     
     public String normalizeAbsolutePath(String absPath) {
-        //BZ#192265 as vkvashin stated the URI i sused to normilize the path
+        //BZ#192265 as stated the URI i sused to normilize the path
         //but URI is really very restrictive so let's use another way
         //will use the face that path is absolute and we have Unix like system
         //no special code for Windows

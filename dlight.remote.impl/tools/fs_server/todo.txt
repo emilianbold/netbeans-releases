@@ -16,10 +16,10 @@ High
 - it seems access rights aren't passed properly. Check this.
 
 l 44 /home/vkvashin/src/netbeans/pythia-platform/
-fs_server[5036]: unexpected numeric value: '/home/vkvashin/src/netbeans/pythia-platform/
+fs_server[5036]: unexpected numeric value: '/home/src/netbeans/pythia-platform/
 Segmentation fault (core dumped)
 
-fs_server[23925]: error opening /home/vkvashin/.netbeans/remotefs/dirtab for writing: File exists
+fs_server[23925]: error opening /home/.netbeans/remotefs/dirtab for writing: File exists
 
 Medium
 ------

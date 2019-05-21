@@ -570,7 +570,7 @@ public class ReadRegistryTestCase extends NbTestCase {
                 "   DisplayVersion      REG_SZ  1.0.10\n" +
                 "   Publisher   REG_SZ  MinGW\n" +
                 "   URLInfoAbout        REG_SZ  http://www.mingw.org/\n" +
-                "   HelpLink    REG_SZ  mailto:mingw-msys@lists.sf.net\n" +
+                "   HelpLink    REG_SZ  mailto:\n" +
                 "   URLUpdateInfo       REG_SZ  http://sf.net/projects/mingw/\n" +
                 "\n";
 
