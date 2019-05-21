@@ -45,7 +45,6 @@ package org.netbeans.jellytools;
 /**
  * CND-specific extension to NewFileWizardOperator.
  *
- * @author Vojtech.Sigler@sun.com
  */
 public class NewCNDFileWizardOperator extends NewFileWizardOperator
 {

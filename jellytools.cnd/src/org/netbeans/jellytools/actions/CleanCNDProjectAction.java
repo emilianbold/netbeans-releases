@@ -48,7 +48,6 @@ import org.netbeans.jellytools.Bundle;
 /** Used to call "Clean Project" popup menu item on a CND project's root node.
  * @see Action
  * @see org.netbeans.jellytools.nodes.CNDProjectRootNode
- * @author Vojtech.Sigler@sun.com
  */
 public class CleanCNDProjectAction extends Action {
 

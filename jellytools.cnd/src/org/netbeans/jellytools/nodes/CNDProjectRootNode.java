@@ -50,7 +50,6 @@ import org.netbeans.jemmy.operators.JTreeOperator;
  * CND-specific extension to ProjectRootNode - adds "Build Project" and "Clean Project"
  * actions.
  *  
- * @author Vojtech.Sigler@sun.com
  */
 public class CNDProjectRootNode extends ProjectRootNode {
 

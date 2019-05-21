@@ -57,7 +57,6 @@ import org.netbeans.jemmy.TimeoutExpiredException;
  *  but did not extend ProjectRootNodeTest, because a test library dependency on 
  *  jellytools module would be neccessary.
  *
- * @author Vojtech.Sigler@sun.com
  */
 public class CNDProjectRootNodeTest extends CNDTestCase
 {

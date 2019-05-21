@@ -49,7 +49,6 @@ import org.netbeans.jellytools.nodes.CNDProjectRootNode;
 /**
  * Java-specific extension to ProjectsTabOperator.
  *
- * @author Vojtech.Sigler@sun.com
  */
 public class CNDProjectsTabOperator extends ProjectsTabOperator {
 

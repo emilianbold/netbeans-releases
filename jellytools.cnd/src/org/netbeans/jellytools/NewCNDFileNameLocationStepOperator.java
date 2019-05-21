@@ -69,7 +69,6 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
  *      op.selectExtension("cpp");
  * </pre>
  *
- * @author Vojtech.Sigler@sun.com
  */
 public class NewCNDFileNameLocationStepOperator extends NewFileWizardOperator {
     

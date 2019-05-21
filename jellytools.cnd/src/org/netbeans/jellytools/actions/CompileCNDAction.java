@@ -49,7 +49,6 @@ import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Build|Compile File" main menu item, "Compile File" popup menu or F9 shortcut.
  * @see Action
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
 public class CompileCNDAction extends Action {
 

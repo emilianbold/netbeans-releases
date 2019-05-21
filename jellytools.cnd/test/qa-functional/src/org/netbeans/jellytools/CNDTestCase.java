@@ -51,7 +51,6 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
  *
- * @author Vojtech.Sigler@sun.com
  */
 public class CNDTestCase extends JellyTestCase {
 

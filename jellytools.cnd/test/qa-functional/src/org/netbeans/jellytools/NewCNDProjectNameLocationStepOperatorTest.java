@@ -48,7 +48,6 @@ import junit.textui.TestRunner;
 
 /**
  * Test of org.netbeans.jellytools.NameCNDProjectNameLocationStepOperator.
- * @author Vojtech.Sigler@sun.com
  */
 public class NewCNDProjectNameLocationStepOperatorTest extends JellyTestCase {
     

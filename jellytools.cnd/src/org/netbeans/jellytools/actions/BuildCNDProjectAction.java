@@ -48,8 +48,6 @@ import org.netbeans.jellytools.Bundle;
 /** Used to call "Build Project" popup menu item on project's root node.
  * @see Action
  * @see org.netbeans.jellytools.nodes.ProjectRootNode
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- * @author Jiri.Skrivanek@sun.com
  */
 public class BuildCNDProjectAction extends Action {
 
