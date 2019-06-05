@@ -80,7 +80,6 @@ import javax.tools.JavaFileObject;
 
 /**
  *
- * @author Dusan Balek
  */
 public class Repair extends TreeTranslator {
 

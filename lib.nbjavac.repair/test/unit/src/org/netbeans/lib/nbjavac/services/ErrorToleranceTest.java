@@ -51,7 +51,6 @@ import junit.framework.TestCase;
 
 /**
  *
- * @author Jan Lahoda
  */
 public class ErrorToleranceTest extends TestCase {
 
