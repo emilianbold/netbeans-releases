@@ -55,7 +55,7 @@ import javax.swing.text.EditorKit;
 import org.netbeans.editor.BaseDocument;
 
 /**
- * Vladimir Voskresensky copied this class to prevent dependency on editor tests
+ * 
  *
  * Support for creation of unit tests working with document.
  *
