@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
 
 /**
  * The actual Renaming refactoring work for C/C++. The skeleton (name checks etc.) based
- * on the Java refactoring module by Jan Becicka, Martin Matula, Pavel Flaska and Daniel Prusa.
+ * on the Java refactoring module.
  * 
  *
  * @todo Complete this. Most of the prechecks are not implemented - and the refactorings themselves need a lot of work.
