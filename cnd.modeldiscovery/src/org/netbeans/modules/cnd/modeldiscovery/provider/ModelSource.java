@@ -73,6 +73,7 @@ import org.openide.util.Utilities;
 
 /**
  *
+ * @author Alexander Simon
  */
 public class ModelSource implements SourceFileProperties {
     private static final boolean TRACE_AMBIGUOUS = Boolean.getBoolean("cnd.modeldiscovery.trace.ambiguous"); // NOI18N
@@ -390,6 +391,7 @@ public class ModelSource implements SourceFileProperties {
             case CPP98: return LanguageStandard.CPP98;
             case CPP11: return LanguageStandard.CPP11;
             case CPP14: return LanguageStandard.CPP14;
+            case CPP17: return LanguageStandard.CPP17;
             case DEFAULT: return LanguageStandard.Default;
             case F77: return LanguageStandard.F77;
             case F90: return LanguageStandard.F90;

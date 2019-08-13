@@ -60,6 +60,7 @@ import org.w3c.dom.NodeList;
 /**
  * Factory for simple Make projects.
  * 
+ * @author Alexander Simon
  */
 public final class MakeProjectTypeImpl implements MakeProjectType {
 
@@ -78,6 +79,7 @@ public final class MakeProjectTypeImpl implements MakeProjectType {
     public final static String C_FORMATTING_STYLE_ELEMENT = "c-style"; // NOI18N
     public final static String CPP_FORMATTING_STYLE_ELEMENT = "cpp-style"; // NOI18N
     public final static String HEADER_FORMATTING_STYLE_ELEMENT = "header-style"; // NOI18N
+    public final static String CLANG_FORMAT_STYLE_ELEMENT = "clang-format-style"; // NOI18N
     public final static String CUSTOMIZERID_ELEMENT = "customizerid"; // NOI18N
     public final static String ACTIVE_CONFIGURATION_TYPE_ELEMENT = "activeConfTypeElem"; // NOI18N
     public final static String ACTIVE_CONFIGURATION_INDEX_ELEMENT = "activeConfIndexElem"; // NOI18N

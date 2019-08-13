@@ -59,6 +59,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
+ * @author Vladimir Voskresensky
  */
 public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
 
@@ -204,6 +205,10 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
             case CPP14:
                 // FIXME
                 lang_std = LangStandard.Kind.lang_gnucxx14;
+                break;
+            case CPP17:
+                // FIXME
+                lang_std = LangStandard.Kind.lang_gnucxx1z;
                 break;
             case F77:
             case F90:

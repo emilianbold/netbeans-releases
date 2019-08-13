@@ -56,7 +56,7 @@ public final class GdbError extends Error {
 	return msgs;
     }
 
-    public GdbError(String errMsg) {
-	super(msgs(errMsg));
+    public GdbError(String command, String errMsg) {
+	super(msgs("command:\"" + command + "\"; error, msg=" + errMsg));//NOI18N
     }
 }

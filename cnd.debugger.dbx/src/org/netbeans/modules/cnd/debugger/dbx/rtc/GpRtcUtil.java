@@ -56,14 +56,14 @@ public class GpRtcUtil {
 				  gframe.pc);
     }
 
-    public static RtcModel.Stack rtcStack(RtcModel model, GPDbxStack gstack) {
+    private static RtcModel.Stack rtcStack(RtcModel model, GPDbxStack gstack) {
 	RtcModel.Stack rstack = model.newStack(gstack.nframes);
 	for (int fx = 0; fx < gstack.nframes; fx++)
 	    rstack.setFrame(fx, rtcFrame(gstack.frame[fx]));
 	return rstack;
     }
 
-    public static RtcModel.Location rtcLocation(GPDbxLocation glocation) {
+    private static RtcModel.Location rtcLocation(GPDbxLocation glocation) {
 	return new RtcModel.Location(glocation.func,
 				     glocation.src,
 				     glocation.line,

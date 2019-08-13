@@ -81,6 +81,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
+ * @author Vladimir Voskresensky
  */
 @ServiceProvider(service=CsmParserProvider.class, position=1000)
 public final class ParserProviderImpl extends CsmParserProvider {
@@ -112,6 +113,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
             flags |= CPPParserEx.CPP_FLAVOR_CPP11;
         } else if (APTLanguageSupport.FLAVOR_CPP14.equals(langFlavour)) {
             flags |= CPPParserEx.CPP_FLAVOR_CPP14;
+        } else if (APTLanguageSupport.FLAVOR_CPP17.equals(langFlavour)) {
+            flags |= CPPParserEx.CPP_FLAVOR_CPP17;
         }
         return flags;
     }

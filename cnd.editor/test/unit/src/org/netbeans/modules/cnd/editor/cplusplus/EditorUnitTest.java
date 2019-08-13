@@ -35,6 +35,7 @@ import org.netbeans.junit.NbTestSuite;
 
 /**
  *
+ * @author Alexander Simon
  */
 public class EditorUnitTest extends NbTestSuite {
 
@@ -43,6 +44,7 @@ public class EditorUnitTest extends NbTestSuite {
         addTestSuite(BracketCompletionTestCase.class);
         addTestSuite(IndentTestCase.class);
         addTestSuite(FormatterTestCase.class);
+        addTestSuite(CLangFormatTestCase.class);
         addTestSuite(SpaceAndLineSeparatorTestCase.class);
 
     }

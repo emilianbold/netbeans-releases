@@ -1741,7 +1741,9 @@ public abstract class NativeBreakpoint
 	    }
 
 	} else if (isMidlevel()) {
-	    removeAnnotations();
+            if (isEnabled()) {//if it is disabled do not remove annotation
+                removeAnnotations();
+            }
 
 	    // remember state from before removeChild()
 	    boolean isOnlyChild = isOnlyChild();
@@ -1777,7 +1779,9 @@ public abstract class NativeBreakpoint
 	    }
 
 	} else if (isToplevel()) {
-	    removeAnnotations();
+            if (isEnabled()) {//if it is disabled do not remove annotation
+                removeAnnotations();
+            }
 
 	    // no parent to remove self from
 	    breakpointBag().remove(this);
@@ -1879,15 +1883,17 @@ public abstract class NativeBreakpoint
 
 	if (currentDebugger() == null) {
 	    if (isToplevel()) {
-		if (!NativeDebuggerManager.isPerTargetBpts())
+		if (!NativeDebuggerManager.isPerTargetBpts()) {
 		    showAnnotation(a, true);
+                }
 	    } else {
 		showAnnotation(a, false);
 	    }
 	} else {
 	    if (isToplevel()) {
-		if (!NativeDebuggerManager.isPerTargetBpts())
+		if (!NativeDebuggerManager.isPerTargetBpts()) {
 		    showAnnotation(a, false);
+                }
 	    } else {
 		showAnnotation(a, currentDebugger() == debugger);
 	    }
@@ -2324,6 +2330,16 @@ public abstract class NativeBreakpoint
 	    if (nChildren() == 0) {
 		// change the state right now
 		setEnabled(b);
+                if (b && debugger == null && NativeDebuggerManager.get().currentDebugger() != null) {
+                    //while fixing bz#271311 - start debug performance: do not post disabled breakpoint
+                    //need to hide disabled annotation for the top level breakpoint
+                    showAnnotations(false);
+                    //post breakpoint (the same action as if we would create it
+                    //new subbreakpoint will be created and its breakpoint annotation will be shown in the editor
+                    //when debug session will be finished  subbreakpoint will be deleted
+                    //and this (top level) breakpoint annotation will be shown in the editor
+                    NativeDebuggerManager.get().currentDebugger().bm().postRestoreBreakpoint(this);
+                }
 	    } else {
 		for (NativeBreakpoint c : getChildren())
 		    c.setPropEnabled(b);
@@ -2346,8 +2362,8 @@ public abstract class NativeBreakpoint
 	    if (hasHandler()) {
 		getHandler().postEnable(b, this.getRoutingToken());
 	    } else {
-		// change the state right now
-		setEnabled(b);
+                // change the state right now
+                setEnabled(b);
 	    }
 	}
     }

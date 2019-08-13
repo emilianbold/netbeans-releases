@@ -80,6 +80,7 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
+ * @author Alexander Simon
  */
 public final class HighlightProvider  {
     
@@ -283,29 +284,13 @@ public final class HighlightProvider  {
             if (interrupter.cancelled()) {
                 return;
             }
-            PositionBounds pb = createPositionBounds(dao, info.getStartOffset(), info.getEndOffset());
-            ErrorDescription desc = null;
-            if (pb != null) {
-                try {
-                    List<Fix> fixes = CsmErrorInfoHintProvider.getFixes(info);
-                    if (info instanceof ErrorInfoImpl) {
-                        desc = ErrorDescriptionFactory.createErrorDescription(
-                                null, getSeverity(info), ((ErrorInfoImpl) info).getCustomType(), info.getMessage(), null, fixes, doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
-                    } else {
-                        desc = ErrorDescriptionFactory.createErrorDescription(
-                                getSeverity(info), info.getMessage(), fixes, doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
-                    }
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-                descriptions.add(desc);
-                if (TRACE_ANNOTATIONS) {
-                    System.err.printf("\tadded to a bag %s\n", desc.toString());
-                }
-            } else {
-                if (TRACE_ANNOTATIONS) {
-                    System.err.printf("\tCan't create PositionBounds for %s\n", info);
-                }
+            List<Fix> fixes = CsmErrorInfoHintProvider.getFixes(info);
+            ErrorDescription desc = ErrorDescriptionFactory.createErrorDescription(
+                    null, getSeverity(info), info.getCustomType(), info.getMessage(), null, fixes, doc,
+                    info.getStartOffsets(), info.getEndOffsets());
+            descriptions.add(desc);
+            if (TRACE_ANNOTATIONS) {
+                System.err.printf("\tadded to a bag %s\n", desc.toString());
             }
         }
 

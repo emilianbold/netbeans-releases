@@ -68,6 +68,7 @@ import org.openide.util.lookup.ServiceProviders;
 /**
  * This is an implementation of DefaultSystemSetting.
  * It provides  
+ * @author Leonid Mesnik
  */
 @ServiceProviders({
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.DefaultSystemSettings.class),
@@ -116,6 +117,9 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings implements 
             case CPP14:
                 // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.CPP14
                 return "-std=c++14"; //NOI18N
+            case CPP17:
+                // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.CPP17
+                return "-std=c++17"; //NOI18N
             default:
                 return ""; // NOI18N
         }

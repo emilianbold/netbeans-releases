@@ -89,6 +89,7 @@ import org.openide.util.Utilities;
 
 /**
  *
+ * @author Alexander Simon
  */
 public class ProjectBridge {
     private final String baseFolder;
@@ -771,6 +772,12 @@ public class ProjectBridge {
                 case CPP14:
                     if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.CPP14) {
                         itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP14);
+                        isChanged = true;
+                    }
+                    break;
+                case CPP17:
+                    if (itemConfiguration.getLanguageFlavor() != LanguageFlavor.CPP17) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP17);
                         isChanged = true;
                     }
                     break;

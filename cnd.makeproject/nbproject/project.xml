@@ -358,10 +358,12 @@ Contributor(s):
                 <friend>org.netbeans.modules.cnd.debugger.dbx</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdbserver</friend>
+                <friend>org.netbeans.modules.cnd.diagnostics.clank</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
+                <friend>org.netbeans.modules.cnd.jconvertwizard</friend>
                 <friend>org.netbeans.modules.cnd.make2netbeans</friend>
                 <friend>org.netbeans.modules.cnd.makeproject.source.bridge</friend>
                 <friend>org.netbeans.modules.cnd.makeproject.ui</friend>

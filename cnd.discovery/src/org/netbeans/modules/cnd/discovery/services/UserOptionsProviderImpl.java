@@ -80,6 +80,7 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
+ * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider.class)
 public class UserOptionsProviderImpl implements UserOptionsProvider {
@@ -183,6 +184,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                 switch (languageStandard) {
                     case CPP11: return LanguageFlavor.CPP11;
                     case CPP14: return LanguageFlavor.CPP14;
+                    case CPP17: return LanguageFlavor.CPP17;
                 }
             } else if (compiler.getKind() == PredefinedToolKind.FortranCompiler) {
                 // TODO

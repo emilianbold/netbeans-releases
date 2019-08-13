@@ -130,11 +130,13 @@ Contributor(s):
                 <friend>org.netbeans.modules.cnd.analysis.impl</friend>
                 <friend>org.netbeans.modules.cnd.apt</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
+                <friend>org.netbeans.modules.cnd.jconvertwizard</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.codemodel.bridge</friend>
                 <friend>org.netbeans.modules.cnd.codemodel.utils</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
+                <friend>org.netbeans.modules.cnd.diagnostics.clank</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>

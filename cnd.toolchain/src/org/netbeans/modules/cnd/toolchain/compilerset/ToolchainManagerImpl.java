@@ -91,6 +91,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
+ * @author Alexander Simon
  */
 @SuppressWarnings({"PackageVisibleInnerClass","PackageVisibleField"})
 public final class ToolchainManagerImpl {
@@ -831,7 +832,7 @@ public final class ToolchainManagerImpl {
         Element e = doc.createElement("cpp_standard"); // NOI18N
         element.appendChild(e);
         Element c;
-        String[] names = new String[]{"default", "cpp98", "cpp11", "cpp14"}; // NOI18N
+        String[] names = new String[]{"default", "cpp98", "cpp11", "cpp14", "cpp17"}; // NOI18N
         for (int i = 0; i < flags.length; i++) {
             c = doc.createElement(names[i]);
             c.setAttribute("flags", flags[i]); // NOI18N
@@ -1442,14 +1443,17 @@ public final class ToolchainManagerImpl {
         String cpp98;
         String cpp11;
         String cpp14;
+        String cpp17;
         int default_selection = 0;
 
         public boolean isValid() {
-            return cppDefault != null && cpp98 != null && cpp11 != null && cpp14 != null;
+            return cppDefault != null && cpp98 != null && cpp11 != null && cpp14 != null && cpp17 != null;
         }
 
         public String[] values() {
             if (isValid()) {
+                return new String[]{cppDefault, cpp98, cpp11, cpp14, cpp17};
+            } else if (cppDefault != null && cpp98 != null && cpp11 != null && cpp14 != null) {
                 return new String[]{cppDefault, cpp98, cpp11, cpp14};
             } else if (cppDefault != null && cpp98 != null && cpp11 != null) {
                 return new String[]{cppDefault, cpp98, cpp11};
@@ -1975,6 +1979,11 @@ public final class ToolchainManagerImpl {
                     }
                 } else if (path.endsWith(".cpp14")) { // NOI18N
                     st.cpp14 = flags;
+                    if (isDefault) {
+                        st.default_selection = 3;
+                    }
+                } else if (path.endsWith(".cpp17")) { // NOI18N
+                    st.cpp17 = flags;
                     if (isDefault) {
                         st.default_selection = 3;
                     }

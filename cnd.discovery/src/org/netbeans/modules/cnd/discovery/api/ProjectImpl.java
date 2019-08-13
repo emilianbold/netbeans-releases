@@ -71,6 +71,7 @@ import org.openide.util.Utilities;
  * Default implementation of ProjectProperties.
  * Enough in most cases.
  *
+ * @author Alexander Simon
  */
 public final class ProjectImpl implements ProjectProperties {
     private static final boolean gatherFolders = true;
@@ -447,6 +448,7 @@ public final class ProjectImpl implements ProjectProperties {
                 case CPP98: return LanguageStandard.CPP98;
                 case CPP11: return LanguageStandard.CPP11;
                 case CPP14: return LanguageStandard.CPP14;
+                case CPP17: return LanguageStandard.CPP17;
                 case F77: return LanguageStandard.F77;
                 case F90: return LanguageStandard.F90;
                 case F95: return LanguageStandard.F95;

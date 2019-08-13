@@ -48,6 +48,13 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.clang.format.FormatGlobals;
+import org.clang.format.FormatStyle;
+import org.clang.tooling.core.Range;
+import org.clang.tooling.core.Replacement;
+import org.clank.java.std;
+import org.llvm.adt.StringRef;
+import org.llvm.adt.aliases.ArrayRef;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -66,6 +73,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
+ * @author Alexander Simon
  */
 public class Reformatter implements ReformatTask {
     private Context context;
@@ -146,9 +154,46 @@ public class Reformatter implements ReformatTask {
         }
         Language<CppTokenId> language = CndLexerUtilities.getLanguage(context.mimePath());
         if (language != null) {
-            reformatLanguage(language, startOffset, endOffset);
+            FormatStyle clangFormatStyle = codeStyle.getClangFormatStyle();
+            if (clangFormatStyle == null) {
+                reformatLanguage(language, startOffset, endOffset);
+            } else {
+                reformat(clangFormatStyle, startOffset, endOffset);
+            }
         } else {
             //LOG.log(Level.SEVERE, "Language of mime type {0} is not found in the document {1}", new Object[]{context.mimePath(), doc});
+        }
+    }
+
+    private void reformat(FormatStyle clangFormatStyle, int startOffset, int endOffset) throws BadLocationException {
+        final String text = doc.getText(0, doc.getLength());
+        final byte[] byteText = new byte[text.length()+1];
+        for(int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c <= 127) {
+                byteText[i] = (byte)(c & 0xFF);
+            } else {
+                // Assumption: formatter never copied non-white text in replacment.
+                // Replace all wide chars to keep parity between char and byte offsets.
+                byteText[i] = (byte)(0xD3);
+            }
+        }
+        byteText[text.length()] = 0;
+        //StringRef stringRef = new StringRef(text);
+        StringRef stringRef = new StringRef(byteText);
+        ArrayRef<Range> Ranges = new ArrayRef(new Range[]{new Range(startOffset, endOffset - startOffset)});
+        String title = (String) doc.getProperty("title"); //NOI18N
+        if (title == null) {
+          title = "<stdin>"; //NOI18N
+        }
+        StringRef file = new StringRef(/*KEEP_STR*/title); //NOI18N
+        std.setType<Replacement> replaces = FormatGlobals.reformat(clangFormatStyle, stringRef, Ranges, file);
+        LinkedList<Replacement> diffs = new LinkedList<Replacement>();
+        for(Replacement r : replaces){
+            diffs.addFirst(r);
+        }
+        for(Replacement r : diffs) {
+            unsafeApplyDiff(r.getOffset(), r.getOffset()+r.getLength(), r.getReplacementText().toJavaString());
         }
     }
 
@@ -294,6 +339,16 @@ public class Reformatter implements ReformatTask {
         if (carret != -1) {
             currentComponent.getCaret().setDot(carret);
         }
+    }
+
+    private boolean unsafeApplyDiff(int start, int end, String text) throws BadLocationException{
+        if (end - start > 0) {
+            doc.remove(start, end - start);
+        }
+        if (text != null && text.length() > 0) {
+            doc.insertString(start, text, null);
+        }
+        return true;
     }
 
     private boolean applyDiff(int start, int end, String text) throws BadLocationException{

@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 
 /**
  *
+ * @author Alexander Simon
  */
 public class FortranFormatterTestCase extends FortranEditorBase {
 
@@ -733,5 +734,26 @@ public class FortranFormatterTestCase extends FortranEditorBase {
                 "    end do\n" +
                 "end\n"
                 );
+    }
+
+    public void testIZ_270651() {
+        setLoadDocumentText(
+                "interface assignment(=)\n" +
+                "  module procedure c_to_s_assign, s_toc_assign\n" +
+                "end interface\n" +
+                "\n" +
+                "interface operator(//)\n" +
+                "  module procedure string_concat\n" +
+                "end interface\n");
+        setDefaultsOptions(true);
+        reformat();
+        assertDocumentText("Incorrect function indent (free form)",
+                "interface assignment( = )\n" +
+                "    module procedure c_to_s_assign, s_toc_assign\n" +
+                "end interface\n" +
+                "\n" +
+                "interface operator( // )\n" +
+                "    module procedure string_concat\n" +
+                "end interface\n");
     }
 }

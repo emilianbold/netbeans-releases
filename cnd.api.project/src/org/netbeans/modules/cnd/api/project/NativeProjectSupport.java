@@ -57,6 +57,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
+ * @author Vladimir Voskresensky
  */
 public final class NativeProjectSupport {
     private NativeProjectSupport() {}
@@ -145,6 +146,9 @@ public final class NativeProjectSupport {
             case CPP14:
                 flavor =NativeFileItem.LanguageFlavor.CPP14;
                 break;
+            case CPP17:
+                flavor =NativeFileItem.LanguageFlavor.CPP17;
+                break;
         }
         return flavor;
     }
@@ -170,6 +174,8 @@ public final class NativeProjectSupport {
                 return CndLanguageStandard.CPP11;
             case CPP14:
                 return CndLanguageStandard.CPP14;
+            case CPP17:
+                return CndLanguageStandard.CPP17;
             case F77:
             case F90:
             case F95:
@@ -217,6 +223,8 @@ public final class NativeProjectSupport {
                     return NativeFileItem.LanguageFlavor.CPP11;
                 case CPP14:
                     return NativeFileItem.LanguageFlavor.CPP14;
+                case CPP17:
+                    return NativeFileItem.LanguageFlavor.CPP17;
                 case CPP98:
                     return NativeFileItem.LanguageFlavor.CPP98;
             }
@@ -239,6 +247,8 @@ public final class NativeProjectSupport {
                     return NativeFileItem.LanguageFlavor.CPP11;
                 case CPP14:
                     return NativeFileItem.LanguageFlavor.CPP14;
+                case CPP17:
+                    return NativeFileItem.LanguageFlavor.CPP17;
                 case CPP98:
                     return NativeFileItem.LanguageFlavor.CPP98;
             }

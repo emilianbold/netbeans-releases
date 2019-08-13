@@ -97,6 +97,7 @@ import org.openide.windows.WindowManager;
 /**
  * Project less compile action
  * 
+ * @author Alexander Simon
  */
 public class CompileAction extends AbstractExecutorRunAction {
     
@@ -282,6 +283,11 @@ public class CompileAction extends AbstractExecutorRunAction {
                 case CPP14:
                     if (cppStandardFlags != null && cppStandardFlags.length > 3) {
                         argsFlat.append(cppStandardFlags[3]).append(' ');
+                    }
+                    break;
+                case CPP17:
+                    if (cppStandardFlags != null && cppStandardFlags.length > 4) {
+                        argsFlat.append(cppStandardFlags[4]).append(' ');
                     }
                     break;
             }

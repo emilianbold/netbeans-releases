@@ -172,10 +172,11 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
     private final Set<String> cExtensions = MakeProjectImpl.createExtensionSet();
     private final Set<String> cppExtensions = MakeProjectImpl.createExtensionSet();
     private String sourceEncoding = null;
-    private AtomicBoolean projectFormattingStyle;
+    private FormattingStyle projectFormattingStyle;
     private CodeStyleWrapper cFormattingSytle;
     private CodeStyleWrapper cppFormattingSytle;
     private CodeStyleWrapper headerFormattingSytle;
+    private CodeStyleWrapper clangFormattingSytle;
     // lock and open/close state of make project
     private final AtomicBoolean openStateAndLock = new AtomicBoolean(false);
     private final AtomicBoolean isDeleted = new AtomicBoolean(false);
@@ -801,33 +802,33 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
     }
 
     @Override
-    public boolean isProjectFormattingStyle() {
+    public synchronized FormattingStyle isProjectFormattingStyle() {
         if (projectFormattingStyle == null) {
             Element data = helper.getPrimaryConfigurationData(true);
             NodeList nodeList = data.getElementsByTagName(MakeProjectTypeImpl.FORMATTING_STYLE_PROJECT_ELEMENT);
             if (nodeList != null && nodeList.getLength() > 0) {
                 for (int i = 0; i < nodeList.getLength(); i++) {
                     Node node = nodeList.item(i);
-                    projectFormattingStyle = new AtomicBoolean("true".equals(node.getTextContent())); //NOI18N
+                    if ("true".equals(node.getTextContent())) { //NOI18N
+                        projectFormattingStyle = FormattingStyle.Project;
+                    } else if ("false".equals(node.getTextContent())) { //NOI18N
+                        projectFormattingStyle = FormattingStyle.Global;
+                    }  else if ("clang-format".equals(node.getTextContent())) { //NOI18N
+                        projectFormattingStyle = FormattingStyle.ClangFormat;
+                    }
                     break;
                 }
             }
             if (projectFormattingStyle == null) {
-                projectFormattingStyle = new AtomicBoolean(false);
+                projectFormattingStyle = FormattingStyle.Global;
             }
-        } else {
-            return projectFormattingStyle.get();
         }
-        return false;
+        return projectFormattingStyle;
     }
 
     @Override
-    public void setProjectFormattingStyle(boolean isProject) {
-        if (projectFormattingStyle != null) {
-            projectFormattingStyle.set(isProject);
-        } else {
-            projectFormattingStyle = new AtomicBoolean(isProject);
-        }
+    public synchronized void setProjectFormattingStyle(FormattingStyle isProject) {
+        projectFormattingStyle = isProject;
     }
 
     @Override
@@ -859,14 +860,32 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
         }
         if (res != null) {
             if (MIMENames.C_MIME_TYPE.equals(mime)) {
-                cFormattingSytle = new CodeStyleWrapper(res);
+                cFormattingSytle = CodeStyleWrapper.decodeProjectStyle(MakeProject.FormattingStyle.Project, res);
                 return cFormattingSytle;
             } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
-                cppFormattingSytle = new CodeStyleWrapper(res);
+                cppFormattingSytle = CodeStyleWrapper.decodeProjectStyle(MakeProject.FormattingStyle.Project, res);
                 return cppFormattingSytle;
             } else if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
-                headerFormattingSytle = new CodeStyleWrapper(res);
+                headerFormattingSytle = CodeStyleWrapper.decodeProjectStyle(MakeProject.FormattingStyle.Project, res);
                 return headerFormattingSytle;
+            }
+        }
+        if (mime == null) {
+            if (clangFormattingSytle != null) {
+                return clangFormattingSytle;
+            }
+            nodeList = helper.getPrimaryConfigurationData(true).getElementsByTagName(MakeProjectTypeImpl.CLANG_FORMAT_STYLE_ELEMENT);
+            res = null;
+            if (nodeList != null && nodeList.getLength() > 0) {
+                for (int i = 0; i < nodeList.getLength(); i++) {
+                    Node node = nodeList.item(i);
+                    res = node.getTextContent();
+                    break;
+                }
+            }
+            if (res != null) {
+                clangFormattingSytle = CodeStyleWrapper.decodeProjectStyle(MakeProject.FormattingStyle.ClangFormat, res);
+                return clangFormattingSytle;
             }
         }
         return null;
@@ -880,6 +899,9 @@ public final class MakeProjectImpl implements Project, MakeProjectListener, Make
             cppFormattingSytle = style;
         } else if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
             headerFormattingSytle = style;
+        }
+        if (mime == null) {
+            clangFormattingSytle = style;
         }
     }
 

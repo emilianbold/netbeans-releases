@@ -66,6 +66,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -152,6 +154,8 @@ import org.openide.util.Exceptions;
 public final class GdbDebuggerImpl extends NativeDebuggerImpl
         implements BreakpointProvider, Gdb.Factory.Listener {
 
+    private AtomicBoolean breakpointsStateIsChangedAndEnabled = new AtomicBoolean(false);
+    private AtomicBoolean breakpointsStateIsChangedAndDisabled = new AtomicBoolean(false);
     private GdbEngineProvider engineProvider;
     private volatile Gdb gdb;				// gdb proxy
     private GdbVersionPeculiarity peculiarity;  // gdb version differences
@@ -1754,9 +1758,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return errMsg;
     }
 
+    public String getLogger() {
+        return gdb == null ? null : gdb.getLogger();
+    }
+
     private void genericFailure(MIRecord record) {
         String errMsg = getErrMsg(record);
-        manager().error(record.command().routingToken(), new GdbError(errMsg), this);
+        manager().error(record.command().routingToken(), new GdbError(record.command().command(),errMsg), this);
     }
 
     private void unexpected(String what, String command) {
@@ -2721,47 +2729,52 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 expr = '$' + expr;
             }
         }
-
         // disable breakpoints and signals
-        final Handler[] handlers = bm().getHandlers();
-        if (peculiarity.isLldb()) {
-            // lldb-mi can't disable all breakpoints
-            if (handlers.length > 0) {
-                StringBuilder command = new StringBuilder();
-                command.append("-break-disable"); // NOI18N
-                for (Handler h : handlers) {
-                    if (h.breakpoint().isEnabled()) {
-                        command.append(' ');
-                        command.append(h.getId());
-                    }
-                }
-                send(command.toString());
-            }
-        } else {
-            send("-break-disable"); //NOI18N
-        }
-        send("-gdb-set unwindonsignal on"); //NOI18N
+        modifyBreakpoints(false);
         Runnable postRunnable = new Runnable() {
             @Override
             public void run() {
                 // enable breakpoints and signals
-                if (handlers.length > 0) {
-                    StringBuilder command = new StringBuilder();
-                    command.append("-break-enable"); // NOI18N
-                    for (Handler h : handlers) {
-                        if (h.breakpoint().isEnabled()) {
-                            command.append(' ');
-                            command.append(h.getId());
-                        }
-                    }
-                    send(command.toString());
-                }
-                send("-gdb-set unwindonsignal off"); //NOI18N
+                modifyBreakpoints(true);                
             }
         };
-        dataMIEval(lp, expr, dis, postRunnable);
+        dataMIEval(lp, expr, dis, postRunnable, postRunnable);
+    }
 
-       
+    private void modifyBreakpoints(boolean isEnabled) {
+        //flags breakpointsStateIsChangedAndDisabled and breakpointsStateIsChangedAndEnabled
+        //allows to avoid repeatable enabling/disabling  that make a little speed up for the step
+        boolean wasChangedEndEnabledAlready = isEnabled && breakpointsStateIsChangedAndEnabled.getAndSet(isEnabled);
+        if (isEnabled) {
+            breakpointsStateIsChangedAndDisabled.set(false);
+        }
+        if (wasChangedEndEnabledAlready) {
+            return;
+        }
+        boolean wasChangedEndDisabledAlready = !isEnabled && breakpointsStateIsChangedAndDisabled.getAndSet(!isEnabled);
+        if (!isEnabled) {
+            breakpointsStateIsChangedAndEnabled.set(false);
+        }
+        if (wasChangedEndDisabledAlready) { //nothing to change
+            return;
+        }
+        send("-gdb-set unwindonsignal " + (isEnabled ? "off" : "on")); //NOI18N
+        final Handler[] handlers = bm().getHandlers();
+        if (handlers.length == 0) {
+            return;
+        }
+        String breakCommand = isEnabled ? "-break-enable" : "-break-disable";//NOI18N
+        if (handlers.length > 0) {
+            StringBuilder command = new StringBuilder();
+            command.append(breakCommand);
+            for (Handler h : handlers) {
+                if (h.breakpoint().isEnabled()) {
+                    command.append(' ');
+                    command.append(h.getId());
+                }
+            }
+            send(command.toString());
+        }
     }
 
     @Override
@@ -2789,7 +2802,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         mcd.addListener(new ModelChangeListenerImpl());
 
         final GdbWatch watch = new GdbWatch(GdbDebuggerImpl.this, mcd, expr);
-        createMIVar(watch, false);
+        try{
+                        //see bz#269968 - debugger continues from unexpected breakpoint place after tooltip evaluation
+                //should disable breakpoints            
+            modifyBreakpoints(false);
+            createMIVar(watch, false);
+        } finally {
+            modifyBreakpoints(true);
+        }
 
         final Node node = new VariableNode(watch, new GdbVariableNodeChildren(watch, false));
 
@@ -2922,26 +2942,33 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void postExprQualify(String expr, QualifiedExprListener qeListener) {
     }
     
-    private static String formatRegisterIfNeeded(String value_string){
+    private static String formatRegisterIfNeeded(GdbVariable v, String value_string){
+        //for watches we should get format from the Output Base
+        //for tooltips we should show for Disasm windows in hexadecimal format
+        //but if the tooltip is pinned -> use as Output Base in Variables
+        //see bz#270494 - Wrong variable values if user opens Disassembly tab 
+        String format = v != null && (!v.isWatch() || 
+                (v.isWatch() && (v instanceof GdbWatch) && ((GdbWatch)v).getNativeWatch() != null)) ?  v.getFormat() : 
+                Disassembly.getCurrentDataRepresentationFormat().toString();
         String result = value_string;
         if (Disassembly.isInDisasm()) {
             // see #199557 we need to convert dis annotations to hex
             if (!value_string.startsWith("0x")) { //NOI18N
                 try {
-                    switch (Disassembly.getCurrentDataRepresentationFormat()) {
-                        case  DECIMAL:
+                    switch  (Disassembly.DATA_REPRESENTATION.valueOf(format)) {
+                        case  decimal:
                             break;
-                        case OCTAL:
+                        case octal:
                             result = Address.toOctalString0x(Address.parseAddr(value_string), true);
                             break;
-                        case BINARY:
+                        case binary:
                             result = Address.toBinaryString0x(Address.parseAddr(value_string), true);
                             break;
-                        case HEXADECIMAL:
-                        default:
+                        case hexadecimal:
                             result = Address.toHexString0x(Address.parseAddr(value_string), true);
                             break;
-
+                        default:
+                            result = value_string;
                     }
                     //value_string = Address.toHexString0x(Address.parseAddr(value_string), true);
                 } catch (Exception e) {
@@ -2951,149 +2978,166 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
         return result;
     }
+    
 
-    private void dataMIEval(final Line.Part lp, final String expr, final boolean dis, final Runnable postRunnable) {
+    private void processMIDataEval(MIRecord record, boolean isError, final Line.Part lp,
+            final String expr, final boolean dis, final Runnable postRunnable, final Runnable postRunnableOnError) {
+        String value_string = "<OUT_OF_SCOPE>"; // NOI18N
+        if (!isError) {
+            MITList value = record.results();
+            if (Log.Variable.mi_vars) {
+                System.out.println("value " + value.toString()); // NOI18N
+            }
+            value_string = value.getConstValue("value"); // NOI18N
+
+            if (dis) {
+                value_string = formatRegisterIfNeeded(null, value_string);
+            } else if (value_string.startsWith("@0x")) { //NOI18N
+                try {
+                    // See bug 206736 - tooltip for reference-based variable shows address instead of value
+                    balloonEvaluate(lp, "*&" + expr, false); //NOI18N
+                    return;
+                } finally {
+                    postRunnable.run();
+                }
+            } else {
+                value_string = ValuePresenter.getValue(value_string);
+            }
+        } else {
+            if (postRunnableOnError != null) {
+                postRunnableOnError.run();
+            }
+            value_string = "<OUT_OF_SCOPE>"; // NOI18N
+        }
+        final String data_value_string = value_string;
+        Line line = lp.getLine();
+        DataObject dob = DataEditorSupport.findDataObject(line);
+        if (dob == null) {
+            postRunnable.run();
+            return;
+        }
+        final EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
+        if (ec == null) {
+            postRunnable.run();
+            return;
+            // Only for editable dataobjects
+        }
+        StyledDocument doc;
+        try {
+            doc = ec.openDocument();
+        } catch (IOException ex) {
+            postRunnable.run();
+            return;
+        }
+        final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
+        if (ep == null || ep.getDocument() != doc) {
+            postRunnable.run();
+            return;
+        }
+        //Object var = null; 
+        ModelChangeDelegator mcd = new ModelChangeDelegator();
+        final ModelChangeListenerTooltipImpl mcLImpl = new ModelChangeListenerTooltipImpl();
+        final ModelChangeDelegator watchUpdater = watchUpdater();
+        watchUpdater.addListener(mcLImpl);
+        final GdbWatch watch = new GdbWatch(GdbDebuggerImpl.this, watchUpdater(), expr);
+        final Runnable onDoneRunnable = new Runnable() {
+            @Override
+            public void run() {
+                postRunnable.run();
+                //need to execute following code only after the value is update in onDone in createMIVar
+                final Object objectVariable = watch;
+                final String toolTip = expr + "=" + watch.getAsText();//NOI18N
+                final String expression = expr;
+                //get var
+                //((GdbDebuggerImpl) watch.getDebugger()).getMIChildren((GdbVariable) watch, ((GdbVariable) watch).getMIName(), 0);
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        EditorUI eui = Utilities.getEditorUI(ep);
+                        if (eui == null) {
+                            //firePropertyChange(PROP_SHORT_DESCRIPTION, null, toolTip);
+                            return;
+                        }
+
+                        ToolTipUI.Expandable expandable = !(watch.isLeaf())
+                                ? new ToolTipUI.Expandable(expression, objectVariable)
+                                : null;
+                        ToolTipUI.Pinnable pinnable = new ToolTipUI.Pinnable(
+                                expression,
+                                lp.getLine().getLineNumber(),
+                                "NativePinWatchValueProvider");   // NOI18N
+                        ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
+                        final ToolTipSupport tts = toolTipUI.show(ep);
+                        if (tts != null) {
+                            tts.addPropertyChangeListener(new ToolTipSupportPropertyChangeListener(watch));
+                            mcLImpl.registerToolTip(tts, ep, lp);
+                        }
+
+                    }
+                });
+
+            }
+        };
+        //this runnable for the case when it is not WATCH
+        final Runnable onErrorRunnable = new Runnable() {
+            @Override
+            public void run() {
+                postRunnable.run();
+                if (postRunnableOnError != null) {
+                    postRunnableOnError.run();
+                }
+                //need to execute following code only after the value is update in onDone in createMIVar
+                final String toolTip = expr + "=" + data_value_string;//NOI18N
+                final String expression = expr;
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        EditorUI eui = Utilities.getEditorUI(ep);
+                        if (eui == null) {
+                            //firePropertyChange(PROP_SHORT_DESCRIPTION, null, toolTip);
+                            return;
+                        }
+
+                        ToolTipUI.Expandable expandable = null;
+                        ToolTipUI.Pinnable pinnable = new ToolTipUI.Pinnable(
+                                expression,
+                                lp.getLine().getLineNumber(),
+                                "NativePinWatchValueProvider");   // NOI18N
+                        ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
+                        final ToolTipSupport tts = toolTipUI.show(ep);
+                        if (tts != null) {
+                            tts.addPropertyChangeListener(new ToolTipSupportPropertyChangeListener(watch));
+                            mcLImpl.registerToolTip(tts, ep, lp);
+                        }
+
+                    }
+                });
+            }
+        };
+        //the Runnable below will be executed for real watch only
+        //but what if we want to get expression evaluation
+        createMIVar(watch, false, onDoneRunnable, onErrorRunnable);
+    }
+    
+
+    private void dataMIEval(final Line.Part lp, final String expr, final boolean dis, final Runnable postRunnable, final Runnable postRunnableOnError) {
         String expandedExpr = MacroSupport.expandMacro(this, expr);
         String cmdString = "-data-evaluate-expression " + "\"" + expandedExpr + "\""; // NOI18N
+
         MICommand cmd =
             new MiCommandImpl(cmdString) {
             @Override
             protected void onDone(MIRecord record) {
-                MITList value = record.results();
-                if (Log.Variable.mi_vars) {
-                    System.out.println("value " + value.toString()); // NOI18N
-                }
-                String value_string = value.getConstValue("value"); // NOI18N
-                
-                if (dis) {
-                    value_string = formatRegisterIfNeeded(value_string);
-                } else if (value_string.startsWith("@0x")) { //NOI18N
-                    try{
-                        // See bug 206736 - tooltip for reference-based variable shows address instead of value
-                        balloonEvaluate(lp, "*&" + expr, false); //NOI18N
-                        finish();                        
-                        return;
-                    } finally {
-                        postRunnable.run();
-                    }
-                } else {
-                    value_string = ValuePresenter.getValue(value_string);
-                }
-               final String data_value_string = value_string;
-                Line line = lp.getLine();
-                DataObject dob = DataEditorSupport.findDataObject(line);
-                if (dob == null) {
-                    postRunnable.run();
-                    return;
-                }
-                final EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
-                if (ec == null) {
-                    postRunnable.run();
-                    return;
-                    // Only for editable dataobjects
-                }
-                StyledDocument doc;
-                try {
-                    doc = ec.openDocument();
-                } catch (IOException ex) {
-                    postRunnable.run();
-                    return;
-                }
-                final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
-                if (ep == null || ep.getDocument() != doc) {
-                    postRunnable.run();
-                    return ;
-                }      
-                //Object var = null; 
-                ModelChangeDelegator mcd = new ModelChangeDelegator();
-                final ModelChangeListenerTooltipImpl mcLImpl = new ModelChangeListenerTooltipImpl();    
-                final ModelChangeDelegator watchUpdater = watchUpdater();
-                watchUpdater.addListener(mcLImpl);
-                final GdbWatch watch = new GdbWatch(GdbDebuggerImpl.this, watchUpdater(), expr);
-                final Runnable onDoneRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        postRunnable.run();
-                        //need to execute following code only after the value is update in onDone in createMIVar
-                        final Object objectVariable = watch;
-                        final String toolTip = expr + "=" + watch.getAsText();//NOI18N
-                        final String expression = expr;
-                        //get var
-                        //((GdbDebuggerImpl) watch.getDebugger()).getMIChildren((GdbVariable) watch, ((GdbVariable) watch).getMIName(), 0);
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                EditorUI eui = Utilities.getEditorUI(ep);
-                                if (eui == null) {
-                                    //firePropertyChange(PROP_SHORT_DESCRIPTION, null, toolTip);
-                                    return;
-                                }
-
-                                ToolTipUI.Expandable expandable = !(watch.isLeaf())
-                                        ? new ToolTipUI.Expandable(expression, objectVariable)
-                                        : null;
-                                ToolTipUI.Pinnable pinnable = new ToolTipUI.Pinnable(
-                                        expression,
-                                        lp.getLine().getLineNumber(),
-                                        "NativePinWatchValueProvider");   // NOI18N
-                                ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
-                                final ToolTipSupport tts = toolTipUI.show(ep);
-                                if (tts != null) {
-                                    tts.addPropertyChangeListener(new ToolTipSupportPropertyChangeListener(watch));
-                                    mcLImpl.registerToolTip(tts, ep, lp);
-                                }
-
-                            }
-                        });
-                        
-                    }
-                };
-                //this runnable for the case when it is not WATCH
-                final Runnable onErrorRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        postRunnable.run();
-                        //need to execute following code only after the value is update in onDone in createMIVar
-                        final String toolTip = expr + "=" + data_value_string;//NOI18N
-                        final String expression = expr;
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                EditorUI eui = Utilities.getEditorUI(ep);
-                                if (eui == null) {
-                                    //firePropertyChange(PROP_SHORT_DESCRIPTION, null, toolTip);
-                                    return;
-                                }
-
-                                ToolTipUI.Expandable expandable = null;
-                                ToolTipUI.Pinnable pinnable = new ToolTipUI.Pinnable(
-                                        expression,
-                                        lp.getLine().getLineNumber(),
-                                        "NativePinWatchValueProvider");   // NOI18N
-                                ToolTipUI toolTipUI = ViewFactory.getDefault().createToolTip(toolTip, expandable, pinnable);
-                                final ToolTipSupport tts = toolTipUI.show(ep);
-                                if (tts != null) {
-                                    tts.addPropertyChangeListener(new ToolTipSupportPropertyChangeListener(watch));
-                                    mcLImpl.registerToolTip(tts, ep, lp);
-                                }
-
-                            }
-                        });
-                    }
-                };                
-                //the Runnable below will be executed for real watch only
-                //but what if we want to get expression evaluation
-                createMIVar(watch, false, onDoneRunnable, onErrorRunnable); 
-                
+                processMIDataEval(record, false, lp, expr, dis, postRunnable, postRunnableOnError);
                 finish();
             }
 
             @Override
             protected void onError(MIRecord record) {
                 // Be silent on balloon eval failures
-                // genericFailure(record);
+                processMIDataEval(record, true, lp, expr, dis, postRunnable, postRunnableOnError);
                 finish();
             }
         };
@@ -3138,11 +3182,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // No need to check for duplicates - gdb will create different vars
         GdbWatch gdbWatch = new GdbWatch(this, watchUpdater(), nativeWatch.getExpression());
         if (get_watches || WatchBag.isPinOpened(nativeWatch)) {
-            createMIVar(gdbWatch, true);
-            //do not call update if there is no editor opened or watches are opened
+            try{
+                //see bz#269968 - debugger continues from unexpected breakpoint place after tooltip evaluation
+                //should disable breakpoints
+                modifyBreakpoints(false);
+                createMIVar(gdbWatch, true);
+                //do not call update if there is no editor opened or watches are opened
 //            if (get_watches || WatchBag.isPinOpened(nativeWatch)) {
-            updateMIVar();
-            //}
+                updateMIVar();
+                //}
+            } finally {
+                modifyBreakpoints(true);
+            }
+            
         }
         nativeWatch.setSubWatchFor(gdbWatch, this);
         watches.add(gdbWatch);
@@ -3225,7 +3277,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * yet.
      */
     private void retryWatches(boolean forceVarCreate) {
-
         for (WatchVariable wv : watches) {
             GdbWatch w = (GdbWatch) wv;
             if (forceVarCreate || w.getNativeWatch().watch().getPin() != null) {
@@ -3240,10 +3291,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void updateWatches(boolean forceVarCreate) {
-        retryWatches(forceVarCreate);
-        if (forceVarCreate) {
-            updateMIVar();
-        }
+        try{
+            //see bz#269968 - debugger continues from unexpected breakpoint place after tooltip evaluation
+            //should disable breakpoints
+            modifyBreakpoints(false);
+            retryWatches(forceVarCreate);
+            if (forceVarCreate) {
+                updateMIVar();
+            }
+        } finally {
+           modifyBreakpoints(true);
+        }            
     }
 
     private void updateVarAttr(GdbVariable v, MIRecord attr, boolean evalValue) {
@@ -3288,7 +3346,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (!pretty) {
             value = ValuePresenter.getValue(value);
         }
-        value = formatRegisterIfNeeded(value);
+        value = formatRegisterIfNeeded(v, value);
         valueChanged = !value.equals(v.getAsText());
         v.setAsText(value);
 
@@ -3300,7 +3358,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             watchUpdater().treeNodeChanged(v); // just update this node
             if (WatchVariable.class.isAssignableFrom(v.getClass())) {
                 final NativeWatch nativeWatch = ((WatchVariable) v).getNativeWatch();
-                if (nativeWatch != null) {
+                if (nativeWatch != null && nativeWatch.watch().getPin() != null) {
                     NativeDebuggerManager.get().firePinnedWatchChange(this, nativeWatch.watch());
                 }
             }
@@ -3462,7 +3520,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             } else {
 		updatevar = (MIValue)item;
             }
-
+            //see bz#248868 as we can get segmentation faults while watches evaluation
+            if (updatevar == null) {
+                //ignore
+                return;//
+            }
             String mi_name = updatevar.asTuple().getConstValue("name"); // NOI18N
             String in_scope = updatevar.asTuple().getConstValue("in_scope"); // NOI18N
             if (Log.Variable.mi_vars) {
@@ -3564,11 +3626,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     // interface NativeDebugger
     @Override
     public String[] formatChoices() {
-	return new String[] {
-            "binary", "octal", "decimal", "hexadecimal", "natural" // NOI18N
-        };
+        List<String> formats = Stream.of(Disassembly.DATA_REPRESENTATION.values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
+	return formats.toArray(new String[0]);
     }
-
+    
     private void interpVarFormat(GdbVariable v, MIRecord record) {
         MITList format_results = record.results();
         String format = format_results.getConstValue("format"); // NOI18N
@@ -3637,6 +3700,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void updateMIVar() {
+        //enable/disable breakpoint earlier if neeed to avoid multiple enabling/disabling
+        //ideally it would good idea to introduce something similar to transaction with start and end actions
         if (!peculiarity.isLldb()) {
             String cmdString = "-var-update --all-values * "; // NOI18N
             MICommand cmd =
@@ -3698,9 +3763,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void evalMIVar(final GdbVariable v) {
-        String mi_name = v.getMIName();
+        final String mi_name = v.getMIName();
         // value of mi_name
-        String cmdString = "-var-evaluate-expression " + mi_name; // NOI18N
+        final String cmdString = "-var-evaluate-expression " + mi_name; // NOI18N
         final MICommand cmd =
             new MiCommandImpl(cmdString) {
 
@@ -3717,6 +3782,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 // to work around gdb "out of scope" problem
                 String out_of_scope = "mi_cmd_var_assign: Could not assign expression to varible object"; // NOI18N
                 if (!errMsg.equals(out_of_scope)) {
+                    //see bz#271342
+                    if (errMsg.equals("Variable object not found") && !variableBag.hasVariable(mi_name)) {//NOI18N
+                        //log it, nothing to evaluate
+                        System.err.println("var=" + v.getVariableName() + " cmd=\"" + cmdString + "\"" + " err=\"" + errMsg + "\"");//NOI18N
+                        return;
+                    }
                     genericFailure(record);
                     finish();
                 }
@@ -3787,6 +3858,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 v.setInScope(true);
                 interpVar(v, record);
                 updateValue(v, record, true);
+                //when we create var if it is register(starts with $ and we are in disasm windows)
+                //run var-set-format var11 hexadecimal (where hexadecimal is current format from Disassembly.getCurrentDataRepresentationFormat
+                //if we are in disasm and the variable name starts with $ - consider it as a register - format
+                if (Disassembly.isInDisasm() && v.getVariableName().startsWith("$")) {//NOI18N
+                    postVarFormat(v, Disassembly.getCurrentDataRepresentationFormat().name());
+                }
                 finish();
                 if (onDoneRunnable != null) {
                     onDoneRunnable.run();
@@ -3896,7 +3973,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         List<GdbLocal> param_list = null;
         int params_count = 0;
-
+        
         //mromashova_bz#269898: we will use "-stack-list-variables --no-values" not "-stack-list-locals --no-values"
         //and frame will never keep args
 //        // paramaters
@@ -3916,54 +3993,58 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             System.out.println("local_count " + local_count); // NOI18N
             System.out.println("update_var " + update_var); // NOI18N
         }
+        try{
+            modifyBreakpoints(false);
+            // iterate through local list
+            GdbVariable[] new_local_vars = new GdbVariable[local_count];
+            for (int vx = 0; vx < size; vx++) {
+                MITListItem localItem = locals_list.get(vx);
+                if (peculiarity.isLocalsOutputUnusual()) {
+                    localItem = ((MITList) localItem).get(0);
+                }
+                if (localItem instanceof MITList) {
+                    localItem = ((MITList) localItem).get(0);
+                }
+                MIResult localvar = (MIResult) localItem;
+                String var_name = localvar.value().asConst().value();
+                GdbVariable gv = variableBag.get(var_name,
+                        false, VariableBag.FROM_LOCALS);
+                if (gv == null) {
+                    new_local_vars[vx] = new GdbVariable(this, localUpdater, null,
+                            var_name, null, null, false);
+                    createMIVar(new_local_vars[vx], false);
+                } else {
+                    new_local_vars[vx] = gv;
+                    evalMIVar(new_local_vars[vx]);
+                }
+            }
 
-        // iterate through local list
-        GdbVariable[] new_local_vars = new GdbVariable[local_count];
-        for (int vx = 0; vx < size; vx++) {
-            MITListItem localItem = locals_list.get(vx);
-            if (peculiarity.isLocalsOutputUnusual()) {
-                localItem = ((MITList) localItem).get(0);
+            // iterate through frame arguments list
+            for (int vx = 0; vx < params_count; vx++) {
+                GdbLocal loc = param_list.get(vx);
+                String var_name = loc.getName();
+                String var_value = loc.getValue();
+
+                GdbVariable gv = variableBag.get(var_name, false, VariableBag.FROM_LOCALS);
+                if (gv != null) {
+                    gv.setValue(var_value); // update value
+                    new_local_vars[size + vx] = gv;
+                } else {
+                    new_local_vars[size + vx] = new GdbVariable(this, localUpdater,
+                            null, var_name, loc.getType(), loc.getValue(), false);
+                    createMIVar(new_local_vars[size + vx], false);
+                }
             }
-            if (localItem instanceof MITList) {
-                localItem = ((MITList) localItem).get(0);
+            // need to update local_vars with fully filled array
+            local_vars = new_local_vars;
+
+            if (update_var) {
+                updateMIVar(); // call var-update * , but results are not reliable
             }
-            MIResult localvar = (MIResult) localItem;
-            String var_name = localvar.value().asConst().value();
-            GdbVariable gv = variableBag.get(var_name,
-                    false, VariableBag.FROM_LOCALS);
-            if (gv == null) {
-                new_local_vars[vx] = new GdbVariable(this, localUpdater, null,
-                        var_name, null, null, false);
-                createMIVar(new_local_vars[vx], false);
-            } else {
-                new_local_vars[vx] = gv;
-                evalMIVar(new_local_vars[vx]);
-            }
+            localUpdater.treeChanged();     // causes a pull
+        } finally {
+            modifyBreakpoints(true);
         }
-
-        // iterate through frame arguments list
-        for (int vx = 0; vx < params_count; vx++) {
-            GdbLocal loc = param_list.get(vx);
-            String var_name = loc.getName();
-            String var_value = loc.getValue();
-
-            GdbVariable gv = variableBag.get(var_name, false, VariableBag.FROM_LOCALS);
-            if (gv != null) {
-                gv.setValue(var_value); // update value
-                new_local_vars[size + vx] = gv;
-            } else {
-                new_local_vars[size + vx] = new GdbVariable(this, localUpdater,
-                        null, var_name, loc.getType(), loc.getValue(), false);
-                createMIVar(new_local_vars[size + vx], false);
-            }
-        }
-        // need to update local_vars with fully filled array
-        local_vars = new_local_vars;
-
-        if (update_var) {
-            updateMIVar(); // call var-update * , but results are not reliable
-        }
-        localUpdater.treeChanged();     // causes a pull
     }
 
     private void getMILocals(final boolean update_var) {
@@ -4035,7 +4116,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             reason.equals(MI_SYSCALL_ENTRY) || //NOI18N
             reason.equals(MI_SYSCALL_RETURN) || //NOI18N
                 reason.equals("function-finished")) { // NOI18N
-
+            //mark as not running once we are stopped
+            state().isRunning = false;
             // update our views
             NativeBreakpoint breakpoint = null;
             MIValue bkptnoValue = (results != null) ? results.valueOf("bkptno") : null; // NOI18N

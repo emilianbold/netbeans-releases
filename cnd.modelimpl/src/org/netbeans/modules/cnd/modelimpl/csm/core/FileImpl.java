@@ -156,6 +156,7 @@ import org.openide.util.Pair;
 
 /**
  * CsmFile implementations
+ * @author Vladimir Kvashin
  */
 public final class FileImpl implements CsmFile,
         Disposable, Persistent, SelfPersistent, CsmIdentifiable {
@@ -523,6 +524,8 @@ public final class FileImpl implements CsmFile,
                 return APTLanguageSupport.FLAVOR_CPP11;
             } else if (CndTraceFlags.LANGUAGE_FLAVOR_CPP14) {
                 return APTLanguageSupport.FLAVOR_CPP14;
+            } else if (CndTraceFlags.LANGUAGE_FLAVOR_CPP17) {
+                return APTLanguageSupport.FLAVOR_CPP17;
             }
             NativeFileItem nativeFileItem = getNativeFileItem();
             if(nativeFileItem != null) {

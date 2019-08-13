@@ -96,6 +96,7 @@ public class GlobalOptionSet extends OptionSetSupport {
 	DebuggerOption.RUN_AUTOSTART,
 	DebuggerOption.BALLOON_EVAL,
         DebuggerOption.ARGS_VALUES_IN_STACK,
+        DebuggerOption.DO_NOT_POPUP_DEBUGGER_ERRORS_DIALOG,
     };
 
 

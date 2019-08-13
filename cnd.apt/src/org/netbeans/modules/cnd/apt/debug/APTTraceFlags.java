@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.utils.ComponentType;
 
 /**
  * A common place for APT tracing flags that are used by several classes
+ * @author Vladimir Voskresensky
  */
 public class APTTraceFlags {
 
@@ -72,7 +73,7 @@ public class APTTraceFlags {
             final ComponentType product = ComponentType.getComponent();
             switch (product) {
                 case CND:
-                    val = true;
+                    val = false; // FIXME: should be true after clank speed optimization
                     break;
                 case PROJECT_CREATOR:
                 case OSS_IDE:

@@ -76,7 +76,7 @@ public class RtcModel {
 	}
     }
 
-    static public class Location {
+    /*package*/ static class Location {
 	private final String func;
 	private final String source;
 	private final int lineno;
@@ -117,7 +117,7 @@ public class RtcModel {
 	public String args() { return args; }
     }
 
-    static public class Stack {
+    /*package*/ static class Stack {
 	private final Frame frame[];
 	private final Run run;
 
@@ -126,13 +126,13 @@ public class RtcModel {
 	    frame = new Frame[nframes];
 	}
 
-	public void setFrame(int fx, Frame f) {
+	/*package*/ void setFrame(int fx, Frame f) {
 	    frame[fx] = f;
 	}
 
-	public Frame[] frame() { return frame; }
+	/*package*/ Frame[] frame() { return frame; }
 
-	public Run run() { return run; }
+	/*package*/ Run run() { return run; }
     }
 
     public static enum ErrorCode {
@@ -222,7 +222,7 @@ public class RtcModel {
 	private final int percentage;		// only for BLOCK_INUSE
 	private Stack stack;		// ... at the time of allocation
 
-	public MemoryReportItem(ErrorCode type,
+	/*package*/ MemoryReportItem(ErrorCode type,
 				String message,
 				int count,
 				long address,
@@ -244,7 +244,7 @@ public class RtcModel {
 	public long address() { return address; }
 	public long size() { return size; }
 	public int percentage() { return percentage; }
-	public Stack stack() { return stack; }
+	/*package*/ Stack stack() { return stack; }
 
 	// for use by XML decoder:
 
@@ -478,11 +478,11 @@ public class RtcModel {
 	public long address;		// ... which was accessed
 	public long size;		// ... of access
 	public String region;		// stack, heap, heap block etc
-	public Stack stack;		// ... at the time of allocation
-	public Location location;	// ... of the accessing instruction
+	/*package*/ Stack stack;		// ... at the time of allocation
+	/*package*/ Location location;	// ... of the accessing instruction
 	public String variableName;	// ... variable associated with address
 
-	public AccessError(ErrorCode type,
+	/*package*/ AccessError(ErrorCode type,
 			   String description,
 			   long address,
 			   long size,
@@ -506,8 +506,8 @@ public class RtcModel {
 	public long address() { return address; }
 	public long size() { return size ; }
 	public String region() { return region; }
-	public Stack stack() { return stack; }
-	public Location location() { return location; }
+	/*package*/ Stack stack() { return stack; }
+	/*package*/ Location location() { return location; }
 	public String variableName() { return variableName; }
 
 
@@ -606,11 +606,11 @@ public class RtcModel {
 	ArrayList<MultiLeaksReport> leakReports = new ArrayList<MultiLeaksReport>();
 	ArrayList<AccessError> accessErrors = new ArrayList<AccessError>();
 
-	public ArrayList<MultiMemuseReport> memuseReports() {
+	/*package*/ ArrayList<MultiMemuseReport> memuseReports() {
 	    return memuseReports;
 	}
 
-	public ArrayList<MultiLeaksReport> leakReports() {
+	/*package*/ ArrayList<MultiLeaksReport> leakReports() {
 	    return leakReports;
 	}
 
@@ -662,11 +662,11 @@ public class RtcModel {
 	this.name = name;
     }
 
-    public ArrayList<Run> runs() {
+    /*package*/ ArrayList<Run> runs() {
 	return runs;
     }
 
-    public Run currentRun() {
+    /*package*/ Run currentRun() {
 	return currentRun;
     }
 
@@ -695,20 +695,20 @@ public class RtcModel {
     // Helpers for constructing parts of model
     // 
 
-    public Stack newStack(int nframes) {
+    /*package*/ Stack newStack(int nframes) {
 	return new Stack(currentRun, nframes);
     }
 
     //
     // Listener registration
     //
-    protected ArrayList<Listener> listeners = new ArrayList<Listener>();
+    private final  ArrayList<Listener> listeners = new ArrayList<Listener>();
 
-    public void addListener(Listener listener) {
+    /*package*/ void addListener(Listener listener) {
 	listeners.add(listener);
     }
 
-    public void removeListener(Listener listener) {
+    /*package*/ void removeListener(Listener listener) {
 	listeners.remove(listener);
     }
 
@@ -938,7 +938,7 @@ public class RtcModel {
      * Traverse the whole model dispatching to any observers via Listener
      * events.
      */
-    public void traverse(Listener listener, boolean detailed) {
+    /*package*/ void traverse(Listener listener, boolean detailed) {
 	for (Run run : runs)
 	    traverseRun(run, listener, detailed);
     }

@@ -55,6 +55,7 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
 /**
  * Test several lexer inputs.
  *
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class FortranLexerBatchTestCase extends TestCase {
 
@@ -216,6 +217,39 @@ public class FortranLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_REAL, "1e1");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_REAL, "1d1");
+    }
+
+    public void testRealLiterals() {
+        String text = "1.23e9 1.23e+9 1.23e-9 "+
+                      "1.23d9 1.23d+9 1.23d-9 "+
+                      "1.23q9 1.23q+9 1.23q-9 "+
+                      "1.23e9_4 1.23e+9_8 1.23e-9_16 ";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FIXED));
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_REAL, "1.23e9");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_REAL, "1.23e+9");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_REAL, "1.23e-9");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_REAL, "1.23d9");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_REAL, "1.23d+9");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_REAL, "1.23d-9");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_REAL, "1.23q9");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_REAL, "1.23q+9");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_REAL, "1.23q-9");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_REAL, "1.23e9_4");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_REAL, "1.23e+9_8");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_REAL, "1.23e-9_16");
+        LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
     }
 
     public void testOperators() {

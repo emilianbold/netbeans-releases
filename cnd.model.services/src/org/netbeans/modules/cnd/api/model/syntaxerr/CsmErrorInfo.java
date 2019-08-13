@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.model.syntaxerr;
 
 /**
  * Represents an error or warning
+ * @author Vladimir Kvashin
  */
 public interface CsmErrorInfo {
 
@@ -77,4 +78,16 @@ public interface CsmErrorInfo {
      * Gets error end offset 
      */
     public int getEndOffset();
+    
+    default String getCustomType () {
+        return null;
+    }
+
+    default int[] getStartOffsets() {
+        return new int[]{getStartOffset()};
+    }
+
+    default int[] getEndOffsets() {
+        return new int[]{getEndOffset()};
+    }
 }

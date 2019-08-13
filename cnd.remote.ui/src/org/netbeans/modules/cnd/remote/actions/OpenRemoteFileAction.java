@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.cnd.remote.actions;
 
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.actions.base.RemoteOpenActionBase;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -54,6 +57,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
+ * @author Vladimir Kvashin
  */
 //@ActionID(id = "com.sun.tools.ide.remote.actions.OpenRemoteFileAction", category = "System")
 //@ActionRegistration(iconInMenu = true, displayName = "#OpenRemoteFileAction.submenu.title")
@@ -84,10 +88,17 @@ public class OpenRemoteFileAction extends RemoteOpenActionBase {
     }
 
     @Override
-    protected String getSubmenuTitle() {
-        return NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title"); //NOI18N
+    protected void updateToolTip() {
+        ServerRecord rec = ServerList.getDefaultRecord();
+        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.tooltip", 
+                (rec == null/*paranoia*/) ? "?" : rec.getDisplayName())); //NOI18N
     }
 
+    @Override
+    protected String getSubmenuTitle() {
+        return NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title"); //NOI18N    
+    }
+    
     @Override
     protected String getItemTitle(String record) {
         return NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.item.title", record); //NOI18N

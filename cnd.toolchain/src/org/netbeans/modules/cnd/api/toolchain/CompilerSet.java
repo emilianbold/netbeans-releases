@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
 
 /**
  *
+ * @author Alexander Simon
  */
 public abstract class CompilerSet {
     /**
@@ -79,7 +80,8 @@ public abstract class CompilerSet {
 
     /**
      *
-     * @return The path to binaries of compilers
+     * @return The path to binaries of compilers or an empty String if this path
+     * is not defined
      */
     public abstract String getDirectory();
 

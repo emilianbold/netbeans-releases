@@ -73,6 +73,7 @@ import org.openide.windows.InputOutput;
 
 /**
  *
+ * @author Alexander Simon
  */
 public final class CompilerLineConvertor implements LineConvertor, ChangeListener {
 
@@ -166,6 +167,7 @@ public final class CompilerLineConvertor implements LineConvertor, ChangeListene
 		    platform = PlatformTypes.PLATFORM_MACOSX;
 		    break;
 		case UNKNOWN:
+		case FREEBSD:
 		default:
 		    platform = PlatformTypes.PLATFORM_GENERIC;
 		    break;

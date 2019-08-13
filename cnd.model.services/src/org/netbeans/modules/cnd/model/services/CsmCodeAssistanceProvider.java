@@ -69,6 +69,7 @@ import org.openide.util.Pair;
 
 /**
  *
+ * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.CodeAssistance.class)
 public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressListener {
@@ -256,6 +257,9 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
         }
         if (flavors.contains(NativeFileItem.LanguageFlavor.CPP14)) {
             prefFlavor = NativeFileItem.LanguageFlavor.CPP14;
+        }
+        if (flavors.contains(NativeFileItem.LanguageFlavor.CPP17)) {
+            prefFlavor = NativeFileItem.LanguageFlavor.CPP17;
         }
         return prefFlavor;
     }

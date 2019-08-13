@@ -48,6 +48,7 @@ import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
@@ -81,6 +82,7 @@ import org.openide.windows.InputOutput;
 
 /**
  *
+ * @author Alexander Simon
  */
 public class ExecuteCommand {
 
@@ -122,7 +124,7 @@ public class ExecuteCommand {
             Exceptions.printStackTrace(ex);
             return null;
         } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(ExecuteCommand.class.getName()).log(Level.INFO, "Connections was cancelled by user", ex);
             return null;
         }
         // Executable

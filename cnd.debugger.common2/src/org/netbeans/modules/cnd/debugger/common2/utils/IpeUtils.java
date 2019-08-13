@@ -65,6 +65,8 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -511,7 +513,7 @@ public class IpeUtils {
 	}
     }
      */
-
+    
     /*
      * Manage error dialogs
      * SHOULD this be per debugger engine or global?
@@ -541,10 +543,20 @@ public class IpeUtils {
 	}
 
 	assert SwingUtilities.isEventDispatchThread();
+        if (DebuggerOption.DO_NOT_POPUP_DEBUGGER_ERRORS_DIALOG.isEnabled(NativeDebuggerManager.get().globalOptions())) {
+            //use top component
+            //LogVi
+            DebuggerErrorsTopComponent.findInstance().setErrorDoc(errorDoc);
+            return;
+        }
 	if (errorDialog == null) { // Not already showing...
 
 	    JPanel ev = new JPanel();
 	    ev.setLayout(new BorderLayout());
+            if (textArea == null) {
+                textArea = new JTextArea();
+                textArea.setDocument(errorDoc);
+            }
 	    textArea.setEditable(false);
 	    textArea.setWrapStyleWord(true);
 	    textArea.setLineWrap(true);

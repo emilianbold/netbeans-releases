@@ -50,6 +50,7 @@ import org.openide.util.Utilities;
  * its an interface, cnd.makeproject's Platform class can implement this interface and still have
  * the same platform types/values.
  * 
+ * @author gordonp
  */
 public final class PlatformTypes {
 
@@ -90,6 +91,7 @@ public final class PlatformTypes {
             case MACOSX:
                 return PLATFORM_MACOSX;
             case UNKNOWN:
+            case FREEBSD:
                 return PLATFORM_GENERIC;
             default:
                 Exceptions.printStackTrace(new IllegalStateException(

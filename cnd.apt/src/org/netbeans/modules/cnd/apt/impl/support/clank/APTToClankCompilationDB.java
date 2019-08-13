@@ -46,6 +46,7 @@ import java.util.Collections;
 import org.clang.frontend.InputKind;
 import org.clang.frontend.LangStandard;
 import org.clang.tools.services.ClankCompilationDataBase;
+import org.clang.tools.services.spi.ClankFileSystemProvider;
 import org.clang.tools.services.support.DataBaseEntryBuilder;
 import static org.clank.support.NativePointer.*;
 import org.llvm.adt.StringRef;
@@ -61,6 +62,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
+ * @author Vladimir Voskresensky
  */
 public final class APTToClankCompilationDB implements ClankCompilationDataBase {
     private static boolean SKIP_COMPILER_SETTINGS = Boolean.valueOf(System.getProperty("cnd.skip.compiler.builtin", "false")); // NOI18N
@@ -173,7 +175,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
             builder.addUserMacroDef(macro);
         }
 
-        builder.setFileSystem(ClankFileSystemProviderImpl.getInstance().getFileSystem());
+        builder.setFileSystem(ClankFileSystemProvider.getDefault().getFileSystem());
         if (CndFileSystemProvider.isRemote(startEntry.getFileSystem())) {
             CharSequence prefix = CndFileSystemProvider.toUrl(startEntry.getFileSystem(), "/"); //NOI18N
             builder.setAbsPathLookupPrefix(prefix);
@@ -187,7 +189,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
         CPP98(4), CPP11(8),
         F77(5), F90(6), F95(7),
         DEFAULT(9),
-        C11(10), CPP14(11);
+        C11(10), CPP14(11), CPP17(12);
         private final int flavor;
 
         private LanguageFlavor(int flavor) {
@@ -224,6 +226,8 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                     return C11;
                 case 11:
                     return CPP14;
+                case 12:
+                    return CPP17;
                 default:
                     return UNKNOWN;
             }
@@ -266,6 +270,10 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
             case CPP14:
                 // FIXME
                 out_lang_std = LangStandard.Kind.lang_gnucxx14;
+                break;
+            case CPP17:
+                // FIXME
+                out_lang_std = LangStandard.Kind.lang_gnucxx1z;
                 break;
             case F77:
             case F90:

@@ -65,6 +65,7 @@ import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 /**
  *
+ * @author Sergey Grinev
  */
 public final class ToolsCacheManagerImpl extends ToolsCacheManager {
 
@@ -209,10 +210,6 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
         CompilerSet newDefault = newCsm.getCompilerSet(oldDefaultName);
         if (newDefault != null) {
             newCsm.setDefault(newDefault);
-        }
-
-        if (execEnv.isLocal()) {
-            WindowsSupport.getInstance().init();
         }
 
         if (canceled.get()) {

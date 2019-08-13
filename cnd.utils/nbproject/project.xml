@@ -224,6 +224,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.cnd.debugger.common2</friend>
                 <friend>org.netbeans.modules.cnd.debugger.dbx</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
+                <friend>org.netbeans.modules.cnd.diagnostics.clank</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.editor</friend>
@@ -231,6 +232,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.indexing</friend>
+                <friend>org.netbeans.modules.cnd.jconvertwizard</friend>
                 <friend>org.netbeans.modules.cnd.lexer</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.cnd.makeproject.source.bridge</friend>
@@ -264,10 +266,12 @@ Contributor(s):
                 <friend>org.netbeans.modules.cnd.ui</friend>
                 <friend>org.netbeans.modules.cnd.utils.ui</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>
+                <friend>org.netbeans.modules.dlight.nativeexecution</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>
+                <friend>org.netbeans.modules.odcs.cnd</friend>
                 <package>org.netbeans.modules.cnd.debug</package>
                 <package>org.netbeans.modules.cnd.spi</package>
                 <package>org.netbeans.modules.cnd.spi.utils</package>

@@ -111,7 +111,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     static final String[] CPP = new String[]{"C++", // NOI18N
                                 CndLanguageStandards.CndLanguageStandard.CPP98.toString(),
                                 CndLanguageStandards.CndLanguageStandard.CPP11.toString(),
-                                CndLanguageStandards.CndLanguageStandard.CPP14.toString()
+                                CndLanguageStandards.CndLanguageStandard.CPP14.toString(),
+                                CndLanguageStandards.CndLanguageStandard.CPP17.toString()
                                 };
     static final String[] C = new String[]{"C", // NOI18N
                                 CndLanguageStandards.CndLanguageStandard.C89.toString(),

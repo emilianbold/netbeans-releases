@@ -61,6 +61,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
+ * @author Vladirmir Voskresensky
  */
 public final class CndLexerUtilities {
     
@@ -478,6 +479,7 @@ public final class CndLexerUtilities {
                         return CndLexerUtilities.getHeaderCppFilter();
                     case CPP11:
                     case CPP14:
+                    case CPP17:
                         return CndLexerUtilities.getHeaderCpp11Filter();
                     default:
                         throw new AssertionError(preferred.name());
@@ -496,6 +498,7 @@ public final class CndLexerUtilities {
                         return CndLexerUtilities.getGccCppFilter();
                     case CPP11:
                     case CPP14:
+                    case CPP17:
                         return CndLexerUtilities.getGccCpp11Filter();
                     default:
                         throw new AssertionError(preferred.name());
@@ -512,6 +515,7 @@ public final class CndLexerUtilities {
                     case CPP98:
                     case CPP11:
                     case CPP14:
+                    case CPP17:
                         CndUtils.assertTrue(false, "Unexpected flavor " + preferred + " for C Language"); // NOI18N
                         break;
                     default:

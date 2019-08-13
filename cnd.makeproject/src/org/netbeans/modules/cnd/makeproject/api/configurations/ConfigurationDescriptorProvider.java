@@ -584,10 +584,12 @@ public abstract class ConfigurationDescriptorProvider {
                     oldState.put(item.getAbsolutePath(), new Pair(item, getCRC(item), item.isExcluded()));
                 }
                 NativeProjectProvider np = oldDescriptor.getProject().getLookup().lookup(NativeProjectProvider.class);
-                for(NativeFileItem item : np.getStandardHeadersIndexers()) {
-                    if (item instanceof NativeProjectProvider.NativeFileIndexer) {
-                        NativeProjectProvider.NativeFileIndexer indexer = (NativeProjectProvider.NativeFileIndexer)item;
-                        oldState.put(item.getAbsolutePath(), new Pair(indexer, getCRC(indexer), indexer.isExcluded()));
+                if (np != null) {
+                    for(NativeFileItem item : np.getStandardHeadersIndexers()) {
+                        if (item instanceof NativeProjectProvider.NativeFileIndexer) {
+                            NativeProjectProvider.NativeFileIndexer indexer = (NativeProjectProvider.NativeFileIndexer)item;
+                            oldState.put(item.getAbsolutePath(), new Pair(indexer, getCRC(indexer), indexer.isExcluded()));
+                        }
                     }
                 }
             }
@@ -603,8 +605,10 @@ public abstract class ConfigurationDescriptorProvider {
                 checkItem(item, oldSet);
             }
             NativeProjectProvider np = newDescriptor.getProject().getLookup().lookup(NativeProjectProvider.class);
-            for(NativeFileItem indexer : np.getStandardHeadersIndexers()) {
-                checkItem(indexer, oldSet);
+            if (np != null) {
+                for(NativeFileItem indexer : np.getStandardHeadersIndexers()) {
+                    checkItem(indexer, oldSet);
+                }
             }
             oldSet.forEach((item) -> {
                 deleted.add(item);

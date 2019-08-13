@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter.Diff;
 
 /**
  *
+ * @author Alexander Simon
  */
 public class FortranReformatterImpl {
     /*package local*/ final FortranContextDetector ts;
@@ -1069,6 +1070,10 @@ public class FortranReformatterImpl {
                         return;
                 }
                 spaceBefore(previous, codeStyle.spaceWithinMethodCallParens());
+            } else if (p != null && (p.id() == KW_ASSIGNMENT || p.id() == KW_OPERATOR)) {
+              //interface assignment( = )
+              //interface operator( // )
+              // do not remove space before
             } else {
                 spaceBefore(previous, codeStyle.spaceWithinParens());
             }

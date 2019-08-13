@@ -235,4 +235,8 @@ public abstract class MIProxy {
     public void setIdleHandler(Runnable handler) {
         cmdManager.setIdleHandler(handler);
     }
+
+    public String getLogger() {
+        return gdbLogger.getFilename();
+    }
 }

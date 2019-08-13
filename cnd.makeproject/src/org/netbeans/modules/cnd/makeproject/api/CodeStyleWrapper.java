@@ -43,18 +43,38 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 /**
  *
+ * @author Alexander Simon
  */
 public final class CodeStyleWrapper {
+    public static final String CLANG_FORMAT_FILE = ".clang-format"; //NOI18N
     
     private final String styleId;
     private final String displayName;
-
-    public CodeStyleWrapper(String styleId, String displayName) {
-        this.styleId = styleId;
-        this.displayName = displayName;
+    private MakeProject.FormattingStyle type;
+    
+    public static CodeStyleWrapper createProjectStyle(String styleId, String displayName) {
+        return new CodeStyleWrapper(MakeProject.FormattingStyle.Project, styleId, displayName);
     }
 
-    public CodeStyleWrapper(String styleIdAndDisplayName) {
+    public static CodeStyleWrapper createClangFormatStyle(String fileOrStyle, boolean isFile) {
+        if (isFile) { //NOI18N
+            return new CodeStyleWrapper(MakeProject.FormattingStyle.ClangFormat, fileOrStyle, "file"); //NOI18N
+        } else {
+            return new CodeStyleWrapper(MakeProject.FormattingStyle.ClangFormat, fileOrStyle, "style"); //NOI18N
+        }
+    }
+
+    public static CodeStyleWrapper decodeProjectStyle(MakeProject.FormattingStyle type, String styleIdAndDisplayName) {
+        return new CodeStyleWrapper(type, styleIdAndDisplayName);
+    }
+
+    private CodeStyleWrapper(MakeProject.FormattingStyle type, String styleId, String displayName) {
+        this.styleId = styleId;
+        this.displayName = displayName;
+        this.type = type;
+    }
+
+    private CodeStyleWrapper(MakeProject.FormattingStyle type, String styleIdAndDisplayName) {
         int i = styleIdAndDisplayName.indexOf('|');
         if (i > 0) {
             this.styleId = styleIdAndDisplayName.substring(0, i);
@@ -63,6 +83,7 @@ public final class CodeStyleWrapper {
             this.styleId = styleIdAndDisplayName;
             this.displayName = styleIdAndDisplayName;
         }
+        this.type = type;
     }
 
     public String getStyleId() {

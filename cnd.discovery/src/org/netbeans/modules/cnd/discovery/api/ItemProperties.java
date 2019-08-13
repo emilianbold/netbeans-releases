@@ -49,6 +49,7 @@ import java.util.Map;
 
 /**
  *
+ * @author Alexander Simon
  */
 public interface ItemProperties {
 
@@ -107,7 +108,7 @@ public interface ItemProperties {
     public enum LanguageStandard {
         Unknown,
         C, C89, C99, C11,
-        CPP98, CPP11, CPP14,
+        CPP98, CPP11, CPP14, CPP17,
         F77, F90, F95,
         Default
     }

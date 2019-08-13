@@ -159,7 +159,7 @@ abstract class RtcComponent extends OldTermComponent implements Accessible {
     }
 
 
-    protected void listenTo(RtcModel model,
+    /*package*/ void listenTo(RtcModel model,
 			    RtcModel.Listener listener,
 			    RtcController controller) {
 

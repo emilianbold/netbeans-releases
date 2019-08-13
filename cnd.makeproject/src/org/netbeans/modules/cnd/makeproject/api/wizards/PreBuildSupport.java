@@ -55,6 +55,7 @@ import org.openide.util.Lookup;
 
 /**
  *
+ * @author Alexander Simon
  */
 public final class PreBuildSupport {
     public static final String CMAKE_MACRO = "${CMAKE}"; //NOI18N
@@ -132,7 +133,9 @@ public final class PreBuildSupport {
             if (cs.getCompilerFlavor().isCygwinCompiler()) {
                 path = WindowsSupport.getInstance().convertToCygwinPath(path);
             }
-            command = command.replace(C_COMPILER_MACRO, path);
+            if (path != null) {
+              command = command.replace(C_COMPILER_MACRO, path);
+            }
         }
         if (command.contains(CPP_COMPILER_MACRO)) {
             String path = getDefaultCpp(cs);
@@ -143,7 +146,9 @@ public final class PreBuildSupport {
             if (cs.getCompilerFlavor().isCygwinCompiler()) {
                 path = WindowsSupport.getInstance().convertToCygwinPath(path);
             }
-            command = command.replace(CPP_COMPILER_MACRO, path);
+            if (path != null) {
+              command = command.replace(CPP_COMPILER_MACRO, path);
+            }
         }
         return command;
     }

@@ -699,6 +699,14 @@ public class DebuggerOption extends Option {
 			    "on",    // NOI18N //default value
 			    false, // is engine option
 			    radio_or_check, false, true);  //type    
+    
+    public static final DebuggerOption DO_NOT_POPUP_DEBUGGER_ERRORS_DIALOG  =
+	new DebuggerOption( // NOI18N
+			    "do_not_popup_debugger_errors_dialog",  // NOI18N //name
+			    new String[] {"on", "off"},  // NOI18N //values
+			    "off",    // NOI18N //default value
+			    false, // is engine option
+			    radio_or_check, false, true);  //type        
 
 
     public static final DebuggerOption SESSION_REUSE  =

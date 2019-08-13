@@ -69,6 +69,7 @@ import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.Utilities;
 
 /**
+ * @author Alexey Vladykin
  */
 public class LibraryChecker {
 
@@ -101,9 +102,12 @@ public class LibraryChecker {
             if (execEnv.isLocal() && Utilities.isWindows()) {
                 linkerPath = LinkSupport.resolveWindowsLink(linkerPath);
                 dummySourcePath = convertToCompilerPath(dummySourcePath, compilerSet);
+                if (dummySourcePath == null) {
+                    return false;
+                }
             }
 
-            List<String> args = new ArrayList<String>();
+            List<String> args = new ArrayList<>();
             // linker.getOutputFileFlag() can actually give several flags separated with spaces,
             // e.g. for Solaris Studio on Linux it is "-compat=g -o"
             args.addAll(Arrays.asList(Utilities.parseParameters(linker.getOutputFileFlag())));

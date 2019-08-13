@@ -59,6 +59,7 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
 /**
  * Test how many flyweight tokens gets created over a typical system headers
  *
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class FortranFlyTokensTestCase extends NbTestCase {
 
@@ -107,9 +108,9 @@ public class FortranFlyTokensTestCase extends NbTestCase {
         );
         ts.moveIndex(0);
 
-        assertEquals(141, LexerTestUtilities.flyweightTokenCount(ts));
-        assertEquals(807, LexerTestUtilities.flyweightTextLength(ts));
-        assertEquals(561, ts.tokenCount());
+        assertEquals(140, LexerTestUtilities.flyweightTokenCount(ts));
+        assertEquals(806, LexerTestUtilities.flyweightTextLength(ts));
+        assertEquals(559, ts.tokenCount());
     }
 
 }

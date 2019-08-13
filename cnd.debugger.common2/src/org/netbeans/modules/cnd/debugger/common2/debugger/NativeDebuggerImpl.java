@@ -1173,11 +1173,14 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
         bm().breakpointUpdater().treeChanged();
 
-	for (NativeBreakpoint bpt : bm().breakpointBag().getBreakpoints())
+	for (NativeBreakpoint bpt : bm().breakpointBag().getBreakpoints()) {
+            if (!bpt.isEnabled()) {
+                continue;//do nothing for disabled breakpoints
+            }
 	    bpt.showAnnotationsFor(true, this);
-        
+        }
         registerRegistersWindow(RegistersWindow.getDefault().isShowing() ? RegistersWindow.getDefault() : null);
-        
+
         if (MemoryWindow.getDefault().isShowing()) {
             registerMemoryWindow(MemoryWindow.getDefault());
             MemoryWindow.getDefault().setDebugger(this);
@@ -1211,8 +1214,9 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
         bm().breakpointUpdater().treeChanged();
 
-	for (NativeBreakpoint bpt : bm().breakpointBag().getBreakpoints())
+	for (NativeBreakpoint bpt : bm().breakpointBag().getBreakpoints()) {
 	    bpt.showAnnotationsFor(false, this);
+        }
         
         // remember src/dis state
         disActive = Disassembly.isInDisasm();

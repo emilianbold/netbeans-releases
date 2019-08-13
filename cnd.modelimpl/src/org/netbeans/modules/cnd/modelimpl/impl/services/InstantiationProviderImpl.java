@@ -131,6 +131,7 @@ import org.netbeans.modules.cnd.utils.Antiloop;
 /**
  * Service that provides template instantiations
  *
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.class)
 public final class InstantiationProviderImpl extends CsmInstantiationProvider {
@@ -516,7 +517,13 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 if (proj instanceof ProjectBase) {
                     StringBuilder fqn = new StringBuilder(templateDecl.getUniqueName());
                     fqn.append('<'); // NOI18N
-                    specs = new ArrayList<>(((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString()));
+                    Collection<CsmOffsetableDeclaration> decls = ((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString());
+                    specs = new ArrayList<>(decls.size());
+                    for (CsmOffsetableDeclaration d : decls) {
+                        if (!ForwardClass.isForwardClass(d)) {
+                            specs.add(d);
+                        }
+                    }
                 }
             } else if (CsmKindUtilities.isMethod(templateDecl)) {
                 // try to find explicit specialization of method if any

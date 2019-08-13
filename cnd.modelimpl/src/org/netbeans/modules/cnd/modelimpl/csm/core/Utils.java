@@ -93,6 +93,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * Misc. (static) utility functions
+ * @author Vladimir Kvashin
  */
 public class Utils {
     
@@ -176,6 +177,8 @@ public class Utils {
     public static String getLanguageFlavor(NativeFileItem.LanguageFlavor flavor) {
         if (null != flavor) {
             switch (flavor) {
+                case CPP17:
+                    return APTLanguageSupport.FLAVOR_CPP17;
                 case CPP14:
                     return APTLanguageSupport.FLAVOR_CPP14;
                 case CPP11:

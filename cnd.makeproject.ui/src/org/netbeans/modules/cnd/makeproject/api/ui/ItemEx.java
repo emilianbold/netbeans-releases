@@ -58,6 +58,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
+ * @author Alexander Simon
  */
 public class ItemEx extends Item {
     
@@ -103,7 +104,7 @@ public class ItemEx extends Item {
 
     @Override
     public void setFolder(Folder folder) {
-        if (folder == null && file == null) {
+        if (folder == null && canonicalFileObject == null) {
             // store file in field. method getFile() will works after removing item
             ensureFileNotNull();
         }

@@ -55,11 +55,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.CodeStyleWrapper;
+import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -79,9 +81,15 @@ import org.openide.util.Parameters;
 import org.openide.util.lookup.ServiceProvider;
 import org.netbeans.modules.cnd.makeproject.api.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectLookupProvider;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 
 /**
  *
+ * @author Alexander Simon
  */
 public final class BrokenReferencesSupport {
     
@@ -180,6 +188,24 @@ public final class BrokenReferencesSupport {
     }
 
     @NonNull
+    private static Set<? extends ProjectProblemsProvider.ProjectProblem> getClangFormattingStyleProblems(@NonNull final MakeProject project) {
+        FileObject clangFormat = findClangFormattingStyles(project);
+        if (clangFormat != null) {
+            boolean wasFixed = NbPreferences.forModule(ClangStyleResolverImpl.class).getBoolean("clang-format-fixed-"+clangFormat.getPath(), false);
+            if (!wasFixed) {
+                String message = NbBundle.getMessage(ResolveReferencePanel.class, "clang_style_resolve_description", clangFormat.getPath()); //NOI18N
+                final ProjectProblemsProvider.ProjectProblem error =
+                        ProjectProblemsProvider.ProjectProblem.createError(
+                        NbBundle.getMessage(ResolveReferencePanel.class, "clang_style_resolve_name"), //NOI18N
+                        message,
+                        new ClangStyleResolverImpl(project, clangFormat));
+                return Collections.singleton(error);
+            }
+        }
+        return Collections.emptySet();
+    }
+
+    @NonNull
     private static Set<? extends ProjectProblemsProvider.ProjectProblem> getFormattingStyleProblems(@NonNull final MakeProject project) {
         List<Style> styles = getUndefinedFormattingStyles(project);
         if (styles != null && !styles.isEmpty()) {
@@ -218,9 +244,42 @@ public final class BrokenReferencesSupport {
         return new Style(aStyle, mime);
     }
         
-    
+    private static FileObject findClangFormattingStyles(MakeProject project) {
+        if (project.isProjectFormattingStyle() == MakeProject.FormattingStyle.ClangFormat) {
+            return null;
+        }
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (!pdp.gotDescriptor()) {
+            return null;
+        }
+        MakeConfigurationDescriptor cd = (MakeConfigurationDescriptor) pdp.getConfigurationDescriptor();
+        FileObject baseDir = cd.getBaseDirFileObject();
+        if (baseDir != null && baseDir.isValid()) {
+            FileObject format = baseDir.getFileObject(CodeStyleWrapper.CLANG_FORMAT_FILE);
+            if (format != null && format.isValid()) {
+                //found clang format file
+                return format;
+            }
+            for (String root : cd.getAbsoluteSourceRoots()) {
+                try {
+                    FileObject rootFo = new FSPath(baseDir.getFileSystem(), root).getFileObject();
+                    if (rootFo != null && !baseDir.equals(rootFo)) {
+                        format = rootFo.getFileObject(CodeStyleWrapper.CLANG_FORMAT_FILE);
+                        if (format != null && format.isValid()) {
+                            //found clang format file
+                            return format;
+                        }
+                    }
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return null;
+    }
+
     private static List<Style> getUndefinedFormattingStyles(MakeProject project) {
-        if (!project.isProjectFormattingStyle()) {
+        if (project.isProjectFormattingStyle() == MakeProject.FormattingStyle.Project) {
             return null;
         }
         List<Style> list = new ArrayList<>();
@@ -321,6 +380,7 @@ public final class BrokenReferencesSupport {
                         newProblems.addAll(getPlatformProblems(project));
                         newProblems.addAll(envProblemsProvider.getEnvProblems());
                         newProblems.addAll(getFormattingStyleProblems(project));
+                        newProblems.addAll(getClangFormattingStyleProblems(project));
                     }
                     return Collections.unmodifiableSet(newProblems);
                 });
@@ -587,6 +647,43 @@ public final class BrokenReferencesSupport {
                 return false;
             }
             final StyleResolverImpl other = (StyleResolverImpl) obj;
+            return style.equals(other.style);
+        }
+    }
+
+    private static class ClangStyleResolverImpl extends BaseProjectProblemResolver {
+        private final FileObject style;
+
+        private ClangStyleResolverImpl(MakeProject project, FileObject style) {
+            super(project);
+            this.style = style;
+        }
+        
+        @Override
+        public Future<ProjectProblemsProvider.Result> resolve() {
+            MakeCustomizerProvider cp = getProject().getLookup().lookup(MakeCustomizerProvider.class);
+            if (cp != null) {
+                cp.showCustomizer("Formatting"); // NOI18N
+            }
+            NbPreferences.forModule(ClangStyleResolverImpl.class).putBoolean("clang-format-fixed-"+style.getPath(), true); // NOI18N
+            updateProblems();
+            return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED));
+        }
+        
+        @Override
+        public int hashCode() {
+            return style.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ClangStyleResolverImpl other = (ClangStyleResolverImpl) obj;
             return style.equals(other.style);
         }
     }
