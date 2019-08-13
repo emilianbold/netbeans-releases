@@ -49,7 +49,6 @@ import org.netbeans.modules.team.server.ui.spi.RemoteMachineHandle;
 
 /**
  *
- * @author Ilia Gromov
  */
 public class RemoteMachineHandleImpl extends RemoteMachineHandle {
 

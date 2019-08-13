@@ -53,7 +53,6 @@ import org.openide.windows.InputOutput;
 
 /**
  *
- * @author Egor Ushakov
  */
 class InternalTerminalPack extends IOPack {
     private Pty pty = null;

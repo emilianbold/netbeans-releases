@@ -36,7 +36,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author mt154047
  */
 public final class Utilities {
     private static final Map<String, Image> ext2iconCache = new HashMap<String, Image>();

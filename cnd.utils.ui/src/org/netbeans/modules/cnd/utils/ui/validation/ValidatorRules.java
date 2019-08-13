@@ -46,7 +46,6 @@ import java.util.function.Supplier;
 
 /**
  *
- * @author Ilia Gromov
  */
 public final class ValidatorRules {
 

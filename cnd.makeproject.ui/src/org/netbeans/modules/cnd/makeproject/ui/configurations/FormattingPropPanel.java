@@ -65,7 +65,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author alsimon
  */
 public class FormattingPropPanel extends javax.swing.JPanel implements MakeContext.Savable {
     private static final String C_CODE_STYLES = "C_CodeStyles"; // NOI18N

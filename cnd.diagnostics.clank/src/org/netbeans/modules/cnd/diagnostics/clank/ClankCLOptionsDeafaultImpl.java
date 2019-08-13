@@ -45,7 +45,6 @@ import org.clang.tools.services.checkers.api.ClankCLOptionsProvider;
 
 /**
  *
- * @author masha
  */
 public class ClankCLOptionsDeafaultImpl {
     private static final String[] ownArgs = new String[0];//new String[]{"-fcxx-exceptions", "-fexceptions", "-Wno-unreachable-code"};

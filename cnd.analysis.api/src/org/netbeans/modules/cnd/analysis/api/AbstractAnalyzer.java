@@ -77,7 +77,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class AbstractAnalyzer implements Analyzer {
 

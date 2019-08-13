@@ -43,7 +43,6 @@ import javax.swing.JTextField;
 
 /**
  *
- * @author Ilia Gromov
  */
 public class DevelopVMConnectionPanel extends javax.swing.JPanel {
 

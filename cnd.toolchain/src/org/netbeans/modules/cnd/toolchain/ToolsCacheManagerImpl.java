@@ -65,7 +65,6 @@ import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 /**
  *
- * @author Sergey Grinev
  */
 public final class ToolsCacheManagerImpl extends ToolsCacheManager {
 

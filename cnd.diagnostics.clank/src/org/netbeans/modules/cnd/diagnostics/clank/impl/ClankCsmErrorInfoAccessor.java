@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.diagnostics.clank.ClankCsmErrorInfo;
 
 /**
  *
- * @author masha
  */
 abstract public class ClankCsmErrorInfoAccessor {
     private static volatile ClankCsmErrorInfoAccessor DEFAULT;

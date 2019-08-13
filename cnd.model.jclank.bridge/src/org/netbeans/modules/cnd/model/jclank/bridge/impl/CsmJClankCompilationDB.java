@@ -59,7 +59,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
 

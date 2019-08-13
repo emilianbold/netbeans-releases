@@ -72,7 +72,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author masha
  */
 @ServiceProvider(service = ClankErrorPathDetailsProvider.class, position = 1000)
 public class ClankErrorPathDetailsProviderImpl implements ClankErrorPathDetailsProvider {

@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.api.model.syntaxerr;
 
 /**
  * Represents an error or warning
- * @author Vladimir Kvashin
  */
 public interface CsmErrorInfo {
 

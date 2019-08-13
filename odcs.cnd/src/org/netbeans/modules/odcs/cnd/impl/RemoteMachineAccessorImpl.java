@@ -55,8 +55,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Tomas Stupka
- * @author Ilia Gromov
  */
 @ServiceProvider(service = RemoteMachineAccessor.class)
 public class RemoteMachineAccessorImpl extends RemoteMachineAccessor<ODCSProject> {

@@ -82,7 +82,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Egor Ushakov
  */
 public abstract class Disassembly implements StateModel.Listener {
     private static Logger LOG = Logger.getLogger(Disassembly.class.getName());

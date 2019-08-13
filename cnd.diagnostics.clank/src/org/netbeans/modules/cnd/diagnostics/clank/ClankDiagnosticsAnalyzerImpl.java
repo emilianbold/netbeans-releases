@@ -74,7 +74,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author masha
  */
 public final class ClankDiagnosticsAnalyzerImpl extends AbstractAnalyzer {
     private static final String PREFIX = "cnd-"; //NOI18N

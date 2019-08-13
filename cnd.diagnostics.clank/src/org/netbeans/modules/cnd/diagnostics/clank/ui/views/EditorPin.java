@@ -50,7 +50,6 @@ import org.openide.filesystems.FileObject;
 /**
  * Implementation of watch pin in editor.
  * 
- * @author Ralph Benjamin Ruijs
  * @since 2.53
  */
 public final class EditorPin {

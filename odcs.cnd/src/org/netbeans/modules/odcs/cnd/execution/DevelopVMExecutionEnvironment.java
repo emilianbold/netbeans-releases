@@ -43,7 +43,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Ilia Gromov
  */
 public abstract class DevelopVMExecutionEnvironment implements ExecutionEnvironment {
 

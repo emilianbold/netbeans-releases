@@ -51,7 +51,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author vkvashin
  */
 @ServiceProvider(service = ClankFileSystemProvider.class, position = 100)
 public class ClankFileSystemProviderImpl extends  ClankFileSystemProvider{

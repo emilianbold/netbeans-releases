@@ -84,7 +84,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  * bridge which affects editor behavior based on options from makeproject.
- * @author Vladimir Voskresensky
  */
 @ServiceProvider(path=CndSourcePropertiesProvider.REGISTRATION_PATH, service=CndSourcePropertiesProvider.class, position=1000)
 public final class DocumentLanguageFlavorProvider implements CndSourcePropertiesProvider {

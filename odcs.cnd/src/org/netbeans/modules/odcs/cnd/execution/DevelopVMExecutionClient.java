@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ilia Gromov
  */
 public final class DevelopVMExecutionClient {
 

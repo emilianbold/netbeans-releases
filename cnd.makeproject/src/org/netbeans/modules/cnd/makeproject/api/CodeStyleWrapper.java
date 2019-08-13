@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class CodeStyleWrapper {
     public static final String CLANG_FORMAT_FILE = ".clang-format"; //NOI18N

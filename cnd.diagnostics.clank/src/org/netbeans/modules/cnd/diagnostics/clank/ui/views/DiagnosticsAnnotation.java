@@ -58,7 +58,6 @@ import org.openide.util.lookup.Lookups;
 /**
  * Debugger Annotation class.
  *
- * @author   Jan Jancura
  */
 public class DiagnosticsAnnotation extends Annotation implements Lookup.Provider {
 

@@ -43,7 +43,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
- * @author Ilia Gromov
  */
 public abstract class Validator {
 

@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 
 /**
  *
- * @author masha
  */
 final class ClankCLArsPanel extends JPanel{
     private final Preferences preferences;

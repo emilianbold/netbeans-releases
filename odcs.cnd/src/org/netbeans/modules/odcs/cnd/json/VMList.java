@@ -44,7 +44,6 @@ import java.util.List;
 /**
  * POJO for Jackson
  *
- * @author Ilia Gromov
  */
 public final class VMList {
 

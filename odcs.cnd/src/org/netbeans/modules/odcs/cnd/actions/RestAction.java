@@ -51,7 +51,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Ilia Gromov
  */
 public abstract class RestAction extends AbstractAction {
 

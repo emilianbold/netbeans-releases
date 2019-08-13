@@ -46,7 +46,6 @@ import java.util.Map;
 /**
  * POJO for Jackson
  *
- * @author Ilia Gromov
  */
 public final class VMDescriptor {
 

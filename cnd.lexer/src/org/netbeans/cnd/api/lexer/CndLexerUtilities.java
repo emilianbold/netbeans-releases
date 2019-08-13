@@ -61,7 +61,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Vladirmir Voskresensky
  */
 public final class CndLexerUtilities {
     

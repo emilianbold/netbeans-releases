@@ -82,7 +82,6 @@ import org.openide.windows.InputOutput;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ExecuteCommand {
 

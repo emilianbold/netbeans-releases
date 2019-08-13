@@ -60,7 +60,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author alsimon
  */
 final class CndDocumentCodeStyleProviderImpl implements CndDocumentCodeStyleProvider {
     private static final WeakHashMap<MakeProject, FileChangeListenerImpl> styleCache = new WeakHashMap<MakeProject, FileChangeListenerImpl>();

@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.diagnostics.clank.ui.views.ViewComponent;
  * Factory that produces debugger views created from registered view models
  * (see {@link org.netbeans.spi.viewmodel.Model} and it's extension interfaces).
  * 
- * @author Martin Entlicher
  * @since 2.34
  */
 public class ViewFactory {

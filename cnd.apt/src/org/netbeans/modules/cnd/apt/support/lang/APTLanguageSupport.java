@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 /**
  * support for languages:
  *  - filters collection
- * @author Vladimir Voskresensky
  */
 public final class APTLanguageSupport {
     private static APTLanguageSupport singleton = new APTLanguageSupport();

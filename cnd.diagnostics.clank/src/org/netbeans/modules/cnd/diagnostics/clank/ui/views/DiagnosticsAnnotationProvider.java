@@ -110,7 +110,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author masha
  */
 public class DiagnosticsAnnotationProvider {
     public static final String DIAGNOSTIC_CHANGED = "diagnostic_changed";//NOI18N

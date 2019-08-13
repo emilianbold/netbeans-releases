@@ -91,7 +91,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author Alexander Simon
  */
 @SuppressWarnings({"PackageVisibleInnerClass","PackageVisibleField"})
 public final class ToolchainManagerImpl {

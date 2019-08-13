@@ -55,7 +55,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class PreBuildSupport {
     public static final String CMAKE_MACRO = "${CMAKE}"; //NOI18N

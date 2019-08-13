@@ -58,7 +58,6 @@ import org.openide.windows.*;
 
 /** Connects the output stream of a file to the IDE output window.
  *
- * @author ludo
  */
 public class DebuggerLoggerSupport implements Runnable {
 

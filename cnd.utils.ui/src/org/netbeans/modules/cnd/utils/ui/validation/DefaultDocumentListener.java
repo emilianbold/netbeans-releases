@@ -44,7 +44,6 @@ import javax.swing.event.DocumentListener;
 
 /**
  *
- * @author Ilia Gromov
  */
 @FunctionalInterface
 public interface DefaultDocumentListener extends DocumentListener {

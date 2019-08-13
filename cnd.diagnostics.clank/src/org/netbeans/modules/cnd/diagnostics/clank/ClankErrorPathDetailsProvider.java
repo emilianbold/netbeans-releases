@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.diagnostics.clank;
 
 /**
  *
- * @author masha
  */
 public interface ClankErrorPathDetailsProvider {
     void implement (ClankCsmErrorInfo errorInfo);

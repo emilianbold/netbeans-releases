@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ilia Gromov
  */
 public class PropertiesAction extends AbstractAction {
 

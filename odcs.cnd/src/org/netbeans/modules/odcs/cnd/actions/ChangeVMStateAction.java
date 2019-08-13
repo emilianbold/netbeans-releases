@@ -47,7 +47,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ilia Gromov
  */
 public class ChangeVMStateAction extends RestAction {
 

@@ -55,7 +55,6 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
 /**
  * Test several lexer inputs.
  *
- * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class FortranLexerBatchTestCase extends TestCase {
 

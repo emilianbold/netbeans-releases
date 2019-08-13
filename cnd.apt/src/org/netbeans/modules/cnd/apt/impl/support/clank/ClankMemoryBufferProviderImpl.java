@@ -55,7 +55,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author masha
  */
 @ServiceProvider(service = ClankMemoryBufferProvider.class, position = 100)
 public class ClankMemoryBufferProviderImpl implements ClankMemoryBufferProvider{

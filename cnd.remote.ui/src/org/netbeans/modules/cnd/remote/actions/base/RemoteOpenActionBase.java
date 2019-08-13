@@ -63,7 +63,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Vladimir Kvashin
  */
 public abstract class RemoteOpenActionBase extends AbstractAction implements DynamicMenuContent, Presenter.Toolbar, PropertyChangeListener {
 

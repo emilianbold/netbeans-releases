@@ -55,7 +55,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author masha
  */
 /*package*/ class ClankEnhancedFix implements EnhancedFix {
 

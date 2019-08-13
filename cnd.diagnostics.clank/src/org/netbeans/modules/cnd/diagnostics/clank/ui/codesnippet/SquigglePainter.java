@@ -52,7 +52,6 @@ import javax.swing.text.View;
 
 /**
  *
- * @author masha
  */
 public class SquigglePainter extends DefaultHighlighter.DefaultHighlightPainter {
 

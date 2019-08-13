@@ -48,7 +48,6 @@ import org.netbeans.modules.odcs.api.ODCSServer;
 
 /**
  *
- * @author Ilia Gromov
  */
 public class ODCSAuthManager {
 

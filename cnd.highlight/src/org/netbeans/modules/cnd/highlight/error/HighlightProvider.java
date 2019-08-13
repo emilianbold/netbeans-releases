@@ -80,7 +80,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class HighlightProvider  {
     

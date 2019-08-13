@@ -50,7 +50,6 @@ import org.openide.util.Utilities;
  * its an interface, cnd.makeproject's Platform class can implement this interface and still have
  * the same platform types/values.
  * 
- * @author gordonp
  */
 public final class PlatformTypes {
 

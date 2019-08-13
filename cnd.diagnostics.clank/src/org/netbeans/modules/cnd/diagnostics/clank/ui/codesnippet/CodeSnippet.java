@@ -31,7 +31,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public final class CodeSnippet {
 

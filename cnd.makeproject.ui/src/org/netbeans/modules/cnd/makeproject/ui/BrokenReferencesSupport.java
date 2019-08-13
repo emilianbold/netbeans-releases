@@ -89,7 +89,6 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class BrokenReferencesSupport {
     

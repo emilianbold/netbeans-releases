@@ -49,7 +49,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Martin Entlicher
  */
 public class ViewComponent extends JComponent implements org.openide.util.HelpCtx.Provider {
     

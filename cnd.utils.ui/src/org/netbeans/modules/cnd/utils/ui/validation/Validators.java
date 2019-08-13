@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.utils.ui.validation;
 
 /**
  *
- * @author Ilia Gromov
  */
 public class Validators {
 

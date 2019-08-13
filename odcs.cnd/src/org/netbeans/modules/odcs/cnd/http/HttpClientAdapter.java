@@ -60,7 +60,6 @@ import org.openide.util.NetworkSettings;
 
 /**
  *
- * @author Ilia Gromov
  */
 public class HttpClientAdapter {
 

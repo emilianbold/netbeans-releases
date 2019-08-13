@@ -44,7 +44,6 @@ import javax.swing.text.JTextComponent;
 
 /**
  *
- * @author Ilia Gromov
  */
 public class TextComponentValidator extends Validator {
 

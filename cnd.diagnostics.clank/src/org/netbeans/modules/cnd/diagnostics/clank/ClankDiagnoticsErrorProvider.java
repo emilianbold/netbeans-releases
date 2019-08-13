@@ -100,7 +100,6 @@ import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author masha
  */
 @ServiceProviders({
     //@ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1400),

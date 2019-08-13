@@ -69,7 +69,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Ilia Gromov
  */
 public class AddRemoteHostAction extends AbstractAction {
 

@@ -156,7 +156,6 @@ import org.openide.util.Pair;
 
 /**
  * CsmFile implementations
- * @author Vladimir Kvashin
  */
 public final class FileImpl implements CsmFile,
         Disposable, Persistent, SelfPersistent, CsmIdentifiable {

@@ -58,7 +58,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ItemEx extends Item {
     

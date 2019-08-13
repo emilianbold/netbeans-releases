@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class CompilerSet {
     /**

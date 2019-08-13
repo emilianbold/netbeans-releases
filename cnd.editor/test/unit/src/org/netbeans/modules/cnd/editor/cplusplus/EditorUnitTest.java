@@ -35,7 +35,6 @@ import org.netbeans.junit.NbTestSuite;
 
 /**
  *
- * @author Alexander Simon
  */
 public class EditorUnitTest extends NbTestSuite {
 

@@ -52,7 +52,6 @@ import org.netbeans.spi.project.ProjectConfigurationProvider;
 
 /**
  *
- * @author Alexander Simon
  */
 public interface MakeProject extends Project {
     public enum FormattingStyle {

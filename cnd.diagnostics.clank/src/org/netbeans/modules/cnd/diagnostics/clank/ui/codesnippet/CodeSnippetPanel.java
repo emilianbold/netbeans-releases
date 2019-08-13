@@ -83,7 +83,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 public class CodeSnippetPanel extends javax.swing.JPanel {
 

@@ -73,7 +73,6 @@ import org.openide.util.Exceptions;
  * {@link Expandable} and {@link Pinnable} classes.
  *
  * @since 2.54
- * @author Martin Entlicher
  */
 public final class ToolTipUI {
 

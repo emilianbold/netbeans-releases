@@ -52,7 +52,6 @@ import javax.swing.text.View;
 
 /**
  *
- * @author masha
  */
 public class ThePainter extends DefaultHighlighter.DefaultHighlightPainter {
 

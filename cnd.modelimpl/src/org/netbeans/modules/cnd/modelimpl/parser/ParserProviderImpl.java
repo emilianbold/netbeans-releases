@@ -81,7 +81,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
  */
 @ServiceProvider(service=CsmParserProvider.class, position=1000)
 public final class ParserProviderImpl extends CsmParserProvider {

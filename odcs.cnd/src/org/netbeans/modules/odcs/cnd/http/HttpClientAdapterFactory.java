@@ -47,7 +47,6 @@ import org.netbeans.modules.odcs.cnd.impl.ODCSAuthManager;
 
 /**
  *
- * @author Ilia Gromov
  */
 public class HttpClientAdapterFactory {
 

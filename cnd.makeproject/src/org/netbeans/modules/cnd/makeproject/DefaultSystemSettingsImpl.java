@@ -68,7 +68,6 @@ import org.openide.util.lookup.ServiceProviders;
 /**
  * This is an implementation of DefaultSystemSetting.
  * It provides  
- * @author Leonid Mesnik
  */
 @ServiceProviders({
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.DefaultSystemSettings.class),

@@ -67,7 +67,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author masha
  */
 public class NavigationActions {
 

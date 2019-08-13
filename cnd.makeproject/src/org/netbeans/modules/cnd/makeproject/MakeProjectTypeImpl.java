@@ -60,7 +60,6 @@ import org.w3c.dom.NodeList;
 /**
  * Factory for simple Make projects.
  * 
- * @author Alexander Simon
  */
 public final class MakeProjectTypeImpl implements MakeProjectType {
 

@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.spi.CndDocumentCodeStyleProvider;
 
 /**
  *
- * @author as204739
  */
 public class CLangFormatTestCase extends EditorBase {
 

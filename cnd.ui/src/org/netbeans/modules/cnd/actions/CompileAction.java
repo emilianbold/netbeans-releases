@@ -97,7 +97,6 @@ import org.openide.windows.WindowManager;
 /**
  * Project less compile action
  * 
- * @author Alexander Simon
  */
 public class CompileAction extends AbstractExecutorRunAction {
     

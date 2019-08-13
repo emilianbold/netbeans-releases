@@ -41,7 +41,6 @@ package org.netbeans.modules.odcs.cnd.json.misc;
 
 /**
  *
- * @author Ilia Gromov
  */
 public class Response {
 
