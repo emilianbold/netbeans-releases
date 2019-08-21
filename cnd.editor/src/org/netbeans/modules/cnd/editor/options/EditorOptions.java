@@ -453,26 +453,7 @@ public class EditorOptions {
         defaults.put(useInlineKeyword,useInlineKeywordDefault);
 
         namedDefaults = new HashMap<String,Map<String,Object>>();
-//Apache style
-//This style can be generated with the following arguments to GNU indent:
-//    -i4 -npsl -di0 -br -nce -d0 -cli0 -npcs -nfc1 -nut
-//The Guidelines
-//        * Opening braces are given on the same lines as statements,
-//          or on the following line at the start of a function definition.
-//        * Code inside a block (whether surrounded by braces or not) is indented by four space characters.
-//          Tab characters are not used. Comments are indented to the same level as the surrounding code.
-//        * Closing braces are always on a separate line from surrounding code,
-//          and are indented to line up with the start of the text on the line containing the corresponding
-//          opening brace.
-//        * Functions are declared with ANSI-style arguments.
-//        * There is no space between the function name and the opening bracket of the arguments to the function.
-//          There is a single space following commas in argument lists and the semi-colons in for statements.
-//        * Inside a switch() statement, the case keywords are indented to the same level as the switch line.
-//        * Operators in expressions should be surrounded by a single space before and after,
-//          except for unary increment (++), decrement (--), and negation (!) operators.
-//        * There is no whitespace between a cast and the item modified (e.g., "(int)j" and not "(int) j").
-//        * If a cast is to a pointer type, there is a space between the type and
-//          the * character (e.g., "(char *)i" instead of "(char*)i")
+
         Map<String,Object> apache = new HashMap<String,Object>();
         namedDefaults.put(APACHE_PROFILE, apache);
         apache.put(indentCasesFromSwitch, false);
