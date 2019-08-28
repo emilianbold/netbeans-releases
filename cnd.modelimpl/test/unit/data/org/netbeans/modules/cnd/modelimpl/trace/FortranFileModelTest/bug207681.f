@@ -1,7 +1,6 @@
 subroutine CSDcalc(iw)
     use mtr
     use param
-    USE IFPORT
     implicit real*8 (A - H, O - Z)
     integer(8) iii
 
