@@ -111,6 +111,11 @@ public interface FileSystemProviderImplementation {
     void setAccessCheckType(ExecutionEnvironment execEnv, FileSystemProvider.AccessCheckType accessCheckType);
     FileSystemProvider.AccessCheckType getAccessCheckType(ExecutionEnvironment execEnv);
     FileSystemProvider.Stat getStat(FileObject fo);
+    /** 
+     * NB: zip entries time should be in UTC. 
+     * To set entry time in UTC use
+     * entry.setTime(entryTime - TimeZone.getDefault().getRawOffset()); 
+     */
     void uploadAndUnzip(InputStream zipStream, FileObject targetFolder) 
             throws FileNotFoundException, ConnectException, IOException, InterruptedException;
     void suspendWritesUpload(FileObject folder) throws IOException;
