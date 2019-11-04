@@ -42,14 +42,14 @@
 package org.netbeans.modules.dlight.sendto.action;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
+import javax.swing.JPopupMenu;
+import org.netbeans.modules.dlight.sendto.api.Configuration;
+import org.netbeans.modules.dlight.sendto.api.ConfigurationsRegistry;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -60,6 +60,7 @@ import org.openide.text.DataEditorSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 
@@ -99,17 +100,17 @@ public class MenuMetaAction extends SystemAction implements ContextAwareAction {
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-        return new MenuWrapperAction(actionContext, MenuConstructor.constructMenu(actionContext));
+        return new MenuWrapperAction(actionContext);
     }
 
     private static class MenuWrapperAction extends AbstractAction implements Presenter.Popup {
 
-        private final JMenu menu;
+        private final LazyMenu menu;
         private final Lookup actionContext;
 
-        public MenuWrapperAction(Lookup actionContext, JMenu menu) {
-            this.menu = menu;
+        public MenuWrapperAction(Lookup actionContext) {
             this.actionContext = actionContext;
+            this.menu = new LazyMenu();
         }
 
         @Override
@@ -126,7 +127,7 @@ public class MenuMetaAction extends SystemAction implements ContextAwareAction {
             // fast check
             return isFileObject() || isEditorSelection();
         }
-        
+
         private boolean isFileObject() {
             final Collection<? extends FileObject> fos = actionContext.lookupAll(FileObject.class);
 
@@ -135,7 +136,7 @@ public class MenuMetaAction extends SystemAction implements ContextAwareAction {
             }
             return true;
         }
-        
+
         private boolean isEditorSelection() {
             DataEditorSupport des = actionContext.lookup(DataEditorSupport.class);
             if (des == null) {
@@ -152,6 +153,29 @@ public class MenuMetaAction extends SystemAction implements ContextAwareAction {
             }
             return fos.contains(dao.getPrimaryFile());
         }
-        
+
+        private class LazyMenu extends DynamicMenu {
+
+            private boolean initialized;
+
+            public LazyMenu() {
+                super(NbBundle.getMessage(MenuConstructor.class, "SendToMenuName"));
+            }
+
+            @Override
+            public JPopupMenu getPopupMenu() {
+                if (!initialized) {
+                    final List<Configuration> configs = ConfigurationsRegistry.getConfigurations();
+
+                    if (configs == null) {
+                        menu.setEmpty();
+                    } else {
+                        initialized = true;
+                        MenuUpdator.start(menu, actionContext, configs);
+                    }
+                }
+                return super.getPopupMenu();
+            }
+        }
     }
 }

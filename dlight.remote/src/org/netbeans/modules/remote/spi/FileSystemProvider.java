@@ -650,6 +650,8 @@ public final class FileSystemProvider {
     /**
      * Uploads zip to a temporary file on the remote host, unzips it into the given directory, then removes the uploaded zip.
      * Also unzip its content into remote file system caches
+     * NB: zip entries timestamps should be in UTC! 
+     * To set entry time in UTC use entry.setTime(entryTime - TimeZone.getDefault().getRawOffset());
      */
     public static void uploadAndUnzip(File zipFile, FileObject targetFolder) 
             throws FileNotFoundException, ConnectException, IOException, InterruptedException {
@@ -659,6 +661,8 @@ public final class FileSystemProvider {
     /**
      * Uploads zip to a temporary file on the remote host, unzips it into the given directory, then removes the uploaded zip.
      * Also unzip its content into remote file system caches
+     * NB: zip entries timestamps should be in UTC! 
+     * To set entry time in UTC use entry.setTime(entryTime - TimeZone.getDefault().getRawOffset());
      */
     public static void uploadAndUnzip(InputStream zipStream, FileObject targetFolder) 
             throws FileNotFoundException, ConnectException, IOException, InterruptedException {

@@ -503,9 +503,6 @@ public class PathUtilities {
 
     public static String escapeHostOrUserForUseInURL(String path) {
         for (int i = 0; i < path.length(); i++) {
-            if (path.charAt(i) == '-' || path.charAt(i) == '_') { //NOI18N
-                continue; // we know for sure that host and user with "-" or "_" work perfect
-            }
             if (needToEscape(path.charAt(i))) {
                 return escapeImpl(path, i).toString();
             }            
@@ -603,7 +600,7 @@ public class PathUtilities {
         true,  // *      42 0052 0x2a
         true,  // +      43 0053 0x2b
         true,  // ,      44 0054 0x2c
-        true,  // -      45 0055 0x2d
+        false, // -      45 0055 0x2d // NB: here it differs from URI
         false, // .      46 0056 0x2e
         false, // /      47 0057 0x2f
         false, // 0      48 0060 0x30
@@ -653,7 +650,7 @@ public class PathUtilities {
         true,  // \      92 0134 0x5c
         true,  // ]      93 0135 0x5d
         true,  // ^      94 0136 0x5e
-        true,  // _      95 0137 0x5f
+        false, // _      95 0137 0x5f // NB: here it differs from URI
         true,  // `      96 0140 0x60
         false, // a      97 0141 0x61
         false, // b      98 0142 0x62
