@@ -81,7 +81,6 @@ import org.w3c.dom.NodeList;
 
 /**
  * Test {@link View}: changes in children etc.
- * @author Jesse Glick
  */
 public class ViewTest extends TestBase {
     

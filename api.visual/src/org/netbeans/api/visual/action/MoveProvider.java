@@ -50,7 +50,6 @@ import java.awt.*;
 /**
  * This interface controls move action.
  *
- * @author David Kaspar
  */
 public interface MoveProvider {
 

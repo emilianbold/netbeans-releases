@@ -86,7 +86,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /** Processor to hide all the complexities of settings layer registration.
  *
- * @author Martin Entlicher
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_7)

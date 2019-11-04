@@ -60,7 +60,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Martin Entlicher
  */
 class PathLookup extends org.openide.util.Lookup {
 

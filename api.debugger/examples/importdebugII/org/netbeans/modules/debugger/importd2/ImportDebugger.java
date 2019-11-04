@@ -68,7 +68,6 @@ import org.netbeans.modules.debugger.support.util.ValidatorImpl;
  * Into on "import java.awt.Button" opens .java file for Button and
  * puts current line to the first line of it.
  *
- * @author Jan Jancura
  */
 public class ImportDebugger extends SecondaryDebuggerSupport {
 

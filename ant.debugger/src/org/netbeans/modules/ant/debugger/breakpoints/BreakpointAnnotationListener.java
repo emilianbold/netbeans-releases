@@ -60,7 +60,6 @@ import org.netbeans.modules.ant.debugger.DebuggerBreakpointAnnotation;
  * {@link org.netbeans.api.debugger.DebuggerManager#PROP_BREAKPOINTS}
  * property and annotates JPDA Debugger line breakpoints in NetBeans editor.
  *
- * @author Jan Jancura
  */
 public class BreakpointAnnotationListener extends DebuggerManagerAdapter 
 implements PropertyChangeListener {

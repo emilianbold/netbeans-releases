@@ -54,7 +54,6 @@ import org.netbeans.api.project.ProjectUtils;
 /**
  * Test functionality of FreeformProject.
  * This class just tests the basic functionality found in the "simple" project.
- * @author Jesse Glick
  */
 public class FreeformProjectTest extends TestBase {
 

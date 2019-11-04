@@ -75,7 +75,6 @@ import org.openide.util.NbCollections;
  * The user is prompted to pick one.
  * @see "#46886"
  * @see <a href="http://projects.netbeans.org/buildsys/freeform-project-ui-spec-promoe.html#Alert_Run_Project">UI Spec</a>
- * @author Jesse Glick
  */
 public final class UnboundTargetAlert extends JPanel {
     

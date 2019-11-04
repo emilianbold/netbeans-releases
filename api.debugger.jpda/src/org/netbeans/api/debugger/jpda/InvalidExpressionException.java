@@ -48,7 +48,6 @@ package org.netbeans.api.debugger.jpda;
 /**
  * Notification about bad expression.
  *
- * @author   Jan Jancura
  */
 public class InvalidExpressionException extends Exception {
 

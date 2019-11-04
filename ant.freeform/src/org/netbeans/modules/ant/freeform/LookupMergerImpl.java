@@ -59,7 +59,6 @@ import org.openide.util.Lookup;
 /**
  * Merges ActionProvider 
  *
- * @author David Konecny, Milos Kleint
  */
 public class LookupMergerImpl implements LookupMerger<ActionProvider> {
 

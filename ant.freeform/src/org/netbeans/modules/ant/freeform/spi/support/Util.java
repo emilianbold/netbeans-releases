@@ -76,7 +76,6 @@ import org.xml.sax.SAXException;
 
 /**
  * Miscellaneous helper methods.
- * @author Jesse Glick, David Konecny
  */
 public class Util {
     

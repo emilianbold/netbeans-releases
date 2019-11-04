@@ -60,7 +60,6 @@ import org.netbeans.spi.debugger.ui.Constants;
 
 /**
  *
- * @author   Jan Jancura
  */
 public class CallStackModel implements TreeModel, NodeModel, 
 NodeActionsProvider, TableModel {

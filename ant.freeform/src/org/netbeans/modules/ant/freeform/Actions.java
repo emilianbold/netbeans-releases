@@ -105,7 +105,6 @@ import org.w3c.dom.Element;
 
 /**
  * Action bindings for a freeform project.
- * @author Jesse Glick
  */
 public final class Actions implements ActionProvider {
 

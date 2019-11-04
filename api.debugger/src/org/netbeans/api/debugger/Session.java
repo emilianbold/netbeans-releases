@@ -134,7 +134,6 @@ import org.netbeans.spi.debugger.ContextProvider;
  *
  * </td></tr></tbody></table>
  *
- * @author Jan Jancura
  */
 public final class Session implements ContextProvider {
     

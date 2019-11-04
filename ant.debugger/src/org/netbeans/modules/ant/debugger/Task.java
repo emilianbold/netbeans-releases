@@ -49,7 +49,6 @@ import org.apache.tools.ant.module.spi.TaskStructure;
 
 /**
  *
- * @author  Honza
  */
 class Task {
 

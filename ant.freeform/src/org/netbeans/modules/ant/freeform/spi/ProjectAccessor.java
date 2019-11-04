@@ -49,7 +49,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 /**
  * Accessor for AntProjectHelper and PropertyEvaluator, resides in project's lookup.
- * @author Jan Lahoda
  */
 public final class ProjectAccessor {
 

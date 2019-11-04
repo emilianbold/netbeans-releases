@@ -44,7 +44,6 @@ package org.netbeans.debugger.registry;
 
 /**
  *
- * @author Martin Entlicher
  */
 public interface ContextAwareServicePath {
     

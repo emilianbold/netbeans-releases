@@ -58,7 +58,6 @@ import org.w3c.dom.Element;
 /**
  * Provides the Ant grammar for any documents whose root elements matches a standard pattern.
  * See also ant/src/.../resources/mime-resolver.xml.
- * @author Petr Kuzel, Jesse Glick
  */
 @ServiceProvider(service=GrammarQueryManager.class, path=/* XXX GrammarQueryManager.DefaultQueryManager.FOLDER*/ "Plugins/XML/GrammarQueryManagers")
 public final class AntGrammarQueryProvider extends GrammarQueryManager {

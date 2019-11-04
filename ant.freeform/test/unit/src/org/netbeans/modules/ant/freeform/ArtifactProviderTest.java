@@ -58,7 +58,6 @@ import org.w3c.dom.Element;
 
 /**
  * Test {@link ArtifactProvider}.
- * @author Jesse Glick
  */
 public class ArtifactProviderTest extends TestBase {
     

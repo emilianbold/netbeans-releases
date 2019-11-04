@@ -58,7 +58,6 @@ import org.openide.text.Line;
 
 /**
  *
- * @author Jan Jancura
  */
 public class BreakpointsReader implements Properties.Reader {
     

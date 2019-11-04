@@ -56,7 +56,6 @@ package org.netbeans.api.debugger.jpda;
  *
  * @since 2.11
  * @see JPDAClassType
- * @author Martin Entlicher
  */
 public interface VariableType {
     

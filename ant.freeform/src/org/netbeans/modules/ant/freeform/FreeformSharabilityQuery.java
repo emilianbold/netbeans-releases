@@ -64,8 +64,6 @@ import org.w3c.dom.NodeList;
 
 /**
  *
- * @author Jan Lahoda
- * @author Tomas Zezula
  */
 public class FreeformSharabilityQuery implements SharabilityQueryImplementation2, AntProjectListener {
 

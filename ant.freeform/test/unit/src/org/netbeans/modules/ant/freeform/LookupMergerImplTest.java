@@ -64,7 +64,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * Test for merging action providers.
- * @author Jesse Glick
  */
 public class LookupMergerImplTest extends NbTestCase {
 

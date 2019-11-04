@@ -53,7 +53,6 @@ import org.netbeans.api.debugger.Session;
  * support to some some existing
  * {@link org.netbeans.api.debugger.Session}.
  *
- * @author Jan Jancura
  * @deprecated This class is of no use. Nobody can create Session object, but debuggercore.
  */
 // XXX: What this is for??

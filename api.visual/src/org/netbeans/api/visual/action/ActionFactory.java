@@ -64,7 +64,6 @@ import java.util.EnumSet;
  * <p>
  * Instances of the built-in actions could be shared by multiple widgets.
  *
- * @author David Kaspar
  */
 public final class ActionFactory {
 

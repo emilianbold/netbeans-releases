@@ -58,7 +58,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author   Jan Jancura
  */
 public class BreakpointModel implements NodeModel {
     

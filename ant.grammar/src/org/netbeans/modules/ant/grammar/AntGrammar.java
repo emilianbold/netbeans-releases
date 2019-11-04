@@ -85,7 +85,6 @@ import org.w3c.dom.Text;
  * Rather simple query implementation based on static Ant introspection info.
  * Hints given by this grammar cannot guarantee that valid XML document is created.
  *
- * @author Petr Kuzel, Jesse Glick
  */
 class AntGrammar implements GrammarQuery {
 

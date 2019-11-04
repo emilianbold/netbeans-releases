@@ -51,7 +51,6 @@ import org.netbeans.api.debugger.ActiveBreakpoints;
  * Register an implementation of this class for an appropriate debugger engine
  * via {@link DebuggerServiceRegistration} annotation.
  * 
- * @author Martin Entlicher
  * @since 1.51
  */
 public interface BreakpointsActivationProvider {

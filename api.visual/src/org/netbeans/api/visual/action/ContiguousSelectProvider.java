@@ -46,7 +46,6 @@ package org.netbeans.api.visual.action;
 /**
  * Provides a logic for ContiguousSelectAction.
  *
- * @author David Kaspar
  * @since 2.17
  */
 public interface ContiguousSelectProvider {

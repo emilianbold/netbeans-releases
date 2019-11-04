@@ -59,7 +59,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author   Jan Jancura
  */
 public class WatchesModel implements NodeModelFilter, TableModel {
 

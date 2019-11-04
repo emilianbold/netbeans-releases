@@ -59,7 +59,6 @@ import org.openide.util.lookup.ProxyLookup;
 /**
  * Tests Ant debugger stepping actions: step in, step out and step over.
  *
- * @author Jan Jancura
  */
 public class StepTest extends NbTestCase {
     

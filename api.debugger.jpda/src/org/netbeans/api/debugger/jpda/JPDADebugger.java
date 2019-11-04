@@ -83,7 +83,6 @@ import org.openide.util.NbBundle;
  *    JPDADebugger jpdaDebugger = (JPDADebugger) debuggerEngine.lookup 
  *        (JPDADebugger.class);</pre>
  *
- * @author Jan Jancura
  */
 public abstract class JPDADebugger {
 
@@ -658,7 +657,6 @@ public abstract class JPDADebugger {
      * The class must be public and have a public constructor which takes
      * no arguments or takes {@link ContextProvider} as an argument.
      *
-     * @author Martin Entlicher
      * @since 2.19
      */
     @Retention(RetentionPolicy.SOURCE)

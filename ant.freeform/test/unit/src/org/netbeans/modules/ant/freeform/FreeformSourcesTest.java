@@ -74,7 +74,6 @@ import org.w3c.dom.NodeList;
 
 /**
  * Test {@link FreeformSources}.
- * @author Jesse Glick
  */
 public class FreeformSourcesTest extends TestBase {
     

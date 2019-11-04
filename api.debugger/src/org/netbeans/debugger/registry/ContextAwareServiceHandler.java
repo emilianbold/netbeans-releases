@@ -67,7 +67,6 @@ import org.openide.util.Lookup;
  * to an instance of the actual registered class. This will allow to mask some
  * methods with attributes and also can prevent from too early class loading.
  *
- * @author Martin Entlicher
  */
 public class ContextAwareServiceHandler implements InvocationHandler {
 

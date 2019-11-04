@@ -70,7 +70,6 @@ import static org.netbeans.modules.ant.freeform.ui.Bundle.*;
 
 /**
  *
- * @author Petr Hrebejk, David Konecny
  */
 public class ProjectCustomizerProvider implements CustomizerProvider {
     

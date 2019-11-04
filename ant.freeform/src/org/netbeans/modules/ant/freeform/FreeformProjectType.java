@@ -46,7 +46,6 @@ package org.netbeans.modules.ant.freeform;
 
 /**
  * Freeform project type.
- * @author Jesse Glick
  */
 public final class FreeformProjectType {
     public static final String TYPE = "org.netbeans.modules.ant.freeform";

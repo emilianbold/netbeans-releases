@@ -66,7 +66,6 @@ import org.openide.util.NbPreferences;
 /**
  * Abstract definition of JPDA breakpoint.
  *
- * @author   Jan Jancura
  */
 public class JPDABreakpoint extends Breakpoint {
 

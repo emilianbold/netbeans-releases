@@ -55,7 +55,6 @@ package org.netbeans.api.debugger.jpda;
  *
  * @since 2.7
  *
- * @author Martin Entlicher
  */
 public interface ClassVariable extends ObjectVariable {
     

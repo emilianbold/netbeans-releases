@@ -52,7 +52,6 @@ import org.netbeans.spi.debugger.DebuggerEngineProvider;
  * Each Debugger Implementation can add support for debugging of some
  * language or environment to the IDE.
  *
- * @author Jan Jancura
  */
 public class AAAEngineProvider extends DebuggerEngineProvider {
 

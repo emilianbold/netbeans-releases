@@ -50,7 +50,6 @@ import org.openide.modules.ModuleInstall;
 /**
 * Module installation class for ImportDebugger Module
 *
-* @author Jan Jancura
 */
 public class ImportDebuggerModule extends ModuleInstall {
 

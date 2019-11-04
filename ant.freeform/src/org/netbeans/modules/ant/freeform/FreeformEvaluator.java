@@ -68,7 +68,6 @@ import org.w3c.dom.Element;
 /**
  * Manages property evaluation for the freeform project.
  * Refreshes properties if (1) project.xml changes; (2) some *.properties changes.
- * @author Jesse Glick
  */
 final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, PropertyChangeListener {
 

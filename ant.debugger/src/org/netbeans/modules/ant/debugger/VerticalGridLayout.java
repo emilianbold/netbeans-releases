@@ -54,7 +54,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author mkozeny
  */
 public class VerticalGridLayout implements LayoutManager2 {
     

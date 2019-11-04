@@ -83,7 +83,6 @@ import org.openide.util.WeakListeners;
  *    ));</pre>
  * This breakpoint stops in Ted class on 27 line number.
  *
- * @author Jan Jancura
  */
 public class LineBreakpoint extends JPDABreakpoint {
 

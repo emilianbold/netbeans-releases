@@ -70,7 +70,6 @@ import org.openide.util.RequestProcessor;
 /**
  * Represents implementation of one or more actions.
  *
- * @author   Jan Jancura
  */
 public abstract class ActionsProvider {
 

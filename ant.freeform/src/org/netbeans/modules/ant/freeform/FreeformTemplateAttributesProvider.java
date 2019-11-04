@@ -65,7 +65,6 @@ import org.w3c.dom.Element;
  * and returns it as the template attribute.
  * </dl>
  * 
- * @author Milan Kubec
  */
 public class FreeformTemplateAttributesProvider implements CreateFromTemplateAttributesProvider {
     

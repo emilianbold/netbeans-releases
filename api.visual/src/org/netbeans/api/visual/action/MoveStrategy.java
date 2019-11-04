@@ -50,7 +50,6 @@ import java.awt.*;
 /**
  * This interfaces provides a movement strategy.
  *
- * @author David Kaspar
  */
 public interface MoveStrategy {
 

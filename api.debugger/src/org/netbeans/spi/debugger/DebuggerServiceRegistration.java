@@ -56,7 +56,6 @@ import java.lang.annotation.Target;
  * no arguments or takes {@link ContextProvider} as an argument.
  * @since 1.16
  *
- * @author Martin Entlicher
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.TYPE})

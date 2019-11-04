@@ -49,7 +49,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Martin Entlicher
  */
 class JPDABreakpointBeanInfo extends SimpleBeanInfo {
     

@@ -71,7 +71,6 @@ import org.w3c.dom.Element;
 /**
  * Tests for FreeformProjectGenerator.
  *
- * @author David Konecny
  */
 public class FreeformProjectGeneratorTest extends NbTestCase {
 

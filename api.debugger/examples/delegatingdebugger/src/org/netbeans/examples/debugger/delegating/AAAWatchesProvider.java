@@ -51,7 +51,6 @@ import org.netbeans.spi.debugger.support.DelegatingWatchesProvider;
 
 /**
  *
- * @author   Jan Jancura
  */
 public class AAAWatchesProvider extends DelegatingWatchesProvider {
 

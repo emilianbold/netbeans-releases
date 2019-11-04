@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Lahoda
  */
 public class BasicProjectInfoPanelTest extends TestBase {
 

@@ -63,7 +63,6 @@ import org.openide.util.Task;
  * Manages some set of actions. Loads some set of ActionProviders registered
  * for some context, and allows to call isEnabled and doAction methods on them.
  *
- * @author   Jan Jancura
  */
 public final class ActionsManager {
 

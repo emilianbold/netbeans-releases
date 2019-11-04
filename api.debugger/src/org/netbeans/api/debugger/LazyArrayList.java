@@ -59,7 +59,6 @@ import java.util.TreeSet;
 /**
  * Lazy implementation of ArrayList
  *
- * @author Martin Entlicher
  */
 class LazyArrayList<T> extends ArrayList<T> {
 

@@ -51,7 +51,6 @@ import java.beans.PropertyChangeSupport;
  * Abstract definition of watch. Each watch is created for
  * one String which contains the name of variable or some expression.
  *
- * @author   Jan Jancura
  */
 public final class Watch {
 

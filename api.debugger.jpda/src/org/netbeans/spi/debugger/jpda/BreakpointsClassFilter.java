@@ -58,7 +58,6 @@ import org.netbeans.spi.debugger.ContextProvider;
  * But there can be a need to customize the class names for a specific use.
  * For instance, add versioned classes for JRebel, etc.
  * 
- * @author Martin Entlicher
  * @since 2.37
  */
 public abstract class BreakpointsClassFilter {

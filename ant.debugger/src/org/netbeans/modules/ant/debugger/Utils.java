@@ -90,7 +90,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author  Honza
  */
 public class Utils {
             

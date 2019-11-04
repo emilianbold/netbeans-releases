@@ -60,7 +60,6 @@ import org.openide.nodes.Node;
  * implementation to decide (based on the project's metadata) whether they
  * want or should enhance the project or not.
  *
- * @author David Konecny, Jesse Glick
  */
 public interface ProjectNature {
 

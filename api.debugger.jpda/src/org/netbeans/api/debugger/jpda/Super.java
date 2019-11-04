@@ -55,7 +55,6 @@ package org.netbeans.api.debugger.jpda;
  *
  * @see ObjectVariable#getSuper
  *
- * @author Jan Jancura
  */
 public interface Super extends ObjectVariable {
 }

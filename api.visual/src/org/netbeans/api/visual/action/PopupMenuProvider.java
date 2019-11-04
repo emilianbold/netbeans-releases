@@ -51,7 +51,6 @@ import java.awt.*;
 /**
  * This interface provides a popup menu.
  *
- * @author William Headrick, David Kaspar
  */
 public interface PopupMenuProvider {
 

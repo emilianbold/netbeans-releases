@@ -61,7 +61,6 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Jan Lahoda
  */
 public class FreeformProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOrRenameOperationImplementation {
     

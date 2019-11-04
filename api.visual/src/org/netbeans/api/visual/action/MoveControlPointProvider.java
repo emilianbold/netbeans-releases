@@ -51,7 +51,6 @@ import java.awt.*;
 /**
  * This interface controls a move control point action.
  *
- * @author David Kaspar
  */
 public interface MoveControlPointProvider {
 

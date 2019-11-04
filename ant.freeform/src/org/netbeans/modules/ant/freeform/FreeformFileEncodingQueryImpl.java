@@ -71,8 +71,6 @@ import org.openide.xml.XMLUtil;
  * Implementation of FileEncodingQuery for Freeform project, its instance can be 
  * obtained from project lookup
  * 
- * @author Milan Kubec
- * @author Tomas Zezula
  */
 public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementation 
         implements AntProjectListener, PropertyChangeListener {

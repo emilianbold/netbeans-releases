@@ -51,7 +51,6 @@ import com.sun.jdi.request.StepRequest;
 /**
  * Represents one JPDA step.
  *
- * @author Roman Ondruska
  */
 public abstract class JPDAStep {
     private int size;

@@ -56,7 +56,6 @@ import org.netbeans.modules.debugger.*;
 * </UL>
 * Uses Import debugger.
 *
-* @author Jan Jancura
 */
 public class ImportDebuggerInfo extends AbstractDebuggerInfo {
 

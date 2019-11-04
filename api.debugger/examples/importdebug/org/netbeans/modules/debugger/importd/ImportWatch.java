@@ -59,7 +59,6 @@ import org.netbeans.modules.debugger.*;
 * Standart implementation of Watch interface.
 * @see org.openide.debugger.Watch
 *
-* @author   Jan Jancura
 * @version  0.18, Feb 23, 1998
 */
 public class ImportWatch extends AbstractWatch implements Validator.Object {

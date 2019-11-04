@@ -55,7 +55,6 @@ import java.util.List;
  * not to implement this abstract class in client code. New methods can be added to
  * this class at any time to keep up with the JDI functionality.</pre>
  * 
- * @author Martin Entlicher
  * @since 2.16
  */
 public abstract class ThreadsCollector {

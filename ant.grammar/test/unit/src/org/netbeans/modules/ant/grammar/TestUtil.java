@@ -70,7 +70,6 @@ import org.xml.sax.InputSource;
 
 /**
  * Helpers for AntGrammarTest.
- * @author Jesse Glick
  */
 final class TestUtil {
     

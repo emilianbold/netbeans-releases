@@ -77,7 +77,6 @@ import org.openide.util.NbCollections;
  * </ol>
  * </div>
  *
- * @author  David Konecny
  */
 public class NewFreeformProjectSupport {
     

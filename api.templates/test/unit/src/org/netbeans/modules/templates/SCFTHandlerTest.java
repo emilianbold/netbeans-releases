@@ -73,7 +73,6 @@ import org.openide.util.Enumerations;
 
 /**
  *
- * @author Jaroslav Tulach
  */
 public class SCFTHandlerTest extends NbTestCase {
     static {

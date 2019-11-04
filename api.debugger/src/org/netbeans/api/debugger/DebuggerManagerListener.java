@@ -51,7 +51,6 @@ import java.beans.PropertyChangeListener;
  * {@link org.netbeans.api.debugger.DebuggerManager} - breakpoints, watches
  * and sessions.
  *
- * @author   Jan Jancura
  */
 public interface DebuggerManagerListener extends PropertyChangeListener {
 

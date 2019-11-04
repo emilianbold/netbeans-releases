@@ -61,7 +61,6 @@ import org.netbeans.api.debugger.Watch;
  * - listens on all changes of breakpoints and watches (like breakoint / watch
  *     added / removed, or some property change) and saves a new values
  *
- * @author Jan Jancura
  */
 public class PersistenceManager implements LazyDebuggerManagerListener {
     

@@ -51,7 +51,6 @@ import java.lang.annotation.Target;
 /**
  * The annotated element must not be <code>null</code>.
  *
- * @author Petr Hejl
  */
 @Documented
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER,

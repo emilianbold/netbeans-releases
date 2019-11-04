@@ -46,7 +46,6 @@ package org.netbeans.modules.ant.freeform.spi;
 
 /**
  * Miscellaneous constants.
- * @author David Konecny
  */
 public class ProjectConstants {
 

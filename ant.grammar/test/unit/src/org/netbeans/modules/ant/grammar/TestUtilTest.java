@@ -56,7 +56,6 @@ import org.w3c.dom.Node;
 
 /**
  * Test functionality of TestUtil.
- * @author Jesse Glick
  */
 public class TestUtilTest extends NbTestCase {
 

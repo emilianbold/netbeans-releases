@@ -52,7 +52,6 @@ import java.lang.annotation.Target;
  * The annotated element might be <code>null</code>, thus code using it
  * should check for nullity.
  *
- * @author Petr Hejl
  */
 @Documented
 @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})

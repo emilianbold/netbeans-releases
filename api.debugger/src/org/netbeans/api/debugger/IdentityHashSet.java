@@ -50,7 +50,6 @@ import java.util.Map;
 /**
  * Delete when someone decides to fix http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4479578
  *
- * @author Martin Entlicher
  */
 class IdentityHashSet<T> extends AbstractSet<T> {
 

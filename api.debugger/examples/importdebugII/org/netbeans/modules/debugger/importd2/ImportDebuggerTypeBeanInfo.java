@@ -50,7 +50,6 @@ import java.awt.Image;
 
 /** Object that provides beaninfo for {@link ImportDebuggerType}.
 *
-* @author Jan Jancura
 */
 public class ImportDebuggerTypeBeanInfo extends SimpleBeanInfo {
 

@@ -48,7 +48,6 @@ import org.netbeans.api.visual.widget.Widget;
 /**
  * This interface controls hover action.
  *
- * @author David Kaspar
  */
 public interface HoverProvider {
 

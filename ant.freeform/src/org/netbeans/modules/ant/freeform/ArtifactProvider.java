@@ -64,7 +64,6 @@ import org.w3c.dom.Element;
 
 /**
  * Handles <code>&lt;export&gt;</code> elements in project.xml
- * @author Jesse Glick
  */
 final class ArtifactProvider implements AntArtifactProvider {
     

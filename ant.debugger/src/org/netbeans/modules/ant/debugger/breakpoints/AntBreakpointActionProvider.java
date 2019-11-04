@@ -60,7 +60,6 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author  Honza
  */
 @Registration(actions={"toggleBreakpoint"}, activateForMIMETypes={"text/x-ant+xml"})
 public class AntBreakpointActionProvider extends ActionsProviderSupport

@@ -85,7 +85,6 @@ import org.openide.util.RequestProcessor;
 /**
  * Utility class helps store properties.
  *
- * @author Jan Jancura
  */
 public abstract class Properties {
     

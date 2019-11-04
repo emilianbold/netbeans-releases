@@ -68,7 +68,6 @@ import org.openide.util.Lookup;
 
 /**
  * Base class for tests.
- * @author Jesse Glick
  */
 public abstract class TestBase extends NbTestCase {
     

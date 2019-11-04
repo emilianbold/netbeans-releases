@@ -51,7 +51,6 @@ import java.util.EventListener;
  * This listener notifies about changes in the
  * {@link org.netbeans.api.debugger.DebuggerEngine}.
  *
- * @author   Jan Jancura
  */
 public interface ActionsManagerListener extends EventListener {
 

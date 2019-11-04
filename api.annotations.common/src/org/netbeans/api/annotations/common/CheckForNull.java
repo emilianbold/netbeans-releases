@@ -52,7 +52,6 @@ import java.lang.annotation.Target;
  * The annotated method might return <code>null</code>, thus code using it
  * should check for nullity.
  *
- * @author Petr Hejl
  */
 @Documented
 @Target({ElementType.METHOD})

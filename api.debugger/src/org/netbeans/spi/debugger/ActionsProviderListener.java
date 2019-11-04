@@ -50,7 +50,6 @@ import java.util.EventListener;
 /**
  * {@link ActionsProvider} state listener.
  *
- * @author   Jan Jancura
  */
 public interface ActionsProviderListener extends EventListener {
 

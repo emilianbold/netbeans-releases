@@ -59,7 +59,6 @@ import org.netbeans.spi.debugger.ContextAwareSupport;
  * for session. DebuggerEngine implements support for one debugger language
  * for session.
  *
- * @author Jan Jancura
  */
 public abstract class DebuggerEngineProvider {
 

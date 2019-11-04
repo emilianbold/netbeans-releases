@@ -145,7 +145,6 @@ import org.openide.util.Exceptions;
  *
  * </td></tr></tbody></table>
  *
- * @author Jan Jancura
  */
 public final class DebuggerManager implements ContextProvider {
     

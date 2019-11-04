@@ -74,7 +74,6 @@ import org.w3c.dom.Node;
 /**
  * Reads/writes project.xml.
  *
- * @author  Jesse Glick, David Konecny, Pavel Buzek
  */
 public class FreeformProjectGenerator {
 

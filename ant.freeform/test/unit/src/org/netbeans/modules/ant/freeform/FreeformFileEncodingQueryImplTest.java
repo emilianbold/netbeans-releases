@@ -56,7 +56,6 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Tomas Zezula
  */
 public class FreeformFileEncodingQueryImplTest extends TestBase {
 

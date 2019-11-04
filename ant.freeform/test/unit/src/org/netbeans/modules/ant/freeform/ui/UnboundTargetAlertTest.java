@@ -60,7 +60,6 @@ import org.w3c.dom.Element;
 
 /**
  * Test non-GUI functionality of the unbound target alert: binding creation etc.
- * @author Jesse Glick
  */
 public class UnboundTargetAlertTest extends TestBase {
     

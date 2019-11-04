@@ -98,7 +98,6 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author mkleint
  */
 @NodeFactory.Registration(projectType="org-netbeans-modules-ant-freeform")
 public class FolderNodeFactory implements NodeFactory {

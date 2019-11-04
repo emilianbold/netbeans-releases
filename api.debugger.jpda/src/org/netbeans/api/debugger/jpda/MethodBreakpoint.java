@@ -73,7 +73,6 @@ import org.openide.util.NbBundle;
  * This breakpoint stops when some initializer of class Ted or innercalsses is
  * called.
  *
- * @author Jan Jancura
  */
 public class MethodBreakpoint extends JPDABreakpoint {
 

@@ -55,7 +55,6 @@ import org.openide.ErrorManager;
 
 /**
  * Miscellaneous utilities.
- * @author Jesse Glick
  */
 public class Util {
     

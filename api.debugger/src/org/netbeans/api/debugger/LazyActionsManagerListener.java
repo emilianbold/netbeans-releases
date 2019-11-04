@@ -70,7 +70,6 @@ import org.netbeans.spi.debugger.ContextProvider;
  * when the new instance of {@link ActionsManager} is created, and its registered
  * automatically to all properties returned by {@link #getProperties}. 
  *
- * @author   Jan Jancura
  */
 public abstract class LazyActionsManagerListener extends ActionsManagerAdapter {
 

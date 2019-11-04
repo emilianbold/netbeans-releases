@@ -63,7 +63,6 @@ import org.netbeans.modules.debugger.support.nodes.DebuggerNode;
 /**
 * Module installation class for HtmlModule
 *
-* @author Jan Jancura
 */
 public class DVModule extends org.openide.modules.ModuleInstall {
 

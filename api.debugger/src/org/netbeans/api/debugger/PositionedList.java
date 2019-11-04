@@ -46,7 +46,6 @@ import java.util.List;
 /**
  * A list implementation with extra position information.
  * 
- * @author Martin Entlicher
  */
 interface PositionedList<T> extends List<T> {
     

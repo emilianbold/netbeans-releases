@@ -52,7 +52,6 @@ import java.util.EnumSet;
 /**
  * This interface controls an in-place editor of an in-place editor action.
  *
- * @author David Kaspar
  */
 public interface InplaceEditorProvider<C extends JComponent> {
 

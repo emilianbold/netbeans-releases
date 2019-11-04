@@ -62,8 +62,6 @@ import org.openide.util.test.MockLookup;
 
 /**
  *
- * @author Marek Fukala
- * @author Jaroslav Tulach
  */
 public class ScriptingCreateFromTemplateTest extends NbTestCase {
     

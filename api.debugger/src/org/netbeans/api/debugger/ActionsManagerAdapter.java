@@ -47,7 +47,6 @@ package org.netbeans.api.debugger;
 /**
  * Empty implementation of {@link ActionsManagerListener}.
  *
- * @author   Jan Jancura
  */
 public class ActionsManagerAdapter implements ActionsManagerListener {
 

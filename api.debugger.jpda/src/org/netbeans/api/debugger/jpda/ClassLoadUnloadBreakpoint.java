@@ -71,7 +71,6 @@ import org.openide.util.NbBundle;
  * This breakpoint stops when some class from org.netbeans.modules.editor
  * package is loaded.
  *
- * @author Jan Jancura
  */
 public class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
 

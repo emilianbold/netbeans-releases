@@ -69,7 +69,6 @@ import java.io.IOException;
  * @see LaunchingDICookie
  * @see ListeningDICookie
  *
- * @author Jan Jancura
  */
 public abstract class AbstractDICookie {
     

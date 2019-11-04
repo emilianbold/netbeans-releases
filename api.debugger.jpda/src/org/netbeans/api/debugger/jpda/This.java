@@ -55,7 +55,6 @@ package org.netbeans.api.debugger.jpda;
  *
  * @see CallStackFrame#getThisVariable
  *
- * @author   Jan Jancura
  */
 public interface This extends ObjectVariable {
 }

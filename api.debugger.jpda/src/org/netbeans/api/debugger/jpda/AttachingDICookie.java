@@ -73,7 +73,6 @@ import java.util.logging.Logger;
  *    );
  *    DebuggerManager.getDebuggerManager ().startDebugging (di);</pre>
  *
- * @author Jan Jancura
  */
 public final class AttachingDICookie extends AbstractDICookie {
 

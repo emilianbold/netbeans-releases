@@ -61,7 +61,6 @@ import org.w3c.dom.NodeList;
 
 /**
  * Test property evaluation.
- * @author Jesse Glick
  */
 public class FreeformEvaluatorTest extends TestBase {
     

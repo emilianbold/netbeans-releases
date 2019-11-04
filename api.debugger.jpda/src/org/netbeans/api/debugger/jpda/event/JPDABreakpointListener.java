@@ -51,7 +51,6 @@ import org.netbeans.api.debugger.jpda.*;
 /**
  * Notifies about breakpoint events.
  *
- * @author   Jan Jancura
  */
 public interface JPDABreakpointListener extends EventListener {
 

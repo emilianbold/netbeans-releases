@@ -55,7 +55,6 @@ import org.openide.filesystems.FileObject;
 /**
  * Abstract definition of breakpoint.
  *
- * @author   Jan Jancura
  */
 public abstract class Breakpoint {
 

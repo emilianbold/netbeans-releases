@@ -71,7 +71,6 @@ import org.openide.util.lookup.Lookups;
 /**
  * Test functionality of actions in FreeformProject.
  * This class just tests the basic functionality found in the "simple" project.
- * @author Jesse Glick
  */
 public class ActionsTest extends TestBase {
     

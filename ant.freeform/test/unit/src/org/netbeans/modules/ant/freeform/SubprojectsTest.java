@@ -52,7 +52,6 @@ import org.netbeans.spi.project.SubprojectProvider;
 
 /**
  * Test {@link Subprojects}.
- * @author Jesse Glick
  */
 public class SubprojectsTest extends TestBase {
 

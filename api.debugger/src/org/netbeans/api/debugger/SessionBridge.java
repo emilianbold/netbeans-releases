@@ -65,7 +65,6 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
  * for a session change only. The support can be extended according to the future
  * requirements.
  * 
- * @author Martin Entlicher
  * @since 1.48
  */
 public final class SessionBridge {

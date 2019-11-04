@@ -53,7 +53,6 @@ import org.netbeans.spi.debugger.BreakpointsActivationProvider;
  * This class handles an engine-related breakpoints activation/deactivation,
  * which is independent on their enabled/disabled state.
  * 
- * @author Martin Entlicher
  * @since 1.51
  */
 public final class ActiveBreakpoints {

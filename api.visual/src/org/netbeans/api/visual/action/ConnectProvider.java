@@ -51,7 +51,6 @@ import java.awt.*;
 /**
  * This interface controls a connect action.
  *
- * @author David Kaspar
  */
 public interface ConnectProvider {
 

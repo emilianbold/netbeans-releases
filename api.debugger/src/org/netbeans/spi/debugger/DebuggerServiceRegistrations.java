@@ -51,7 +51,6 @@ import java.lang.annotation.Target;
  * Allows registration of multiple {@link DebuggerServiceRegistration} annotations.
  * @since 1.28
  *
- * @author Martin Entlicher
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.TYPE})

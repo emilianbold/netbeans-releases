@@ -60,7 +60,6 @@ import java.lang.annotation.Target;
  * such a method - depending on usage of the {@link java.util.Map}
  * <code>null</code> may be legal or forbidden.
  *
- * @author Andrei Badea, Petr Hejl
  */
 @Documented
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER,

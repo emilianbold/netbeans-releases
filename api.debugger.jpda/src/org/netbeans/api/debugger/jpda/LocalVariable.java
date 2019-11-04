@@ -56,7 +56,6 @@ package org.netbeans.api.debugger.jpda;
  * this interface at any time to keep up with the JDI functionality.</pre>
  *
  * @see ObjectVariable
- * @author   Jan Jancura
  */
 public interface LocalVariable extends MutableVariable {
 

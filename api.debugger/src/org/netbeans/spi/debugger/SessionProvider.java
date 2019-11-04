@@ -57,7 +57,6 @@ import org.netbeans.spi.debugger.ContextAwareSupport;
  * Creates a new instance of {@link org.netbeans.api.debugger.Session}
  * for some {@link org.netbeans.api.debugger.DebuggerInfo}.
  *
- * @author Jan Jancura
  */
 public abstract class SessionProvider {
 

@@ -63,7 +63,6 @@ import org.netbeans.spi.debugger.ContextProvider;
  * Defines bridge to editor and src hierarchy. It allows to use different
  * source viewer for debugger (like some UML view).
  *
- * @author Jan Jancura
  */
 public abstract class EditorContext {
 
@@ -793,7 +792,6 @@ public abstract class EditorContext {
      * The class must be public and have a public constructor which takes
      * no arguments or takes {@link ContextProvider} as an argument.
      *
-     * @author Martin Entlicher
      * @since 2.19
      */
     @Retention(RetentionPolicy.SOURCE)

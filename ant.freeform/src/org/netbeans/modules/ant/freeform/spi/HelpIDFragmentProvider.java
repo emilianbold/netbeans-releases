@@ -55,7 +55,6 @@ package org.netbeans.modules.ant.freeform.spi;
  * provide the fragments. The fragments are then lexicographically sorted and
  * concatenated (separated by dots) into one string, used as a base for the help id.
  *
- * @author Jan Lahoda
  * @since 1.11.1
  */
 public interface HelpIDFragmentProvider {

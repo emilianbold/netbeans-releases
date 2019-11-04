@@ -56,7 +56,6 @@ import org.w3c.dom.Element;
 
 /**
  * Test functionality of AntGrammar.
- * @author Jesse Glick
  */
 public class AntGrammarTest extends NbTestCase {
 

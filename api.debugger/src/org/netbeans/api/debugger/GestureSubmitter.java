@@ -54,7 +54,6 @@ import java.util.logging.Logger;
 
 /**
  * A utility class for submitting UI Gestures Collector records
- * @author Martin Entlicher
  */
 class GestureSubmitter {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------

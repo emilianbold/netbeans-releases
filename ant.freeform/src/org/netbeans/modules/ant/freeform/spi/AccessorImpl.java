@@ -49,7 +49,6 @@ import org.netbeans.modules.ant.freeform.FreeformProject;
 
 /**
  *
- * @author mkleint
  */
 class AccessorImpl extends Accessor {
     

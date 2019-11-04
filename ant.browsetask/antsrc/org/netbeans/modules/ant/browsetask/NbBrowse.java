@@ -58,7 +58,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  * Opens a web browser.
- * @author Jesse Glick
  */
 public class NbBrowse extends Task {
 

@@ -62,7 +62,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * @author  David Konecny
  */
 public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
 

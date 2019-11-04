@@ -51,7 +51,6 @@ import java.awt.datatransfer.Transferable;
 /**
  * This interface controls an accept (drag & drop) action.
  *
- * @author David Kaspar
  */
 public interface AcceptProvider {
 

@@ -51,7 +51,6 @@ import java.util.Collection;
 /**
  * This interface is used for collecting regions for which the moving widget has to be checked.
  *
- * @author David Kaspar
  */
 public interface AlignWithWidgetCollector {
 

@@ -73,7 +73,6 @@ import org.openide.util.NbBundle;
  *    ));</pre>
  * This breakpoint stops when state field of EditorPanel class is modified.
  *
- * @author Jan Jancura
  */
 public class FieldBreakpoint extends JPDABreakpoint {
 

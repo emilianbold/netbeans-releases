@@ -48,7 +48,6 @@ import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
 
 /**
  *
- * @author mkleint
  */
 public abstract class Accessor {
     

@@ -64,7 +64,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
- * @author  David Konecny
  */
 public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx.Provider{
 

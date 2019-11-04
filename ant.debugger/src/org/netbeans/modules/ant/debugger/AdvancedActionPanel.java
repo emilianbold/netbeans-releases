@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
 
 /**
  * Panel for advanced Ant target invocation.
- * @author Jesse Glick
  */
 final class AdvancedActionPanel extends javax.swing.JPanel {
     

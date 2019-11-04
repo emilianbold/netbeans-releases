@@ -55,7 +55,6 @@ import org.netbeans.spi.debugger.ContextProvider;
  * more information about debugger start process see:
  * {@link DebuggerManager#startDebugging}.
  *
- * @author   Jan Jancura
  */
 public final class DebuggerInfo implements ContextProvider {
 

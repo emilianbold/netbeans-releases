@@ -52,7 +52,6 @@ package org.netbeans.api.debugger;
  * when the new instance of {@link DebuggerManager} is created, and is registered
  * automatically to all properties returned by {@link #getProperties}.
  *
- * @author   Jan Jancura
  */
 public interface LazyDebuggerManagerListener extends DebuggerManagerListener {
 

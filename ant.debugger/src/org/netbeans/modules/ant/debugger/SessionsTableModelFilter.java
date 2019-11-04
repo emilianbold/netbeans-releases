@@ -59,7 +59,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Martin Entlicher
  */
 @DebuggerServiceRegistration(path="SessionsView", types=TableModelFilter.class)
 public class SessionsTableModelFilter implements TableModelFilter, Constants {

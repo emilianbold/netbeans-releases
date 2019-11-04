@@ -62,7 +62,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author mkleint
  */
 @CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-ant-freeform", position=700)
 public class TargetMappingCategoryProvider implements CompositeCategoryProvider {

@@ -52,7 +52,6 @@ import org.netbeans.modules.debugger.*;
 /**
  * This class represents JPDA Debugger Implementation.
  *
- * @author Jan Jancura
  */
 public class ImportDebuggerImpl extends DebuggerImpl {
 

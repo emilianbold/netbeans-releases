@@ -64,7 +64,6 @@ import java.util.List;
  * @see JPDAThread#getContendedMonitor
  * @see JPDAThread#getOwnedMonitors
  *
- * @author   Jan Jancura
  */
 public interface ObjectVariable extends Variable {
 

@@ -53,7 +53,6 @@ import java.awt.*;
 /**
  * This interface decorates a connect action.
  *
- * @author David Kaspar
  */
 public interface ConnectDecorator {
 

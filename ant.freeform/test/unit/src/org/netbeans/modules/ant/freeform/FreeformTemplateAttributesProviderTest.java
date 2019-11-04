@@ -59,7 +59,6 @@ import org.openide.loaders.DataFolder;
  * Test for freeform template attributes provider, currently providing only
  * project-license value from project.xml
  * 
- * @author Milan Kubec
  */
 public class FreeformTemplateAttributesProviderTest extends TestBase {
     

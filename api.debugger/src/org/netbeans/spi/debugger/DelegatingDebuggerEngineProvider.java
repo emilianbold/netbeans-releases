@@ -50,7 +50,6 @@ import org.netbeans.api.debugger.DebuggerEngine;
  * Delegates support for some language to some existing
  * {@link org.netbeans.api.debugger.DebuggerEngine}.
  *
- * @author Jan Jancura
  */
 public abstract class DelegatingDebuggerEngineProvider {
 

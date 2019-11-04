@@ -76,7 +76,6 @@ import org.w3c.dom.Element;
 /**
  * Handles source dir list for a freeform project.
  * XXX will not correctly unregister released external source roots
- * @author Jesse Glick
  */
 final class FreeformSources implements Sources, AntProjectListener {
     

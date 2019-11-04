@@ -51,7 +51,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author  Milan Kubec
  */
 public class GeneralInformationPanel extends javax.swing.JPanel {
     

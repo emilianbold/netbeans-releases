@@ -49,7 +49,6 @@ import org.openide.modules.InstalledFileLocator;
 
 /**
  * Points to ant.jar for unit tests.
- * @author Jesse Glick
  */
 @org.openide.util.lookup.ServiceProvider(service=org.openide.modules.InstalledFileLocator.class)
 public final class TestInstalledFileLocator extends InstalledFileLocator {

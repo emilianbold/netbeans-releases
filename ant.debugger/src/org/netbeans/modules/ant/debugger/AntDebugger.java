@@ -86,7 +86,6 @@ import org.w3c.dom.Element;
 /**
  * Ant debugger.
  *
- * @author  Honza
  */
 public class AntDebugger extends ActionsProviderSupport {
 
@@ -1020,7 +1019,6 @@ public class AntDebugger extends ActionsProviderSupport {
      * The originating target, that was not entered yet, but is causing another
      * target to be entered.
      *
-     * @author  Martin Entlicher
      */
     private static class TargetOriginating {
 

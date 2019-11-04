@@ -78,7 +78,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * @author  David Konecny
  */
 public class TargetMappingPanel extends JPanel implements ActionListener, HelpCtx.Provider {
 

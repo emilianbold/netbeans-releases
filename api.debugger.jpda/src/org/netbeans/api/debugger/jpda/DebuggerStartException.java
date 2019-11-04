@@ -48,7 +48,6 @@ package org.netbeans.api.debugger.jpda;
 /**
  * Notification about problems during debugger start.
  *
- * @author   Jan Jancura
  */
 public class DebuggerStartException extends Exception {
 

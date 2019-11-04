@@ -72,7 +72,6 @@ import java.util.Map;
  *    );
  *    DebuggerManager.getDebuggerManager ().startDebugging (di);</pre>
  *
- * @author Jan Jancura
  */
 public final class ListeningDICookie extends AbstractDICookie {
 

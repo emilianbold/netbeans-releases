@@ -77,7 +77,6 @@ import org.w3c.dom.NodeList;
 
 /**
  * One freeform project.
- * @author Jesse Glick
  */
 @AntBasedProjectRegistration(
     type=FreeformProjectType.TYPE,

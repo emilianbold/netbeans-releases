@@ -93,7 +93,6 @@ import org.openide.util.lookup.AbstractLookup;
  * The refreshing is performed under a lock on the list object so that
  * clients have consistent data under synchronization on the list instance.
  *
- * @author   Jan Jancura, Martin Entlicher
  */
 abstract class Lookup implements ContextProvider {
     

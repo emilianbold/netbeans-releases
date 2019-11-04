@@ -58,7 +58,6 @@ import java.util.List;
  *
  * @since 2.7
  *
- * @author Martin Entlicher
  */
 public interface JPDAClassType extends VariableType {
     

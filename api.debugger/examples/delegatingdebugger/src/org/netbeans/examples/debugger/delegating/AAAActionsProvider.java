@@ -51,7 +51,6 @@ import org.netbeans.spi.debugger.support.DelegatingActionsProvider;
 
 /**
  *
- * @author   Jan Jancura
  */
 public class AAAActionsProvider extends DelegatingActionsProvider {
 

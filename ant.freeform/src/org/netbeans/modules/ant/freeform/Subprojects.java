@@ -61,7 +61,6 @@ import org.w3c.dom.Element;
 
 /**
  * Manages list of subprojects.
- * @author Jesse Glick
  * @see "#46713"
  */
 final class Subprojects implements SubprojectProvider {

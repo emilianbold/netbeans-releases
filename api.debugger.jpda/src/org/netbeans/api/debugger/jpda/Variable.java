@@ -60,7 +60,6 @@ package org.netbeans.api.debugger.jpda;
  * @see JPDAThread#getContendedMonitor
  * @see JPDAThread#getOwnedMonitors
  *
- * @author   Jan Jancura
  */
 public interface Variable {
 

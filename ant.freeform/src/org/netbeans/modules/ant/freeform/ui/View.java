@@ -77,7 +77,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * Logical view of a freeform project.
- * @author Jesse Glick
  */
 public final class View implements LogicalViewProvider {
 

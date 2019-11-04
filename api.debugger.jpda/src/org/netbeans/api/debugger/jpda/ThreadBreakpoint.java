@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
  *    ));</pre>
  * This breakpoint stops when some thread is created or killed.
  *
- * @author Jan Jancura
  */
 public class ThreadBreakpoint extends JPDABreakpoint {
 

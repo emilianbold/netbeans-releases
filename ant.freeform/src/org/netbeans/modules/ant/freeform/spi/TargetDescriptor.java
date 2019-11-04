@@ -50,7 +50,6 @@ import java.util.List;
  * Description of the build target to be shown in Target Mappings customizer
  * panel.
  * @see ProjectNature#getExtraTargets
- * @author David Konecny
  */
 public final class TargetDescriptor {
 

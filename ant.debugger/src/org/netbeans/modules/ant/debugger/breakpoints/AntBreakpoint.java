@@ -64,7 +64,6 @@ import org.openide.util.WeakListeners;
 
 /**
  *
- * @author  Honza
  */
 public class AntBreakpoint extends Breakpoint {
 

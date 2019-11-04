@@ -49,7 +49,6 @@ import org.netbeans.api.visual.widget.Scene;
 /**
  * This interface decorates of a align-with move action.
  *
- * @author David Kaspar
  */
 public interface AlignWithMoveDecorator {
 

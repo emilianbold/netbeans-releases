@@ -68,7 +68,6 @@ import org.openide.util.NbBundle;
  *    ));</pre>
  * This breakpoint stops when NullPointerException is throw and uncatched.
  *
- * @author Jan Jancura
  */
 public class ExceptionBreakpoint extends JPDABreakpoint {
 

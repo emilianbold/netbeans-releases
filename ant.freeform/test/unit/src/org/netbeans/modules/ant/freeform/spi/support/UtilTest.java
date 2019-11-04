@@ -62,7 +62,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * @author David Konecny
  */
 public class UtilTest extends TestBase {
     

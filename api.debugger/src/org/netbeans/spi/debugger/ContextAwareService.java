@@ -59,7 +59,6 @@ package org.netbeans.spi.debugger;
  *
  * <br/>
  *
- * @author Martin Entlicher
  * @since 1.16
  */
 public interface ContextAwareService<T> {

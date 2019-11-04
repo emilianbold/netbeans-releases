@@ -50,7 +50,6 @@ import java.awt.*;
 /**
  * Represents an event for ContiguousSelectEvent passed to ContiguousSelectProvider. Contains information about selection-type, previously and currently choosen objects spots.
  *
- * @author David Kaspar
  * @since 2.17
  */
 public final class ContiguousSelectEvent {

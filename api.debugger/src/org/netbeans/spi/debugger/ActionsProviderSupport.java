@@ -53,7 +53,6 @@ import java.util.Vector;
  * {@link #doAction} and {@link #getActions} only, and call {@link #setEnabled}
  * when the action state is changed.
  *
- * @author   Jan Jancura
  */
 public abstract class ActionsProviderSupport extends ActionsProvider {
 

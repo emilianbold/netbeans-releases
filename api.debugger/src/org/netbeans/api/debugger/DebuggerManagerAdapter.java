@@ -50,7 +50,6 @@ import java.beans.PropertyChangeEvent;
  * Empty implementation of
  * {@link DebuggerManagerListener}.
  *
- * @author   Jan Jancura
  */
 public class DebuggerManagerAdapter implements LazyDebuggerManagerListener {
 

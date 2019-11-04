@@ -52,7 +52,6 @@ import org.netbeans.api.debugger.jpda.*;
 /**
  * JPDABreakpoint event notification.
  *
- * @author   Jan Jancura
  */
 public final class JPDABreakpointEvent extends EventObject {
 

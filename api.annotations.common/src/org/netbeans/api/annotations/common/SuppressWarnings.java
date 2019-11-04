@@ -50,7 +50,6 @@ import java.lang.annotation.Target;
 /**
  * Supress the warning reported by the code analyzing tool.
  *
- * @author Petr Hejl
  */
 @Target({ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.LOCAL_VARIABLE,
         ElementType.METHOD, ElementType.PACKAGE, ElementType.PARAMETER, ElementType.TYPE})

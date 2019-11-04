@@ -46,7 +46,6 @@ package org.netbeans.api.visual.action;
 /**
  * This enum is used in ConnectProvider and ReconnectProvider to hold a state of connector (acceptability and searching state).
  *
- * @author David Kaspar
  */
 public enum ConnectorState {
 

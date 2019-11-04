@@ -55,7 +55,6 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
  *
- * @author   Jan Jancura
  */
 public class VariablesModel implements TreeModel, NodeModel, TableModel {
     

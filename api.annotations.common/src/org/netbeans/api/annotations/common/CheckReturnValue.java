@@ -53,7 +53,6 @@ import java.lang.annotation.Target;
  * {@link java.io.File#delete()} or {@link java.lang.String#substring(int)}
  * as an example of such a method.
  *
- * @author Petr Hejl
  */
 @Documented
 @Target(ElementType.METHOD)

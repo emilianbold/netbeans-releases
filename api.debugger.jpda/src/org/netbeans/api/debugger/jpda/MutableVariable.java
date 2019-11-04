@@ -55,7 +55,6 @@ import java.io.InvalidObjectException;
  * @see Field
  * @see JPDAWatch
  *
- * @author Martin Entlicher
  * @since 2.44
  */
 public interface MutableVariable extends Variable {

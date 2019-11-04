@@ -50,7 +50,6 @@ import java.util.List;
 /**
  * Abstract ancestor of classes providing lookup.
  *
- * @author Jan Jancura
  */
 public interface ContextProvider {
 

@@ -48,7 +48,6 @@ import org.netbeans.api.visual.widget.Widget;
 /**
  * This interface provides an ability for switching focus.
  *
- * @author David Kaspar
  */
 public interface CycleFocusProvider {
 

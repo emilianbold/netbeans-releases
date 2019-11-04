@@ -30,7 +30,6 @@ package org.foo;
 
 /**
  *
- * @author Milan
  */
 public class AnotherClass {
 

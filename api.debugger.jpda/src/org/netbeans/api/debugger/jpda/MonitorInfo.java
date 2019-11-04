@@ -58,7 +58,6 @@ import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
  * not to implement this interface in client code. New methods can be added to
  * this interface at any time to keep up with the JDI functionality.</pre>
  *
- * @author Martin Entlicher
  * @since 2.16
  */
 public interface MonitorInfo {

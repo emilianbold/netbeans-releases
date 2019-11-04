@@ -59,7 +59,6 @@ import org.openide.util.Lookup;
 /**
  * Support class for context-aware debugger services.
  *
- * @author Martin Entlicher
  * @since 1.16
  */
 public final class ContextAwareSupport {
