@@ -184,13 +184,13 @@ public class CreateTagCommand extends GitCommand {
     
     static void parseShowDetails(String output, TagContainer container) {
         //tag tag-name
-        //Tagger: Alexander Simon <alexander.simon@oracle.com>
+        //Tagger: 
         //Date:   Fri Feb 20 12:00:07 2015 +0300
         //
         //tag message
         //
         //commit 37684447393e088928aa256a61058303422b0462
-        //Author: Alexander Simon <alexander.simon@oracle.com>
+        //Author: 
         //Date:   Fri Feb 20 12:00:07 2015 +0300
         //
         //    init commit
@@ -198,7 +198,7 @@ public class CreateTagCommand extends GitCommand {
         //:000000 100644 0000000... cdb8d0e... A  f
         //=================
         //commit 68f1985c7152d71a1b7296e5113feb88aeef7b80
-        //Author: Alexander Simon <alexander.simon@oracle.com>
+        //Author: 
         //Date:   Fri Feb 20 17:40:43 2015 +0300
         //
         //    init commit

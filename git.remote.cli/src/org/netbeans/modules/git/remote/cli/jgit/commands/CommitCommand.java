@@ -207,7 +207,7 @@ public class CommitCommand extends GitCommand {
         // create mode 100644 testnotadd.txt
         //=========================
         //[master (root-commit) ae05df4] initial commit
-        // Committer: Alexander Simon <alsimon@beta.(none)>
+        // Committer: 
         //Your name and email address were configured automatically based
         //on your username and hostname. Please check that they are accurate.
         //You can suppress this message by setting them explicitly:
@@ -262,8 +262,8 @@ public class CommitCommand extends GitCommand {
         //commit 4644eabd50d2b49b1631e9bc613818b2a9b8d87f
         //tree 9b2ab9e89b019b008f10a29762f05c38b05d8cdb
         //parent 5406bff9015700d2353436360d98301aa7941b56
-        //author John <john@git.com> 1423815945 +0300
-        //committer John <john@git.com> 1423815945 +0300
+        //author 1423815945 +0300
+        //committer 1423815945 +0300
         //
         //    second commit
         //
@@ -272,12 +272,12 @@ public class CommitCommand extends GitCommand {
         //commit 18d0fec24027ac226dc2c4df2b955eef2a16462a
         //tree 0e46518195860092ea185af77886c71b73823b33
         //parent bb831db6774aaa733199360dc7af6f3ce375fc20
-        //author Junio C Hamano <gitster@pobox.com> 1423691643 -0800
-        //committer Junio C Hamano <gitster@pobox.com> 1423691643 -0800
+        //author 1423691643 -0800
+        //committer 1423691643 -0800
         //
         //    Post 2.3 cycle (batch #1)
         //    
-        //    Signed-off-by: Junio C Hamano <gitster@pobox.com>
+        //    Signed-off-by: 
         //
         //:120000 100644 9257c74... 0fbbabb... T  RelNotes
         //#git log --raw --pretty=raw -1 HEAD^1
@@ -285,8 +285,8 @@ public class CommitCommand extends GitCommand {
         //tree 4d4befdb8dfc6b9ddafec4550a6e44aaacd89dd9
         //parent afa3ccbf44cb47cf988c6f40ce3ddb10829a9e7b
         //parent 9c9b4f2f8b7f27f3984e80d053106d5d41cbb03b
-        //author Junio C Hamano <gitster@pobox.com> 1423691059 -0800
-        //committer Junio C Hamano <gitster@pobox.com> 1423691060 -0800
+        //author 1423691059 -0800
+        //committer 1423691060 -0800
         //
         //    Merge branch 'ah/usage-strings'
         //    

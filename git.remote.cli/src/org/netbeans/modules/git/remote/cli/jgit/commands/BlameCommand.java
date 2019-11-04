@@ -128,8 +128,8 @@ public class BlameCommand extends GitCommand {
         //author-mail <user1@company.com>
         //author-time 1424260119
         //author-tz +0300
-        //committer Alexander Simon
-        //committer-mail <alexander.simon@oracle.com>
+        //committer
+        //committer-mail
         //committer-time 1424260119
         //committer-tz +0300
         //summary initial commit

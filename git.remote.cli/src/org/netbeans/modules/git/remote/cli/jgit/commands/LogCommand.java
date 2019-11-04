@@ -250,10 +250,10 @@ public class LogCommand extends GitCommand {
     static void parseLog(String output, LinkedHashMap<String, GitRevisionInfo.GitRevCommit> statuses) {
         //#git --no-pager log --name-status --no-walk 0254bffe448b1951af6edef531d80f8e629c575a"
         //commit 9c0e341a6a9197e2408862d2e6ff4b7635a01f9b (from 19f759b14972f669dc3eb203c06944e03365f6bc)
-        //Reflog: refs/stash@{0} (Alexander Simon <alexander.simon@oracle.com>)
+        //Reflog: refs/stash@{0} 
         //Reflog message: On master: stash
         //Merge: 1126f32 846626a
-        //Author: Alexander Simon <alexander.simon@oracle.com>
+        //Author: 
         //Date:   Tue Feb 17 16:12:39 2015 +0300
         //
         //    Merge b
