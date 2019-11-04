@@ -88,7 +88,6 @@ import org.openide.util.NbBundle;
 /**
  * {@link #getComponent Table} that displays nodes in the commit dialog.
  * 
- * @author Maros Sandor
  */
 public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, TableModelListener, MouseListener {    
     

@@ -53,7 +53,6 @@ import org.openide.filesystems.FileObject;
  * Should be implemented by a particular VCS system and returned on a {@link FileObject#getAttribute(java.lang.String)}
  * call with the {@link #PROVIDED_EXTENSIONS_SEARCH_HISTORY} argument.
  * 
- * @author Tomas Stupka
  */
 public abstract class SearchHistorySupport {
 

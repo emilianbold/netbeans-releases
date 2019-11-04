@@ -75,7 +75,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka, Ondra Vrabec
  */
 public class ProjectOpener implements ActionListener, PropertyChangeListener {
     private final ProjectOpenerType type;

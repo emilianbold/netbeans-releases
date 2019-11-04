@@ -111,7 +111,6 @@ import org.openide.windows.TopComponent;
 /**
  * Treetable to show diff/status nodes.
  * 
- * @author Ondra Vrabec
  */
 public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewComponent<T>, AncestorListener, PropertyChangeListener, MouseListener {
 

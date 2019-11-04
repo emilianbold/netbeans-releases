@@ -48,7 +48,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Translates RemoteVcsFileSystemHintsProvider -> RemoteFileSystemHintsProvider
- * @author vkvashin
  */
 @ServiceProvider(service = RemoteFileSystemHintsProvider.class)
 public class RemoteFileSystemHintsDelegatingProvider implements RemoteFileSystemHintsProvider {

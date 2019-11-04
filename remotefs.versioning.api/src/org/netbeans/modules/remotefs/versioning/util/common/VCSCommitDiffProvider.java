@@ -52,7 +52,6 @@ import org.openide.cookies.SaveCookie;
 
 /**
  *
- * @author Tomas Stupka
  */
 public abstract class VCSCommitDiffProvider<T extends VCSFileNode> {
     

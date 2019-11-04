@@ -44,7 +44,6 @@ package org.netbeans.modules.remotefs.versioning.spi;
 /**
  * Analog of org.netbeans.modules.remote.spi.RemoteFileSystemHintsProvider
  * (which we can not use here since we agreed not to introduce dependency on nativeexecution)
- * @author vkvashin
  */
 public interface RemoteVcsFileSystemHintsProvider {
     boolean isSniffing(String fileNameExt);

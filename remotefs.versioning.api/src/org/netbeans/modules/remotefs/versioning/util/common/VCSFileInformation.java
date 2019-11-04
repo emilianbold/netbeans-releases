@@ -47,7 +47,6 @@ import java.util.Comparator;
 
 /**
  *
- * @author Tomas Stupka
  */
 public abstract class VCSFileInformation {
 

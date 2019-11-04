@@ -60,7 +60,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author alsimon
  */
 @ServiceProvider(service=RemoteFileSystemConnectionManager.class)
 public class RemoteFileSystemConnectionManagerImpl extends RemoteFileSystemConnectionManager implements ConnectionListener {

@@ -49,7 +49,6 @@ import org.netbeans.modules.remotefs.versioning.util.projects.ProjectOpener.Proj
 
 /**
  *
- * @author  Petr Kuzel
  */
 final class CheckoutCompletedPanel extends javax.swing.JPanel {
     private final ProjectOpenerType type;

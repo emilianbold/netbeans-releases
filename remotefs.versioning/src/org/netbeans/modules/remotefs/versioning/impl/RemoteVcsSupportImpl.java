@@ -76,7 +76,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author vkvashin
  */
 @ServiceProvider(service = RemoteVcsSupportImplementation.class)
 public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {

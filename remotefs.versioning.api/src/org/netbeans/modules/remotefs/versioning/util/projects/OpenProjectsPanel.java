@@ -50,7 +50,6 @@ package org.netbeans.modules.remotefs.versioning.util.projects;
 
 /**
  *
- * @author ondra
  */
 class OpenProjectsPanel extends javax.swing.JPanel {
 

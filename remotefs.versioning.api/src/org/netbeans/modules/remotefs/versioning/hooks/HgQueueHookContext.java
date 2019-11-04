@@ -46,7 +46,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author Ondra Vrabec
  */
 public final class HgQueueHookContext extends HgHookContext {
 

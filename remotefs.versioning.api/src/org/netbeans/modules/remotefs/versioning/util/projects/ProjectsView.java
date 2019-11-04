@@ -76,7 +76,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * JPanel showing project nodes
- * @author Ondra Vrabec
  */
 class ProjectsView extends JPanel implements ExplorerManager.Provider, VetoableChangeListener {
 

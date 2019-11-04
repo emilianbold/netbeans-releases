@@ -63,7 +63,6 @@ import org.openide.util.*;
 
 /**
  *
- * @author vkvashin
  */
 public final class RemoteVcsSupport {
 

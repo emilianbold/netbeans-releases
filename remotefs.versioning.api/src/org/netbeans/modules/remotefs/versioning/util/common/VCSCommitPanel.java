@@ -124,9 +124,6 @@ import org.openide.util.actions.CallbackSystemAction;
 
 /**
  *
- * @author  pk97937
- * @author  Tomas Stupka
- * @author  Marian Petras
  */
 public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener, PropertyChangeListener {
 

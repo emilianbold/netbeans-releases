@@ -91,7 +91,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author ondra
  */
 public abstract class VCSStatusTable<T extends VCSStatusNode> implements FileViewComponent<T>, MouseListener, ListSelectionListener {
 

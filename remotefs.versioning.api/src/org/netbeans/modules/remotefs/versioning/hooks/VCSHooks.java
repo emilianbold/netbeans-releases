@@ -51,7 +51,6 @@ import org.openide.util.Lookup.Result;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class VCSHooks {
 

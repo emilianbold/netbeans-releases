@@ -50,7 +50,6 @@ import org.openide.util.RequestProcessor;
  * Default implementation of tasks executor service.
  * Uses RequestProcessor but allows submit Callable tasks.
  *
- * @author Alexander Simon
  */
 public class NativeTaskExecutorService  {
 

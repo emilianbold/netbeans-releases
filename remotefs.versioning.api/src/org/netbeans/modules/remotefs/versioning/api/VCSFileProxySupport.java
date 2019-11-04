@@ -96,7 +96,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Alexander Simon
  */
 public final class VCSFileProxySupport {
     

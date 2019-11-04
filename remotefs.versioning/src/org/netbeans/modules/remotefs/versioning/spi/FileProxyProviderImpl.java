@@ -64,7 +64,6 @@ import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author Alexander Simon
  */
 @ServiceProviders({
     @ServiceProvider(service=FileOperationsProvider.class, position = 1000),

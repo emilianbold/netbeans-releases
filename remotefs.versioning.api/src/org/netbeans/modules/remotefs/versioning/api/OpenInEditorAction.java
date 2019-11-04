@@ -61,7 +61,6 @@ import org.openide.util.NbBundle;
 /**
  * Open files in editor.
  *
- * @author Maros Sandor
  */
 public class OpenInEditorAction extends AbstractAction {
     

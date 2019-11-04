@@ -59,7 +59,6 @@ import org.openide.filesystems.*;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service = FilesystemInterceptorProvider.class, position = 1000)
 public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProvider {

@@ -71,7 +71,6 @@ import org.netbeans.modules.versioning.util.common.VCSCommitPanelModifier;
 
 /**
  *
- * @author Tomas Stupka
  */
 abstract class CollapsiblePanel extends JPanel {
     protected final SectionButton sectionButton;

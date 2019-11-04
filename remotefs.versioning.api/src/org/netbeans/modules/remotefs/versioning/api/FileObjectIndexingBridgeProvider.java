@@ -52,7 +52,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author alsimon
  */
 public class FileObjectIndexingBridgeProvider {
     private static final Logger LOG = Logger.getLogger(FileObjectIndexingBridgeProvider.class.getName());

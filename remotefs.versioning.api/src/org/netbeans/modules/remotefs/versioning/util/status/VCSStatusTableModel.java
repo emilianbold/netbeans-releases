@@ -51,7 +51,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author ondra
  */
 public class VCSStatusTableModel<T extends VCSStatusNode> extends NodeTableModel {
 

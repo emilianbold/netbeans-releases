@@ -56,7 +56,6 @@ import javax.swing.event.DocumentListener;
 
 /**
  *
- * @author tomas
  */
 public class ExportDiffPanel extends ExportDiffSupport.AbstractExportDiffPanel implements ActionListener {
     private JComponent attachComponent;

@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 /**
  * Represents a versioned file.
  *
- * @author Tomas Stupka
  */
 public abstract class VCSFileNode<I extends VCSFileInformation> {
 

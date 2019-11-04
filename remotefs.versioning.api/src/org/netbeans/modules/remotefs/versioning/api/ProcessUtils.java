@@ -63,7 +63,6 @@ import org.openide.util.Cancellable;
 
 /**
  *
- * @author Alexander Simon
  */
 public class ProcessUtils  {
 

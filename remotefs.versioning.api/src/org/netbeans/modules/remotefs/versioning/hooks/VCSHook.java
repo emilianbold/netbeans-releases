@@ -46,7 +46,6 @@ import javax.swing.JPanel;
 
 /**
  *
- * @author Tomas Stupka
  */
 public abstract class VCSHook<T extends VCSHookContext> {
 

@@ -65,7 +65,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author Tomas Stuka
  */
 public class FileSelector extends javax.swing.JPanel implements ListSelectionListener {
     private final DialogDescriptor dialogDescriptor;

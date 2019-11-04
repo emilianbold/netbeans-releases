@@ -54,7 +54,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * nb_all/projects/projectui/src/org/netbeans/modules/project/ui/ProjectTab.java and
  * nb_all/ide/welcome/src/org/netbeans/modules/welcome/ui/TitlePanel.java copy.
  *
- * @author Petr Kuzel       
  */
 public final class ProjectUtilities {
 

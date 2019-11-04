@@ -53,7 +53,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author tomas
  */
 public class RootsToFile {
     private final Map<VCSFileProxy, VCSFileProxy> files = new LinkedHashMap<VCSFileProxy, VCSFileProxy>() {

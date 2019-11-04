@@ -67,7 +67,6 @@ import org.openide.util.test.MockLookup;
 
 /**
  *
- * @author tomas
  */
 public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
     static {

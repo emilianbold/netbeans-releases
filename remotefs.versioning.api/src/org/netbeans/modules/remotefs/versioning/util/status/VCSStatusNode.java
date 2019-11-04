@@ -64,7 +64,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author ondra
  */
 public abstract class VCSStatusNode<T extends VCSFileNode> extends AbstractNode {
     protected final T node;

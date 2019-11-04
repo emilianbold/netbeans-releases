@@ -70,7 +70,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  * 
- * @author Tomas Stupka
  */
 public abstract class ExportDiffSupport {
     private AbstractExportDiffPanel panel;
@@ -381,7 +380,6 @@ public abstract class ExportDiffSupport {
 
     /**
      * Abstract ancestor of an output diff panel.
-     * @author Ondra Vrabec
      */
     public static abstract class AbstractExportDiffPanel extends JPanel {
 

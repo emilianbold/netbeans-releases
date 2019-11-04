@@ -47,7 +47,6 @@ import java.util.Map;
 
 /**
  *
- * @author Tomas Stupka
  */
 public abstract class GitHook extends VCSHook<GitHookContext>{
 

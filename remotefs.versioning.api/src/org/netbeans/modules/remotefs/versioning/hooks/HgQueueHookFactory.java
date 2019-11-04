@@ -44,7 +44,6 @@ package org.netbeans.modules.remotefs.versioning.hooks;
 
 /**
  *
- * @author Tomas Stupka
  */
 public abstract class HgQueueHookFactory extends VCSHookFactory<HgQueueHook>{
 

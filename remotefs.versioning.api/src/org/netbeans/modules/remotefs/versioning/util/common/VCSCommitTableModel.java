@@ -59,7 +59,6 @@ import org.openide.util.NbBundle;
 /**
  * Table model for the Commit dialog table.
  *
- * @author Tomas Stupka
  */
 public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableModel {
 

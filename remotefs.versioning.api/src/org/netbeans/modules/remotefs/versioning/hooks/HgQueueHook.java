@@ -46,7 +46,6 @@ import java.io.IOException;
 
 /**
  *
- * @author Ondra Vrabec
  */
 public abstract class HgQueueHook extends VCSHook<HgQueueHookContext>{
 

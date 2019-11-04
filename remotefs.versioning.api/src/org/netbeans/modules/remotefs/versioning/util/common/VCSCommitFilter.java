@@ -46,7 +46,6 @@ import javax.swing.Icon;
 
 /**
  *
- * @author Tomas Stupka
  */
 public abstract class VCSCommitFilter {
     private boolean selected;

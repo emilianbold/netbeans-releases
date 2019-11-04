@@ -53,7 +53,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service = AnnotationProvider.class, position = 1000)
 public class VersioningAnnotationProviderImpl extends AnnotationProvider {

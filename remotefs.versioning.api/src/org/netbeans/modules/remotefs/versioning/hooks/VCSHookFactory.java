@@ -44,7 +44,6 @@ package org.netbeans.modules.remotefs.versioning.hooks;
 
 /**
  *
- * @author Tomas Stupka
  */
 public abstract class VCSHookFactory<T extends VCSHook> {
 
