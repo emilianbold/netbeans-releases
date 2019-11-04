@@ -54,7 +54,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 
 /**
  *
- * @author Tomas Stupka
  */
 public abstract class PanelProgressSupport extends SvnProgressSupport implements Runnable {
 

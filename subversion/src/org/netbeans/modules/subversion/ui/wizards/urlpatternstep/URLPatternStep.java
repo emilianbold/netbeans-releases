@@ -62,7 +62,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * @author Tomas Stupka
  */
 public class URLPatternStep extends AbstractStep implements DocumentListener, ActionListener, FocusListener, ItemListener {
     

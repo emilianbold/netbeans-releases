@@ -46,7 +46,6 @@ import java.io.InputStreamReader;
 
 /**
  *
- * @author tester
  */
 public class svnExistsChecker {
 

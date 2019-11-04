@@ -46,7 +46,6 @@ package org.netbeans.modules.subversion.ui.actions;
 
 /**
  *
- * @author Petr Kuzel
  */
 public final class ActionUtils {
 

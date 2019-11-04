@@ -75,7 +75,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class RepositoryPaths implements ActionListener, DocumentListener {
     

@@ -120,7 +120,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
- * @author Maros Sandor
  */
 public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, VersioningListener, DiffSetupSource, PropertyChangeListener, PreferenceChangeListener {
     

@@ -67,8 +67,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author  Petr Kuzel
- * @author  Marian Petras
  */
 public class CheckoutPanel extends JPanel {
     private final FileSystem fileSystem;

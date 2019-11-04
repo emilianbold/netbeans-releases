@@ -51,7 +51,6 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  *
- * @author tomas
  */
 // XXX add referenceclient
 public class InfoTestHidden extends AbstractCommandTestCase {

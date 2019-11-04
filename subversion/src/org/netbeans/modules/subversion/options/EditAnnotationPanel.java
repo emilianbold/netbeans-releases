@@ -46,7 +46,6 @@ package org.netbeans.modules.subversion.options;
 
 /**
  *
- * @author  tomas
  */
 public class EditAnnotationPanel extends javax.swing.JPanel {
 

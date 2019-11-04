@@ -50,7 +50,6 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 
 /**
  *
- * @author tomas
  */
 public class CommitTestHidden extends AbstractCommandTestCase {
     

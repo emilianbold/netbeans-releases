@@ -65,7 +65,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * Encapsulates a command given to a svn client. 
  * 
- * @author Maros Sandor
  */
 public abstract class SvnCommand implements CommandNotificationListener {
                

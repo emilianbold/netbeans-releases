@@ -48,7 +48,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
- * @author  Petr Kuzel
  */
 public class CreateCopyPanel extends javax.swing.JPanel {
 

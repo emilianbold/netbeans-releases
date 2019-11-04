@@ -64,7 +64,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author tomas
  */
 public class TestAnnotationProvider extends BaseAnnotationProvider {
 

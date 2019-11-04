@@ -59,7 +59,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
- * @author ondra
  */
 public class UpdateTo implements PropertyChangeListener {
 

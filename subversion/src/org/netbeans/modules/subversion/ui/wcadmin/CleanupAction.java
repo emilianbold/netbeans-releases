@@ -63,7 +63,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Ondra Vrabec
  */
 @ActionID(id = "org.netbeans.modules.subversion.ui.wcadmin.CleanupAction", category = "Subversion")
 @ActionRegistration(displayName = "CTL_Cleanup_Title")

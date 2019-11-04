@@ -69,8 +69,6 @@ import org.openide.filesystems.FileUtil;
  *
  * <p>It's registered and instantiated from module manifest.
  *
- * @author Petr Kuzel
- * @author Maros Sandor
  */
 public final class ModuleLifecycleManager extends ModuleInstall implements ErrorHandler, EntityResolver {
 

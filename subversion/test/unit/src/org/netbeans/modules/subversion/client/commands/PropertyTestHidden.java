@@ -56,7 +56,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author tomas
  */
 public class PropertyTestHidden extends AbstractCommandTestCase {
     

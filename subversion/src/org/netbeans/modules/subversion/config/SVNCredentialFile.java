@@ -52,7 +52,6 @@ import org.netbeans.modules.subversion.Subversion;
 /**
  * Handles the Subversion credential files.
  *
- * @author Tomas Stupka
  *
  */
 public abstract class SVNCredentialFile extends KVFile {

@@ -50,7 +50,6 @@ import java.io.OutputStream;
 
 /**
  *
- * @author peter
  */
 public class StreamHandler extends Thread {
 

@@ -79,7 +79,6 @@ import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 
 /**
  *
- * @author Tomas Stupka
  */
 public abstract class CopyDialog {
 

@@ -52,7 +52,6 @@ import org.netbeans.modules.subversion.FileStatusCache;
 
 /**
  * intended to be run with 1.8 client
- * @author tomas
  */
 public class SvnKitClientTest extends NbTestCase {
     // XXX test cancel

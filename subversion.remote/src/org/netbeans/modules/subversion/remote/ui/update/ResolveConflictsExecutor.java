@@ -79,7 +79,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  *
  * This class is copy&pasted from javacvs
  *
- * @author  Martin Entlicher
  */
 public class ResolveConflictsExecutor extends SvnProgressSupport {
     

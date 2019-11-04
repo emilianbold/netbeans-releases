@@ -47,7 +47,6 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  * 
- *  @author tester
  */
 public class RefactoringAction extends ActionNoBlock {
     

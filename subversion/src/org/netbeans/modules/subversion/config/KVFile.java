@@ -61,7 +61,6 @@ import org.netbeans.modules.versioning.util.FileUtils;
 /**
  * Handles the credential or property files used by Subversion.
  *
- * @author Tomas Stupka
  *
  */
 public class KVFile {

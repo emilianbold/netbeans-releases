@@ -65,7 +65,6 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 /**
  * The node that is rendered in the Update Results view.
  * 
- * @author Maros Sandor
  */
 class UpdateResultNode extends AbstractNode {
     

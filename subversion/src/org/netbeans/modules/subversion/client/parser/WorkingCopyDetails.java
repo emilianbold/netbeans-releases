@@ -60,7 +60,6 @@ import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor;
 
 /**
  *
- * @author Ed Hillmann
  */
 public class WorkingCopyDetails {
     static final String FILE_ATTRIBUTE_VALUE = "file";  // NOI18

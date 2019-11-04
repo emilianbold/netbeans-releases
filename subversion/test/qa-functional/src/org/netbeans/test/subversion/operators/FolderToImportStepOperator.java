@@ -48,7 +48,6 @@ import org.netbeans.jemmy.operators.*;
  * 
  * 
  * 
- * @author peter
  * @version 1.0
  */
 public class FolderToImportStepOperator extends ImportWizardOperator {

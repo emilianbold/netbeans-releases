@@ -49,7 +49,6 @@ import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class ResolvedCommand extends SvnCommand {
 

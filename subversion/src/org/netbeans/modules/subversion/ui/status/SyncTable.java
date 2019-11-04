@@ -102,7 +102,6 @@ import org.netbeans.swing.etable.ETableColumnModel;
  * in the Versioning view. The table is  {@link #setTableModel populated)
  * from VersioningPanel.
  * 
- * @author Maros Sandor
  */
 class SyncTable implements MouseListener, ListSelectionListener, AncestorListener, PropertyChangeListener {
 

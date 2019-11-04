@@ -51,7 +51,6 @@ import java.util.zip.GZIPInputStream;
 
 /**
  *
- * @author peter
  */
 public final class RepositoryMaintenance {
     

@@ -46,7 +46,6 @@ import org.netbeans.jemmy.operators.*;
 
 /** Class implementing all necessary methods for handling "Search Revisions" NbDialog.
  *
- * @author pvcs
  * @version 1.0
  */
 public class SearchRevisionsOperator extends NbDialogOperator {

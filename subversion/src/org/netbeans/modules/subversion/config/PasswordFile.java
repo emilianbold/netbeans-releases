@@ -54,7 +54,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * Represents a file holding the username and password credentials for a realmstring.
  *
- * @author Tomas Stupka
  */
 public class PasswordFile extends SVNCredentialFile {
 

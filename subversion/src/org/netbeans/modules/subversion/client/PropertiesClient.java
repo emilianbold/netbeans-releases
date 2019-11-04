@@ -83,7 +83,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
  * {@link org.tigris.subversion.svnclientadapter.ISVNClientAdapter} instead. 
  * Performance comes into question here - that's because svn props are not displayed in Local_changes mode.</strong>
  *
- * @author Petr Kuzel
  */
 public final class PropertiesClient {
 

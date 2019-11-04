@@ -46,7 +46,6 @@ package org.netbeans.modules.subversion.remote.ui.export;
 
 /**
  *
- * @author  Petr Kuzel
  */
 public class ExportPanel extends javax.swing.JPanel {
 

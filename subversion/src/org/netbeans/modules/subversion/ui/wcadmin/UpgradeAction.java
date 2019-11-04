@@ -70,7 +70,6 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  *
- * @author Ondra Vrabec
  */
 @ActionID(id = "org.netbeans.modules.subversion.ui.wcadmin.UpgradeAction", category = "Subversion")
 @ActionRegistration(displayName = "CTL_Upgrade_Title")

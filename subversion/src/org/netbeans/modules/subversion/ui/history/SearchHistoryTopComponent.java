@@ -55,7 +55,6 @@ import java.io.File;
 import java.awt.BorderLayout;
 
 /**
- * @author Maros Sandor
  */
 public class SearchHistoryTopComponent extends TopComponent implements DiffSetupSource {
 

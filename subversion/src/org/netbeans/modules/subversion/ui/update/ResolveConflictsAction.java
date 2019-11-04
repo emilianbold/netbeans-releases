@@ -70,7 +70,6 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 /**
  * Show basic conflict resolver UI (provided by the diff module) and resolves tree conflicts.
  *
- * @author Petr Kuzel
  */
 @NbBundle.Messages({
     "ResolveConflicts=Resolve Con&flicts...",

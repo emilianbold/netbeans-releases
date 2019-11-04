@@ -47,7 +47,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
- * @author  Tomas Stupka
  */
 public class UpdateToPanel extends javax.swing.JPanel {
 

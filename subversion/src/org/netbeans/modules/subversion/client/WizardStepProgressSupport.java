@@ -59,7 +59,6 @@ import org.openide.util.Cancellable;
 
 /**
  *
- * @author Tomas Stupka
  */
 public abstract class WizardStepProgressSupport extends SvnProgressSupport implements Runnable, Cancellable {   
 

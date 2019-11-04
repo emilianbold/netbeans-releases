@@ -65,7 +65,6 @@ import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 /**
  * Executes searches in Search History panel.
  *
- * @author Maros Sandor
  */
 class SearchExecutor extends SvnProgressSupport {
 

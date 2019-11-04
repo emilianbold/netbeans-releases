@@ -52,7 +52,6 @@ import org.openide.filesystems.*;
 
 
 /**
- * @author rmatous
  */
 public class MissingBeforeDeleteTest extends TestBaseHid {
 

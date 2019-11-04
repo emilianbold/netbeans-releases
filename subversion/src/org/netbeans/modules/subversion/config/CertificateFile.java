@@ -54,7 +54,6 @@ import org.openide.filesystems.FileUtil;
 /**
  * Represents a Subversions file holding a X509Certificate for a realmstring.
  *
- * @author Tomas Stupka
  */
 public class CertificateFile extends SVNCredentialFile {
 

@@ -52,7 +52,6 @@ import org.netbeans.test.subversion.utils.svnExistsChecker;
 
 /**
  *
- * @author Petr Dvorak, (joshis)
  */
 public class deleteTestSuite extends JellyTestCase {
     

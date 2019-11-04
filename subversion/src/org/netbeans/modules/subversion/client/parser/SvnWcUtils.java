@@ -59,7 +59,6 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 
 /**
  *
- * @author Ed Hillmann 
  */
 public class SvnWcUtils {
 

@@ -105,7 +105,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * Commit action
  *
- * @author Petr Kuzel
  */
 @NbBundle.Messages({
     "CTL_MenuItem_Commit=Co&mmit...",

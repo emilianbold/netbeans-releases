@@ -52,7 +52,6 @@ import org.netbeans.jemmy.operators.JMenuItemOperator;
 /**
  * Common ancestor for subversion actions.
  *
- * @author Jiri Skrivanek
  */
 public class SvnAction extends ActionNoBlock {
 

@@ -66,7 +66,6 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 /**
  * Packages search criteria in Search History panel.
  *
- * @author Maros Sandor
  */
 class SearchCriteriaPanel extends javax.swing.JPanel {
     

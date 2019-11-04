@@ -46,7 +46,6 @@ package org.netbeans.modules.subversion.remote.ui.wizards.urlpatternstep;
 
 /**
  *
- * @author  Petr Kuzel
  */
 public class URLPatternPanel extends javax.swing.JPanel {
 

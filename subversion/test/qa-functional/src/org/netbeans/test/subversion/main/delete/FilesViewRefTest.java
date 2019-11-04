@@ -57,7 +57,6 @@ import org.netbeans.test.subversion.utils.TestKit;
 
 /**
  *
- * @author novakm
  */
 public class FilesViewRefTest extends JellyTestCase {
 

@@ -46,7 +46,6 @@ package org.netbeans.modules.subversion.remote.ui.repository;
 
 /**
  *
- * @author  Petr Kuzel
  */
 public class SvnSSHCliPanel extends javax.swing.JPanel {
 

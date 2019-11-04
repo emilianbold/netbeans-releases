@@ -64,7 +64,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * Diff action between revisions
  *
- * @author Petr Kuzel
  */
 public class DiffToAction extends ContextAction {
 

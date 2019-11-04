@@ -49,7 +49,6 @@ package org.netbeans.modules.subversion.ui.lock;
 
 /**
  *
- * @author ondra
  */
 public class LockPanel extends javax.swing.JPanel {
 

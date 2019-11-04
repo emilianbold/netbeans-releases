@@ -72,7 +72,6 @@ import org.netbeans.modules.versioning.util.IndexingBridge;
 
 /**
  *
- * @author peter
  */
 public final class TestKit {
     public final static String MODIFIED_COLOR = "#0000ff";

@@ -81,7 +81,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * Represents a path in the repository.
  *
- * @author Tomas Stupka
  *
  */
 public class RepositoryPathNode extends AbstractNode {

@@ -66,7 +66,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
 

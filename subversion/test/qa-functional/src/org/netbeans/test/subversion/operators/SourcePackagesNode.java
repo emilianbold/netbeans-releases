@@ -52,7 +52,6 @@ import org.netbeans.jellytools.actions.FindAction;
 import org.netbeans.jellytools.nodes.Node;
 
 /** Node representing Source packages node under project node.
- * @author Jiri.Skrivanek@sun.com
  */
 public class SourcePackagesNode extends Node {
 

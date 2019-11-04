@@ -69,7 +69,6 @@ import org.openide.util.HelpCtx;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
- * @author Tomas Stupka
  */
 public class ImportPreviewStep extends AbstractStep {
     

@@ -88,7 +88,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * Update action
  *
- * @author Petr Kuzel
  */ 
 public class UpdateAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/update.png"; //NOI18N

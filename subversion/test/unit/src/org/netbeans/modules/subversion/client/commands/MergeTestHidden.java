@@ -50,7 +50,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
- * @author tomas
  */
 public class MergeTestHidden extends AbstractCommandTestCase {
     

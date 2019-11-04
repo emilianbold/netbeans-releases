@@ -58,7 +58,6 @@ import org.openide.util.actions.SystemAction;
  * It means that opened Subversion view, Diff view
  * should react to newly opened/closed projects.
  *
- * @author Petr Kuzel
  */
 public abstract class AbstractAllAction extends SystemAction {
     

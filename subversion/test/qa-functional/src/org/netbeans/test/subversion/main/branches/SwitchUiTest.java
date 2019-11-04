@@ -65,7 +65,6 @@ import org.netbeans.test.subversion.utils.TestKit;
 
 /**
  *
- * @author peter
  */
 public class SwitchUiTest extends JellyTestCase{
     

@@ -78,7 +78,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
 /**
  * Central part of Subversion status management, deduces and caches statuses of files under version control.
  * 
- * @author Maros Sandor
  */
 public class FileStatusCache {
 

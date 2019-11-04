@@ -51,7 +51,6 @@ import org.netbeans.test.subversion.utils.svnExistsChecker;
 
 /**
  *
- * @author Petr Dvorak, (joshis)
  */
 public class checkoutTestSuite extends JellyTestCase {
     

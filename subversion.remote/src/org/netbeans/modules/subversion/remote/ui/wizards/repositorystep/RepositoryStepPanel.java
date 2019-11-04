@@ -48,7 +48,6 @@ import org.netbeans.modules.versioning.util.PlaceholderPanel;
 
 /**
  *
- * @author  Petr Kuzel
  */
 public class RepositoryStepPanel extends javax.swing.JPanel {
 

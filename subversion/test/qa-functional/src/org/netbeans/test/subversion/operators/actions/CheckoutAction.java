@@ -45,7 +45,6 @@ package org.netbeans.test.subversion.operators.actions;
 
 /**
  *
- * @author peter
  */
 public class CheckoutAction extends SvnAction {
 

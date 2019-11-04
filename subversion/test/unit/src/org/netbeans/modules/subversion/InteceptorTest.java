@@ -78,7 +78,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Test is written for 1.7 subversion support, do not even try to run it with 1.6 client
- * @author Tomas Stupka
  */
 public class InteceptorTest extends NbTestCase {
     public static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";

@@ -58,7 +58,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Tomas Stupka
  */
 @OptionsPanelController.Keywords(keywords={"svn", "subversion", "#SvnOptionsPanel.kw1", "#SvnOptionsPanel.kw2", "#SvnOptionsPanel.kw3",
     "#SvnOptionsPanel.kw4", "#SvnOptionsPanel.kw5"}, location="Team", tabTitle="#CTL_OptionsPanel.title")

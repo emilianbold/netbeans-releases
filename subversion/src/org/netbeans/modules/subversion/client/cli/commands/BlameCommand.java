@@ -68,7 +68,6 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 /**
  *
- * @author Tomas Stupka
  * // XXX merge with list, ...
  */
 public class BlameCommand extends SvnCommand {

@@ -48,7 +48,6 @@ import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 
 /**
  *
- * @author ondra
  */
 public class CleanupCommand extends SvnCommand {
     

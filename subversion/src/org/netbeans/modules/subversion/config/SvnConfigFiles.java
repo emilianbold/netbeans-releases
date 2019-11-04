@@ -82,7 +82,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * the remaining values are always taken from the commandline clients configuration files. 
  * The only exception is the 'store-auth-creds' key, which is always set to 'no'.
  * 
- * @author Tomas Stupka
  */
 public class SvnConfigFiles {
 

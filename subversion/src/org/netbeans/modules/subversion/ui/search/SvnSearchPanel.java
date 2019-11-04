@@ -46,7 +46,6 @@ package org.netbeans.modules.subversion.ui.search;
 
 /**
  *
- * @author  tst
  */
 public class SvnSearchPanel extends javax.swing.JPanel {
 

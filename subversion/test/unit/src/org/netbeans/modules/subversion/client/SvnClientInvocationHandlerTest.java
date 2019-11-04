@@ -54,7 +54,6 @@ import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class SvnClientInvocationHandlerTest {
 

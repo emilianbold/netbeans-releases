@@ -66,7 +66,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
 /**
  * Creates a new folder in the browser
  *
- * @author Tomas Stupka
  */
 public class CreateFolderAction extends BrowserAction implements PropertyChangeListener {
     private final String defaultFolderName;    

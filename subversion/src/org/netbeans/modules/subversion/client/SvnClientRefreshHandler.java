@@ -53,7 +53,6 @@ import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class SvnClientRefreshHandler implements ISVNNotifyListener {
 

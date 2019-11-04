@@ -76,7 +76,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  *
  *
- * @author Tomas Stupka
  */
 public class RepositoryStep extends AbstractStep implements WizardDescriptor.AsynchronousValidatingPanel, PropertyChangeListener {
 

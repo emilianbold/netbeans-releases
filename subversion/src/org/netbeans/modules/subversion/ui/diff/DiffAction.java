@@ -67,7 +67,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * Diff action shows local changes
  *
- * @author Petr Kuzel
  */
 public class DiffAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/diff.png"; //NOI18N

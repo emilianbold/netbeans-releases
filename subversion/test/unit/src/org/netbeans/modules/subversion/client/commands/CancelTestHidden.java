@@ -53,7 +53,6 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  *
- * @author tomas
  */
 public class CancelTestHidden extends AbstractCommandTestCase {
 

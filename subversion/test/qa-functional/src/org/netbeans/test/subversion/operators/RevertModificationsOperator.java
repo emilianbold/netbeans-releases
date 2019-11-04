@@ -48,7 +48,6 @@ import org.netbeans.test.subversion.operators.actions.RevertAction;
 
 /** Class implementing all necessary methods for handling "Revert Modifications" NbDialog.
  *
- * @author peter
  * @version 1.0
  */
 public class RevertModificationsOperator extends NbDialogOperator {

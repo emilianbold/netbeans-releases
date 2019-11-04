@@ -53,7 +53,6 @@ import javax.swing.JTextField;
 
 /**
  *
- * @author  Peter Pis
  */
 public class RelocatePanel extends javax.swing.JPanel {
     

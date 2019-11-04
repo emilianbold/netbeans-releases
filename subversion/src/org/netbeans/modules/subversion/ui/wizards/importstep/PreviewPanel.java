@@ -47,7 +47,6 @@ import org.netbeans.modules.versioning.util.PlaceholderPanel;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class PreviewPanel extends javax.swing.JPanel {
 

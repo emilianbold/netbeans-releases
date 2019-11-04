@@ -62,7 +62,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /*
  *
  *
- * @author Tomas Stupka
  */
 public final class CheckoutWizard implements ChangeListener {
     

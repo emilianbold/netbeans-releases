@@ -52,7 +52,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author tomas
  */
 public class MkdirTestHidden extends AbstractCommandTestCase {
     

@@ -47,7 +47,6 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
 
 /**
  *
- * @author tomas
  */
 public class ClientSwitchTest extends AbstractSvnTestCase {
     

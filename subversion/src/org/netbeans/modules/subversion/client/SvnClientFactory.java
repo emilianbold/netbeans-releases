@@ -68,7 +68,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * A SvnClient factory
  *
- * @author Tomas Stupka
  */
 public class SvnClientFactory {
     

@@ -56,7 +56,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
 
 /**
  *
- * @author tomas
  */
 public class LogTestHidden extends AbstractCommandTestCase {
 

@@ -83,7 +83,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author tomas
  */
 public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
     

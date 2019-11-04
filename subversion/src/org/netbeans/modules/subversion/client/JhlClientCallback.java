@@ -48,7 +48,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author ondra
  */
 class JhlClientCallback extends SvnClientCallback {
 

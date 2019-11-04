@@ -62,7 +62,6 @@ import org.openide.awt.ActionRegistration;
  * view it behaves like StatusProjectsAction without
  * on-open refresh.
  *
- * @author Petr Kuzel
  */
 @ActionID(id = "org.netbeans.modules.subversion.ui.status.OpenVersioningAction", category = "Subversion")
 @ActionRegistration(displayName = "#CTL_MenuItem_OpenVersioning", iconBase=OpenVersioningAction.ICON_BASE)

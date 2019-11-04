@@ -45,7 +45,6 @@ package org.netbeans.modules.subversion.client;
 
 /**
  *
- * @author  Tomas Stupka
  */
 public class AcceptCertificatePanel extends javax.swing.JPanel {
 

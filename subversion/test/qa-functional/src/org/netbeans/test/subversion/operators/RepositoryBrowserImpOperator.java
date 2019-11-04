@@ -48,7 +48,6 @@ import org.netbeans.jemmy.operators.*;
 
 /** Class implementing all necessary methods for handling "Repository browser - file:///tmp/repo" NbDialog.
  *
- * @author peter
  * @version 1.0
  */
 public class RepositoryBrowserImpOperator extends NbDialogOperator {

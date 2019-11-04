@@ -58,7 +58,6 @@ import org.netbeans.test.subversion.utils.TestKit;
 
 /**
  *
- * @author novakm
  */
 public class FilesViewDoubleRefTest extends JellyTestCase {
 

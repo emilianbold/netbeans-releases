@@ -65,7 +65,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 /**
  * Stream source for diffing CVS managed files.
  *
- * @author Maros Sandor
  */
 public class DiffStreamSource extends StreamSource {
 

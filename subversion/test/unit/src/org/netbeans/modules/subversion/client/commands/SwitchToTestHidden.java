@@ -49,7 +49,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
- * @author tomas
  */
 public class SwitchToTestHidden extends AbstractCommandTestCase {
     

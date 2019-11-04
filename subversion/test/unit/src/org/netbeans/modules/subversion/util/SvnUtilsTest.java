@@ -54,7 +54,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Tests org.netbeans.modules.subversion.util.SVNUtils utility methods
- * @author ondra.vrabec
  */
 public class SvnUtilsTest extends NbTestCase {
 

@@ -50,7 +50,6 @@ import org.tigris.subversion.svnclientadapter.*;
 
 /**
  *
- * @author tomas
  */
 public class TreeConflictsTestHidden extends AbstractCommandTestCase {
     private File wc1, wc2;

@@ -62,7 +62,6 @@ import org.tigris.subversion.svnclientadapter.*;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class HistoryProvider implements VCSHistoryProvider {
 

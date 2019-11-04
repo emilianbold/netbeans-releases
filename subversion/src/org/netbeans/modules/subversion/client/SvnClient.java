@@ -50,7 +50,6 @@ import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 /**
  * Extends basic ISVNClientAdapter fucntionality.
  *
- * @author Petr Kuzel
  */
 public interface SvnClient extends ISVNClientAdapter, Cancellable, SvnClientDescriptor {
 

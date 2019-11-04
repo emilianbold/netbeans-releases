@@ -99,7 +99,6 @@ import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 /**
  * Subversion-specific utilities.
  *
- * @author Maros Sandor
  */
 public class SvnUtils {
 

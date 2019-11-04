@@ -53,7 +53,6 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 
 /**
  *
- * @author Ed Hillmann
  */
 public class SvnWcParserTest extends NbTestCase {
 

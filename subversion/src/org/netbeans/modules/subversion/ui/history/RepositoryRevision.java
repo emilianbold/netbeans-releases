@@ -78,7 +78,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
  * cvs log command. The fields in instances of this object are populated
  * by response handlers.
  *
- * @author Maros Sandor
  */
 final class RepositoryRevision {
 

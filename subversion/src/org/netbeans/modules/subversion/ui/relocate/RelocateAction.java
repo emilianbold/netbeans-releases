@@ -71,7 +71,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author  Peter Pis
  */
 public class RelocateAction extends ContextAction {
          

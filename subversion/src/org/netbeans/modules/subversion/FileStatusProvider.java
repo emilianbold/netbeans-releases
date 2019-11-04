@@ -55,7 +55,6 @@ import java.util.logging.Level;
  * Contract specific for Filesystem <-> UI interaction, to be replaced later with something more
  * sophisticated (hopefuly).
  * 
- * @author Maros Sandor
  */
 class FileStatusProvider extends VCSAnnotator {
     private static final int INCLUDE_STATUS = FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;

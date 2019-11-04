@@ -47,7 +47,6 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 
 /**
  *
- * @author  Tomas Stupka
  */
 public class UpdateToPanel extends javax.swing.JPanel {
 

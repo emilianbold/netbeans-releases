@@ -48,7 +48,6 @@ import org.netbeans.test.subversion.operators.actions.SvnPropertiesAction;
 
 /** Class implementing all necessary methods for handling "Svn Properties Editor" NbDialog.
  *
- * @author novakm
  * @version 1.0
  */
 public class SvnPropertiesOperator extends NbDialogOperator {

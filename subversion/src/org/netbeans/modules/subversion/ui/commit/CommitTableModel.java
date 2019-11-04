@@ -56,7 +56,6 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
 /**
  * Table model for the Commit dialog table.
  *
- * @author Maros Sandor
  */
 public class CommitTableModel extends AbstractTableModel {
 

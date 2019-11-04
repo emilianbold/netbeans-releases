@@ -68,7 +68,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
- * @author ondra
  */
 class BranchPicker {
 

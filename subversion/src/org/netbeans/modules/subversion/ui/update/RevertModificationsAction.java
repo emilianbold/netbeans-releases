@@ -72,7 +72,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * Reverts local changes.
  *
- * @author Petr Kuzel
  */
 public class RevertModificationsAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/get_clean.png"; //NOI18N

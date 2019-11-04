@@ -61,7 +61,6 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class ApiTest extends NbTestCase {
     private String username;

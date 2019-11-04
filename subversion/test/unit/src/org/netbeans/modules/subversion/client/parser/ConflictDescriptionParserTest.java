@@ -60,7 +60,6 @@ import org.netbeans.modules.subversion.client.parser.ConflictDescriptionParser.P
 
 /**
  *
- * @author ondra
  */
 public class ConflictDescriptionParserTest extends NbTestCase {
 

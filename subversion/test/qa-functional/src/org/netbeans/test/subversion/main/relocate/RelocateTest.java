@@ -65,7 +65,6 @@ import org.netbeans.test.subversion.utils.TestKit;
 
 /**
  *
- * @author peterpis
  */
 public class RelocateTest extends JellyTestCase {
 

@@ -46,7 +46,6 @@ package org.netbeans.modules.subversion.remote.ui.copy;
 
 /**
  *
- * @author  Petr Kuzel
  */
 public class MergePanel extends javax.swing.JPanel {
 

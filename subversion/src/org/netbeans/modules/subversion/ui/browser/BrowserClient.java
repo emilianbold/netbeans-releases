@@ -52,7 +52,6 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  *
- * @author Tomas Stupka
  */
 public interface BrowserClient {
     public List<RepositoryPathEntry> listRepositoryPath(RepositoryPathEntry entry, SvnProgressSupport support) throws SVNClientException;

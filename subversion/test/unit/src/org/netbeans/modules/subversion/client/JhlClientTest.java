@@ -49,7 +49,6 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  * Subversion 1.8
- * @author tomas
  */
 public class JhlClientTest extends NbTestCase {
     // XXX test cancel

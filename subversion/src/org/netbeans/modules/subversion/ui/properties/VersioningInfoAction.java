@@ -73,7 +73,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * 
- * @author Peter Pis
  */
 @NbBundle.Messages({
     "CTL_MenuItem_VersioningInfoAction=Versionin&g Info",

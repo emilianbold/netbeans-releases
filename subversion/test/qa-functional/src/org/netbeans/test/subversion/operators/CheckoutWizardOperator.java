@@ -55,7 +55,6 @@ import org.netbeans.test.subversion.operators.actions.CheckoutAction;
  * Class implementing all necessary methods for handling "CheckoutWizardOperator" NbDialog.
  *
  *
- * @author peter
  * @version 1.0
  */
 public class CheckoutWizardOperator extends WizardOperator {

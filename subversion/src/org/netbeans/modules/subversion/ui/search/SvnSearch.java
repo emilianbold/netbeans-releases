@@ -77,7 +77,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * Handles the UI for revision search.
  *
- * @author Tomas Stupka
  */
 public class SvnSearch implements ActionListener, DocumentListener {
     

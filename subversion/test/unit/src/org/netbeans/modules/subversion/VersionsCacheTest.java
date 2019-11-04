@@ -57,7 +57,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author ondra
  */
 public class VersionsCacheTest extends AbstractSvnTestCase {
 

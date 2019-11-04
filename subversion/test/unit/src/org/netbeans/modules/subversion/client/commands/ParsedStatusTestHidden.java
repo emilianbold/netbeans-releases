@@ -54,7 +54,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author tomas
  */
 public class ParsedStatusTestHidden extends AbstractCommandTestCase {
     

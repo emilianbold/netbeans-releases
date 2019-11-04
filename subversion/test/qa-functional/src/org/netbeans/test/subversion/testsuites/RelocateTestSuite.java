@@ -50,7 +50,6 @@ import org.netbeans.test.subversion.utils.svnExistsChecker;
 
 /**
  *
- * @author peterpis
  */
 public class RelocateTestSuite extends JellyTestCase {
     public RelocateTestSuite(String name) {

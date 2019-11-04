@@ -54,7 +54,6 @@ import org.netbeans.test.subversion.utils.svnExistsChecker;
 
 /**
  *
- * @author Petr Dvorak
  */
 public class branchesTestSuite extends JellyTestCase {
     

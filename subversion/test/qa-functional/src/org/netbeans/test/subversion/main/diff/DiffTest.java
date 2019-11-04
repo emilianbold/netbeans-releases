@@ -67,7 +67,6 @@ import org.netbeans.test.subversion.utils.MessageHandler;
 
 /**
  *
- * @author pvcs
  */
 public class DiffTest extends JellyTestCase {
 

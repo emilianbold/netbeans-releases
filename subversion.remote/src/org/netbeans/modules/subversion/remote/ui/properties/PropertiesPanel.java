@@ -88,8 +88,6 @@ import org.openide.filesystems.FileSystem;
 
 /**
  *
- * @author  Peter Pis
- * @author  Marian Petras
  */
 public class PropertiesPanel extends JPanel implements DocumentListener,
                                                        ItemListener,

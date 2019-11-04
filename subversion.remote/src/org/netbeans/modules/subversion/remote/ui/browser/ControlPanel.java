@@ -45,7 +45,6 @@ package org.netbeans.modules.subversion.remote.ui.browser;
 
 /**
  *
- * @author  tomas
  */
 public class ControlPanel extends javax.swing.JPanel {
 

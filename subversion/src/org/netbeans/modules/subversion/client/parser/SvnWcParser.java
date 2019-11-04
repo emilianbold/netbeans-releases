@@ -64,7 +64,6 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Ed Hillmann
  */
 public class SvnWcParser {
     

@@ -55,7 +55,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class SelectPathAction extends AbstractAction {
 

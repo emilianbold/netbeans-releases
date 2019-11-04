@@ -78,12 +78,10 @@ import org.openide.util.WeakListeners;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
- * @author Maros Sandor
  */
 /**
  * Shows Search History results in a JList.
  *
- * @author Maros Sandor
  */
 class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 

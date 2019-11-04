@@ -69,7 +69,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Petr Kuzel
  */
 public class SwitchToAction extends ContextAction {
     

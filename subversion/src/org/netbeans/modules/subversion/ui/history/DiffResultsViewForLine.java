@@ -78,7 +78,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * DiffResultsView not showing differences but rather fixed line numbers.
  * Currently used by bugtracking to display revisions of a file and to fix the view on a given line number.
  * 
- * @author Ondra Vrabec
  */
 final class DiffResultsViewForLine extends DiffResultsView {
     private int lineNumber;

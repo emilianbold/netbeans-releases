@@ -38,7 +38,6 @@ import org.openide.filesystems.FileUtil;
 /**
  *
  *
- * @author Tomas Stupka
  */
 public class FileUpdateInfo {
 

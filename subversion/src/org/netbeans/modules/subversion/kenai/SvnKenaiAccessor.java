@@ -51,7 +51,6 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class SvnKenaiAccessor {
 

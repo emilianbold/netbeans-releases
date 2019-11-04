@@ -46,7 +46,6 @@ package org.netbeans.modules.subversion.client.cli;
 /**
  * Listener for cleartool responses to some command. 
  * 
- * @author Maros Sandor
  */
 public interface CommandNotificationListener {
     

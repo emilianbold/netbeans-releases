@@ -32,7 +32,6 @@ package org.netbeans.test.subversion.operators.actions;
 
 /**
  *
- * @author novakm
  */
 public class SvnPropertiesAction extends SvnAction {
 

@@ -84,7 +84,6 @@ import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 class RevisionSetupsSupport {
     private final RepositoryFile repositoryTreeLeft;

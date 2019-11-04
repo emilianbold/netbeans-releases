@@ -73,7 +73,6 @@ import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
- * @author Tomas Stupka
  */
 public class CheckoutStep extends AbstractStep implements ActionListener, DocumentListener, FocusListener, ItemListener {
 

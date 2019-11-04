@@ -51,8 +51,6 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.util.Utilities;
 
 /**
- * @author Tomas Stupka
- * @author Jan Stola
  */
 public class MissingClientPanel extends javax.swing.JPanel {
 

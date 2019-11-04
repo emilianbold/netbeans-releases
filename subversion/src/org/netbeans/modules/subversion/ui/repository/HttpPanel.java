@@ -43,7 +43,6 @@ package org.netbeans.modules.subversion.ui.repository;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class HttpPanel extends javax.swing.JPanel {
 

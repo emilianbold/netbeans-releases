@@ -50,7 +50,6 @@ import org.netbeans.test.subversion.operators.actions.ImportAction;
  * Class implementing all necessary methods for handling "ImportWizardOperator" NbDialog.
  * 
  * 
- * @author peter
  * @version 1.0
  */
 public class ImportWizardOperator extends WizardOperator {

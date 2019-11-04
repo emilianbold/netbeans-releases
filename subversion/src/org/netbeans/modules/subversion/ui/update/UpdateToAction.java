@@ -56,7 +56,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author ondra
  */
 public class UpdateToAction extends UpdateAction {
 

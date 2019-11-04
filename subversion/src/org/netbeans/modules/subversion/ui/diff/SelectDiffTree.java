@@ -64,7 +64,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class SelectDiffTree extends CopyDialog implements PropertyChangeListener {
 

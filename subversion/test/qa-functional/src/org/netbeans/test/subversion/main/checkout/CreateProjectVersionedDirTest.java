@@ -63,7 +63,6 @@ import org.netbeans.test.subversion.utils.TestKit;
 
 /**
  *
- * @author pvcs
  */
 public class CreateProjectVersionedDirTest extends JellyTestCase {
 

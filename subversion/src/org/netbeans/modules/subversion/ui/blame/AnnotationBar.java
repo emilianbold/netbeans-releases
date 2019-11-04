@@ -101,7 +101,6 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  *   <li> {@link #annotate} message
  * </ul>
  *
- * @author Petr Kuzel
  */
 final class AnnotationBar extends JComponent implements Accessible, PropertyChangeListener, DocumentListener, ChangeListener, ActionListener, Runnable, ComponentListener {
 

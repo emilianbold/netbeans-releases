@@ -50,7 +50,6 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  *
- * @author tomas
  */
 public class AvailabilityTest extends AbstractSvnTestCase {
     private String exec = null;

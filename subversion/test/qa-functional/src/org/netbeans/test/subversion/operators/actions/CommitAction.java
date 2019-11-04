@@ -43,7 +43,6 @@ package org.netbeans.test.subversion.operators.actions;
 
 /**
  *
- * @author peter
  */
 public class CommitAction extends SvnAction {
 

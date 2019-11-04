@@ -58,7 +58,6 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 /**
  * Represents real or virtual (non-local) file.
  *
- * @author Maros Sandor
  */
 public class SvnFileNode {
 

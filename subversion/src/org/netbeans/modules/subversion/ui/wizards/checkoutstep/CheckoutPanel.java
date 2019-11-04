@@ -64,8 +64,6 @@ import org.netbeans.modules.subversion.client.SvnClientFactory;
 
 /**
  *
- * @author  Petr Kuzel
- * @author  Marian Petras
  */
 public class CheckoutPanel extends JPanel {
 

@@ -71,7 +71,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author  Peter Pis
  */
 public class RelocateAction extends ContextAction {
          

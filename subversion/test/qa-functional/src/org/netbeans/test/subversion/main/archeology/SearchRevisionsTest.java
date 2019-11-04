@@ -61,7 +61,6 @@ import org.netbeans.test.subversion.utils.TestKit;
 
 /**
  *
- * @author pvcs
  */
 public class SearchRevisionsTest extends JellyTestCase {
     

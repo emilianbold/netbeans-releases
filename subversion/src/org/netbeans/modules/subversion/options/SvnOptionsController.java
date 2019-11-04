@@ -84,7 +84,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 public final class SvnOptionsController extends OptionsPanelController implements ActionListener, VCSOptionsKeywordsProvider {
     

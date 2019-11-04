@@ -69,7 +69,6 @@ import org.netbeans.test.subversion.utils.TestKit;
 
 /**
  *
- * @author pvcs
  */
 public class RefactoringTest extends JellyTestCase {
 

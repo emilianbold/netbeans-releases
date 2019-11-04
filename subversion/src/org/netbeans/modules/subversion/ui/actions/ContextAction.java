@@ -79,7 +79,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * Base for all context-sensitive SVN actions.
  * 
- * @author Maros Sandor
  */
 public abstract class ContextAction extends NodeAction {
 

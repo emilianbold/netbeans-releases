@@ -87,8 +87,6 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 /**
  *
- * @author  Peter Pis
- * @author  Marian Petras
  */
 public class PropertiesPanel extends JPanel implements DocumentListener,
                                                        ItemListener,

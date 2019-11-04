@@ -51,7 +51,6 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 
 /**
  *
- * @author tomas
  */
 public class DifferentWorkingDirsTestHidden extends AbstractCommandTestCase {
     

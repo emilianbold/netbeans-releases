@@ -72,7 +72,6 @@ import org.netbeans.test.subversion.utils.TestKit;
 
 /**
  *
- * @author peter
  */
 public class CheckoutUITest extends JellyTestCase{
     

@@ -57,7 +57,6 @@ import org.tigris.subversion.svnclientadapter.*;
 /**
  * Represnts <tt>svn resolved</tt> command.
  *
- * @author Petr Kuzel
  */
 public class ConflictResolvedAction extends ContextAction {
     

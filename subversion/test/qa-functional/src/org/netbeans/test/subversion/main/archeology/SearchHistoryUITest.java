@@ -71,7 +71,6 @@ import org.netbeans.test.subversion.utils.MessageHandler;
 
 /**
  *
- * @author peter
  */
 public class SearchHistoryUITest extends JellyTestCase{
     

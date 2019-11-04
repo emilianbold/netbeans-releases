@@ -72,7 +72,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author tomas
  */
 public abstract class ConnectionType implements ActionListener, DocumentListener, FocusListener {
     

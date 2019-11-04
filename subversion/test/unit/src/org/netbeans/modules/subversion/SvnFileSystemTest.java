@@ -74,7 +74,6 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
- * @author Tomas Stupka
  */
 public class SvnFileSystemTest extends FileSystemFactoryHid {
 

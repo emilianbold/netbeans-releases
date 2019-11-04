@@ -70,7 +70,6 @@ import org.tigris.subversion.svnclientadapter.*;
  *
  * This class is copy&pasted from javacvs
  *
- * @author  Martin Entlicher
  */
 public class ResolveConflictsExecutor extends SvnProgressSupport {
     

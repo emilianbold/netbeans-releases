@@ -61,7 +61,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * Represents on DIFF setup.
  *
- * @author Maros Sandor
  */
 public final class Setup extends AbstractDiffSetup {
 

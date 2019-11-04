@@ -51,7 +51,6 @@ import org.netbeans.test.subversion.operators.actions.RelocateAction;
 
 /**
  *
- * @author peterpis
  */
 public class RelocateOperator extends NbDialogOperator {
 

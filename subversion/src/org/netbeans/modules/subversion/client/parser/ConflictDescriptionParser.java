@@ -59,7 +59,6 @@ import org.tigris.subversion.svnclientadapter.SVNConflictVersion;
 
 /**
  *
- * @author ondra
  */
 class ConflictDescriptionParser {
 

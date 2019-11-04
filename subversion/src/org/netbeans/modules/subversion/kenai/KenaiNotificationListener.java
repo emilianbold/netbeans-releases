@@ -59,7 +59,6 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificationListener {
     

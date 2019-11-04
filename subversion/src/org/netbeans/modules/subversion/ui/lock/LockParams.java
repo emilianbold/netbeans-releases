@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 class LockParams {
     private final LockPanel panel;

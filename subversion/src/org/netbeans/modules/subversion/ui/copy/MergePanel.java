@@ -48,7 +48,6 @@ import org.netbeans.modules.subversion.ui.wizards.*;
 
 /**
  *
- * @author  Petr Kuzel
  */
 public class MergePanel extends javax.swing.JPanel {
 

@@ -68,7 +68,6 @@ import org.netbeans.test.subversion.utils.TestKit;
 
 /**
  *
- * @author peter pis
  */
 public class CopyTest extends JellyTestCase {
 

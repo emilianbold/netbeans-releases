@@ -64,7 +64,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Tomas Stupka
  */
 public abstract class SvnProgressSupport implements Runnable, Cancellable, ISVNNotifyListener {
 

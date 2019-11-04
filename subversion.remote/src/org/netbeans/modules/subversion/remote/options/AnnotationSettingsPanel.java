@@ -47,7 +47,6 @@ import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 
 /**
  *
- * @author  Tomas Stupka
  */
 public class AnnotationSettingsPanel extends javax.swing.JPanel {
     

@@ -70,7 +70,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Peter Pis
  * 
  * Test of creation and merging "config" and "servers" subversion administrative files. 
  * 

@@ -77,7 +77,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  * Handles the UI for repository browsing.
  *
- * @author Tomas Stupka
  */
 public final class Browser implements VetoableChangeListener, BrowserClient, TreeExpansionListener {
 

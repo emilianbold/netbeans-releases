@@ -48,7 +48,6 @@ import org.netbeans.test.subversion.operators.actions.CopyAction;
 
 /** Class implementing all necessary methods for handling "Copy to..." NbDialog.
  *
- * @author peter
  * @version 1.0
  */
 public class CopyToOperator extends NbDialogOperator {

@@ -53,8 +53,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author ondra.vrabec
- * @author Marian Petras
  */
 public final class TestUtilities {
 

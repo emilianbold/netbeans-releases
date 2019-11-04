@@ -46,7 +46,6 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  *
- * @author peterpis
  */
 public class RelocateAction extends ActionNoBlock {
 

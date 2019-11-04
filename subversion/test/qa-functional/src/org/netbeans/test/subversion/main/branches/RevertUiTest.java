@@ -67,7 +67,6 @@ import org.netbeans.test.subversion.utils.TestKit;
 
 /**
  *
- * @author peter
  */
 public class RevertUiTest extends JellyTestCase{
     

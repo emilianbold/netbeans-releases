@@ -64,7 +64,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class RevisionSetupSupportTest extends AbstractSvnTestCase {
 

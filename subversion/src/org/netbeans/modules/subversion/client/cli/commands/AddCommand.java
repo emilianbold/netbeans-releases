@@ -50,7 +50,6 @@ import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class AddCommand extends SvnCommand {
 

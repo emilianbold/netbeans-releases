@@ -45,7 +45,6 @@ package org.netbeans.modules.subversion.remote.ui.repository;
 
 /**
  *
- * @author  Tomas Stupka
  */
 public class RepositoryDialogPanel extends javax.swing.JPanel {
 

@@ -57,7 +57,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class CLIStatus implements ISVNStatus {
     private Status status;

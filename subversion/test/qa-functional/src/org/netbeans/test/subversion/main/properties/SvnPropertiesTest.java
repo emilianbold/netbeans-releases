@@ -53,7 +53,6 @@ import org.netbeans.test.subversion.utils.TestKit;
 
 /**
  *
- * @author novakm
  */
 public class SvnPropertiesTest extends JellyTestCase {
 

@@ -48,7 +48,6 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 
 /**
  *
- * @author  Petr Kuzel
  */
 public class MergeSinceOriginPanel extends javax.swing.JPanel {
 

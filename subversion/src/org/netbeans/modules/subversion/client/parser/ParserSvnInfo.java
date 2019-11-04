@@ -54,7 +54,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Ed Hillmann
  */
 public class ParserSvnInfo implements ISVNInfo{
     

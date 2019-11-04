@@ -93,7 +93,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
- * @author Tomas Stupka
  */
 public class Repository implements ActionListener, DocumentListener, ItemListener {
     

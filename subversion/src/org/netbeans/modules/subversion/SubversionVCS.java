@@ -67,7 +67,6 @@ import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
 import org.netbeans.modules.versioning.spi.*;
 
 /**
- * @author Maros Sandor
  * 
  * Warning:
  * $FOLDER_NAME:getenv:$VARIABLE:null|notnull - private contract with Versioning to determine 

@@ -46,7 +46,6 @@ package org.netbeans.modules.subversion.remote.ui.copy;
 
 /**
  *
- * @author  Petr Kuzel
  */
 public class MergeBranchPanel extends javax.swing.JPanel {
 

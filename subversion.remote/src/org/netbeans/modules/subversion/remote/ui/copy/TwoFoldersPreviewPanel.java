@@ -46,7 +46,6 @@ package org.netbeans.modules.subversion.remote.ui.copy;
 
 /**
  *
- * @author  tst
  */
 public class TwoFoldersPreviewPanel extends javax.swing.JPanel {
 

@@ -80,7 +80,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Marian Petras
  */
 public class Subversion {
 

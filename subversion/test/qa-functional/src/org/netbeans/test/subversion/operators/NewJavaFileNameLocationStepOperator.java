@@ -70,7 +70,6 @@ import org.netbeans.jemmy.ComponentChooser;
  *      op.selectPackage("org.netbeans.jellytools");
  * </pre>
  *
- * @author tb115823, Jiri.Skrivanek@sun.com
  */
 public class NewJavaFileNameLocationStepOperator extends NewFileWizardOperator {
     

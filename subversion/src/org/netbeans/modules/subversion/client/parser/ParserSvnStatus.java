@@ -56,7 +56,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Ed Hillmann
  */
 public class ParserSvnStatus implements ISVNStatus {
 

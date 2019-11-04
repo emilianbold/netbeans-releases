@@ -63,7 +63,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class SwitchTo extends CopyDialog implements PropertyChangeListener {
 

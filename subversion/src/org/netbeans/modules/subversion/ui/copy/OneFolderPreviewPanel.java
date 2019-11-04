@@ -46,7 +46,6 @@ package org.netbeans.modules.subversion.ui.copy;
 
 /**
  *
- * @author  tst
  */
 public class OneFolderPreviewPanel extends javax.swing.JPanel {
 

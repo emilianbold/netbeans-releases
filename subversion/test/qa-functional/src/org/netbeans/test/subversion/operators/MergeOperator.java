@@ -47,7 +47,6 @@ import org.netbeans.test.subversion.operators.actions.MergeAction;
 
 /** Class implementing all necessary methods for handling "Merge AnagramGame to..." NbDialog.
  *
- * @author peter
  * @version 1.0
  */
 public class MergeOperator extends JDialogOperator {

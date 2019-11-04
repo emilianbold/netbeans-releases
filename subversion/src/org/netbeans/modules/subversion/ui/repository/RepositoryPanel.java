@@ -46,7 +46,6 @@ package org.netbeans.modules.subversion.ui.repository;
 
 /**
  *
- * @author  Petr Kuzel
  */
 public class RepositoryPanel extends javax.swing.JPanel {
 

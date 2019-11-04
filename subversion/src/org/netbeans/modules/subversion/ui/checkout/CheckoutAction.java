@@ -72,7 +72,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Tomas Stupka
  */
 @ActionID(id = "org.netbeans.modules.subversion.ui.checkout.CheckoutAction", category = "Subversion")
 @ActionRegistration(displayName = "#LBL_CheckoutAction_Name")

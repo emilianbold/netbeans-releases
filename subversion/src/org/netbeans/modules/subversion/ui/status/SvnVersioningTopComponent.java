@@ -61,7 +61,6 @@ import org.netbeans.modules.subversion.Subversion;
 /**
  * Top component of the Versioning view.
  * 
- * @author Maros Sandor
  */
 public class SvnVersioningTopComponent extends TopComponent implements Externalizable {
    

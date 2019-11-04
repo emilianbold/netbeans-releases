@@ -53,7 +53,6 @@ import org.netbeans.modules.versioning.util.SearchHistorySupport;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class SvnSearchHistorySupport extends SearchHistorySupport {
 

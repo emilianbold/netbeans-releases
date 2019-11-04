@@ -55,7 +55,6 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
 /**
  * Encapsulates svn shell process. 
  * 
- * @author Tomas Stupka
  */
 class Commandline {
 

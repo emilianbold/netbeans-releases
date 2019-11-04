@@ -48,7 +48,6 @@ import org.netbeans.test.subversion.operators.actions.SwitchAction;
 
 /** Class implementing all necessary methods for handling "Switch AnagramGame to..." NbDialog.
  *
- * @author peter
  * @version 1.0
  */
 public class SwitchOperator extends NbDialogOperator {

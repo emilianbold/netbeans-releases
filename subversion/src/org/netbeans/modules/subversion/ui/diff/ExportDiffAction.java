@@ -83,7 +83,6 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  * working copy and BASE repository version.
  * </ul>
  *  
- * @author Petr Kuzel
  */
 public class ExportDiffAction extends ContextAction {
     

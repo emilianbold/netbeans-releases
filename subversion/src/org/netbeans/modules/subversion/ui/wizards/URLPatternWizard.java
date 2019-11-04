@@ -58,7 +58,6 @@ import org.openide.WizardDescriptor;
 /*
  *
  *
- * @author Tomas Stupka
  */
 public final class URLPatternWizard implements ChangeListener {
     

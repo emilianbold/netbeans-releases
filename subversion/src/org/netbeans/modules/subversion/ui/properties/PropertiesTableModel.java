@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Peter Pis
  */
 public class PropertiesTableModel extends AbstractTableModel {
     

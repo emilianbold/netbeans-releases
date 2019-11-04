@@ -62,7 +62,6 @@ import org.netbeans.modules.subversion.Subversion;
 /**
  * Opens Search History Component.
  * 
- * @author Maros Sandor
  */
 public class SearchHistoryAction extends ContextAction {
 

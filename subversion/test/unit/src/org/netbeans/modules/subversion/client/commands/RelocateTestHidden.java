@@ -50,7 +50,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author tomas
  */
 public class RelocateTestHidden extends AbstractCommandTestCase {
     

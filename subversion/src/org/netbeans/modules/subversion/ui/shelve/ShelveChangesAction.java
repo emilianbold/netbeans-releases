@@ -75,7 +75,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Ondra Vrabec
  */
 @ActionID(id = "org.netbeans.modules.subversion.ui.shelve.ShelveChangesAction", category = "Subversion")
 @ActionRegistration(displayName = "#CTL_ShelveChanges_Title")

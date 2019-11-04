@@ -82,8 +82,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Peter Pis
- * @author Marian Petras
  */
 public final class SvnProperties implements ActionListener {
 
