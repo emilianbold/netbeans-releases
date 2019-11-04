@@ -55,7 +55,6 @@ import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
- * @author ondra
  */
 public class ListRemoteTagsCommand extends TransportCommand {
     private Map<String, String> remoteTags;

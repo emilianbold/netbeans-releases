@@ -54,7 +54,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.repository.OpenConfigurationAction", category = "GitRemote")
 @ActionRegistration(lazy = false, displayName = "#LBL_OpenConfigurationAction_Name")

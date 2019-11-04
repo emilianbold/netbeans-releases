@@ -52,7 +52,6 @@ import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 
 /**
  *
- * @author ondra
  */
 public class RemoteConfig {
     private final String remoteName;

@@ -68,7 +68,6 @@ import org.netbeans.test.git.utils.TestKit;
 
 /**
  *
- * @author tester
  */
 public class ExportDiffPatchTest extends JellyTestCase{
     

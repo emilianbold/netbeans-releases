@@ -47,7 +47,6 @@ import java.io.IOException;
 
 /**
  *
- * @author kanakmar
  */
 public final class RepositoryMaintenance {
 

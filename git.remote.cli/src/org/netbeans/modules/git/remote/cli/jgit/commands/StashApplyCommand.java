@@ -49,7 +49,6 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class StashApplyCommand extends GitCommand {
     private final String stashRef;

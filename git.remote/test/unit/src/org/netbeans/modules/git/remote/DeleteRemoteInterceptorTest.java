@@ -60,7 +60,6 @@ import org.openide.filesystems.FileSystem.AtomicAction;
 
 /**
  *
- * @author ondra
  */
 @ClassForAllEnvironments(section = "remote.svn")
 public class DeleteRemoteInterceptorTest extends AbstractRemoteGitTestCase {

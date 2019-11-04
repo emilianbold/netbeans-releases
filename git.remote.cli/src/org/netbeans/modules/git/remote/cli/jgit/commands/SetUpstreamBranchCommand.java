@@ -53,7 +53,6 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
- * @author ondra
  */
 public class SetUpstreamBranchCommand extends GitCommand {
     private final String localBranchName;

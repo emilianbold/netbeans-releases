@@ -58,7 +58,6 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
- * @author ondra
  */
 public class ListRemoteBranchesCommand extends TransportCommand {
     private LinkedHashMap<String, GitBranch> remoteBranches;

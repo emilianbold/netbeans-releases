@@ -88,7 +88,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class RemoteRepository implements DocumentListener, ActionListener, ItemListener {
     private boolean valid;

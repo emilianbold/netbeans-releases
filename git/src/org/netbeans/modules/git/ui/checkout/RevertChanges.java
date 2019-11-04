@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class RevertChanges implements ActionListener {
     private RevertChangesPanel panel;

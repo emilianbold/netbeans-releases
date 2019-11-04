@@ -60,7 +60,6 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
 
 /**
  *
- * @author ondra
  */
 public class HistoryTest extends AbstractGitTestCase {
 

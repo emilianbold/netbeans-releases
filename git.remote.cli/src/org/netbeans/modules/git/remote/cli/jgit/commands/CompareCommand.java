@@ -54,7 +54,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public class CompareCommand extends GitCommand {
     private final LinkedHashMap<VCSFileProxy, GitRevisionInfo.GitFileInfo> statuses;

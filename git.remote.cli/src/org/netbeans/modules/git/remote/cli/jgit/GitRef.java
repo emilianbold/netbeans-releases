@@ -45,7 +45,6 @@ import java.util.Objects;
 
 /**
  *
- * @author alsimon
  */
 public class GitRef implements Comparable<GitRef> {
     private final String name;

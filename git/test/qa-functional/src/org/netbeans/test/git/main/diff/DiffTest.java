@@ -63,7 +63,6 @@ import org.netbeans.test.git.utils.TestKit;
 
 /**
  *
- * @author kanakmar 
  */
 public class DiffTest extends JellyTestCase {
 

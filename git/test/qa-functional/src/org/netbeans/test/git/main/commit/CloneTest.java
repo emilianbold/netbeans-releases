@@ -61,7 +61,6 @@ import org.netbeans.test.git.utils.TestKit;
 
 /**
  *
- * @author kanakmar
  */
 public class CloneTest extends JellyTestCase {
 

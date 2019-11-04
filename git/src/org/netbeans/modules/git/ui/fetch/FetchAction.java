@@ -73,7 +73,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.fetch.FetchAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_FetchAction_Name")

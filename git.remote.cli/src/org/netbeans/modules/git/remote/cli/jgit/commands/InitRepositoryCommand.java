@@ -54,7 +54,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public class InitRepositoryCommand extends GitCommand {
     private final VCSFileProxy workDir;

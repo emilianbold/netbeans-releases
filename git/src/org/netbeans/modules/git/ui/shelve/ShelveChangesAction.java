@@ -93,7 +93,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Ondra Vrabec
  */
 @ActionID(id = "org.netbeans.modules.git.ui.shelve.ShelveChangesAction", category = "Git")
 @ActionRegistration(displayName = "#CTL_ShelveChanges_Title")

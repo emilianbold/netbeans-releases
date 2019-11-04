@@ -55,7 +55,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * Provides information about a certain commit, usually is returned by 
  * git commit or log command.
  * 
- * @author Jan Becicka
  */
 public final class GitRevisionInfo {
     private static final Logger LOG = Logger.getLogger(GitRevisionInfo.class.getName());

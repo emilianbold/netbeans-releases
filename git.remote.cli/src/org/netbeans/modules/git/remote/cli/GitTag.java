@@ -44,7 +44,6 @@ package org.netbeans.modules.git.remote.cli;
 /**
  * Represents a git tag.
  * 
- * @author Ondra Vrabec
  */
 public final class GitTag {
     private final String id;

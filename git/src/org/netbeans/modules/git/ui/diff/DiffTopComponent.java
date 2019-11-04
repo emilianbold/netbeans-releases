@@ -53,7 +53,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author ondra
  */
 public class DiffTopComponent extends TopComponent {
 

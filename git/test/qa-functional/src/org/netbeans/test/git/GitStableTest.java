@@ -58,7 +58,6 @@ import org.netbeans.test.git.utils.gitExistsChecker;
 
 /**
  *
- * @author kanakmar
  */
 public class GitStableTest extends JellyTestCase {
 

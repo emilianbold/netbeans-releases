@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class SelectUriPanel extends javax.swing.JPanel {
 

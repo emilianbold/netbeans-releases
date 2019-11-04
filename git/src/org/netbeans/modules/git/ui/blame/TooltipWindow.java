@@ -94,7 +94,6 @@ import org.openide.util.Exceptions;
 
 /**
  * Window displaying the line annotation with links to bugtracking in the commit message.
- * @author Ondrej Vrabec
  */
 class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListener, WindowFocusListener {
 

@@ -47,7 +47,6 @@ import org.netbeans.modules.git.client.ProgressDelegate;
 
 /**
  *
- * @author Ondra
  */
 public abstract class ActionProgressSupport {
 

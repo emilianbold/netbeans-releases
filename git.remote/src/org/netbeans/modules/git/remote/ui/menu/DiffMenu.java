@@ -63,7 +63,6 @@ import org.openide.util.actions.SystemAction;
 /**
  * Container menu for diff actions.
  *
- * @author Ondra
  */
 public final class DiffMenu extends DynamicMenu {
     private final ActionDestination dest;

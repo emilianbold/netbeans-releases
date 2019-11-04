@@ -59,7 +59,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author ondra
  */
 @ClassForAllEnvironments(section = "remote.svn")
 public class FilesystemRemoteInterceptorTest extends AbstractRemoteGitTestCase {

@@ -51,7 +51,6 @@ import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 /**
  * ErrorStripe liason, real work is done in AnnotationBar.
  *
- * @author Petr Kuzel
  */
  @SuppressWarnings("unchecked") // Get name clashes with Mark and AnnotationMark
  final class AnnotationMarkProvider extends MarkProvider {

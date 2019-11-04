@@ -46,7 +46,6 @@ package org.netbeans.modules.git.ui.repository.remote;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class RemoteRepositoryPanel extends javax.swing.JPanel {
 

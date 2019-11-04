@@ -121,8 +121,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
 /**
- *s
- * @author ondra
+ *
  */
 public final class GitUtils {
 

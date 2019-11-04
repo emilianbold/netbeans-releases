@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 @ActionID(id = "org.netbeans.modules.git.ui.repository.RepositoryBrowserAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_RepositoryBrowserAction_Name")

@@ -91,7 +91,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
- * @author ondra
  */
 class FilesystemInterceptor extends VCSInterceptor {
 

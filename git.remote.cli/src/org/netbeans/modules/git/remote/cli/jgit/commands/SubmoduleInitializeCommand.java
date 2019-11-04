@@ -54,7 +54,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class SubmoduleInitializeCommand extends GitCommand {
     

@@ -43,7 +43,6 @@ package org.netbeans.modules.git.remote.ui.rebase;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class SelectDestPanel extends javax.swing.JPanel {
 

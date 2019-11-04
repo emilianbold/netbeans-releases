@@ -58,7 +58,6 @@ import org.netbeans.spi.queries.CollocationQueryImplementation;
 
 /**
  *
- * @author ondra
  */
 @VersioningSystem.Registration(
     displayName="#CTL_Git_DisplayName", 

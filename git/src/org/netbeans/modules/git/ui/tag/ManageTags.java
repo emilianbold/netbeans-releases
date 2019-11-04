@@ -85,7 +85,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 class ManageTags implements ListSelectionListener, ActionListener {
 

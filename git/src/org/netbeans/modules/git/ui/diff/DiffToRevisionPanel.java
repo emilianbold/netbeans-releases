@@ -43,7 +43,6 @@ package org.netbeans.modules.git.ui.diff;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class DiffToRevisionPanel extends javax.swing.JPanel {
 

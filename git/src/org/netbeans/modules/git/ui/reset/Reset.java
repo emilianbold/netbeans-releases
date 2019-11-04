@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class Reset implements ActionListener {
     private ResetPanel panel;

@@ -79,7 +79,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.merge.MergeRevisionAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_MergeRevisionAction_Name")

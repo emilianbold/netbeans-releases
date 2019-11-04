@@ -64,7 +64,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 @NbBundle.Messages({
     "MSG_ApplyStashAction.progressName=Applying stash",

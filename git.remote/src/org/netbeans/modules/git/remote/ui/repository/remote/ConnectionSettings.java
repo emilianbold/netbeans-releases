@@ -41,7 +41,6 @@ import org.netbeans.modules.git.remote.cli.GitURI;
 
 /**
  *
- * @author ondra
  */
 public class ConnectionSettings {
     private char[] password = new char[0];

@@ -62,7 +62,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public class BranchTest extends AbstractGitTestCase {
     private static final boolean KIT = ListBranchCommand.KIT;

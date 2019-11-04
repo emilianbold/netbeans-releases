@@ -97,7 +97,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author Tomas Stupka
  */
 @ActionID(id = "org.netbeans.modules.git.ui.clone.CloneAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_CloneAction_Name")

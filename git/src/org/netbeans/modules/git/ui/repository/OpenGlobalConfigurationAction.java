@@ -59,7 +59,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 @ActionID(id = "org.netbeans.modules.git.ui.repository.OpenGlobalConfigurationAction", category = "Git")
 @ActionRegistration(lazy = false, displayName = "#LBL_OpenGlobalConfigurationAction_Name")

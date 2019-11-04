@@ -64,7 +64,6 @@ import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author ondra
  */
 public abstract class GitAction extends NodeAction {
     

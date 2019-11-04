@@ -64,7 +64,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.fetch.PullFromUpstreamAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_PullFromUpstreamAction_Name")

@@ -69,7 +69,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * responsibility</strong> to hold a strong reference to the file so a created client always works with 
  * the same instance of the git repository.</p>
  * 
- * @author Ondra Vrabec
  */
 public final class GitRepository {
 

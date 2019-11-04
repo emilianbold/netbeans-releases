@@ -54,7 +54,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.diff.DiffAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_DiffAction_Name")

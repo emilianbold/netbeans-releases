@@ -73,7 +73,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class RepositoryStep extends AbstractWizardPanel implements ChangeListener, AsynchronousValidatingPanel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor>, DocumentListener {

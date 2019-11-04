@@ -74,7 +74,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class FetchBranchesStep extends AbstractWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
     private String fetchUri;

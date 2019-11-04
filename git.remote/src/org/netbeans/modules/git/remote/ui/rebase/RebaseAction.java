@@ -95,7 +95,6 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.rebase.RebaseAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_RebaseAction_Name")

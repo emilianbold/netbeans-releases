@@ -56,7 +56,6 @@ import org.openide.windows.OutputListener;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class LogUtils {
     

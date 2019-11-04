@@ -50,7 +50,6 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
- * @author alsimon
  */
 public class ResolveCommand  extends GitCommand {
 

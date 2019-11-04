@@ -61,7 +61,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author ondra
  */
 public class RebaseCommand extends GitCommand {
 

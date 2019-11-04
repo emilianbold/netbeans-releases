@@ -50,7 +50,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author Ondra
  */
 public class JGitUtils {
 

@@ -49,7 +49,6 @@ import java.util.List;
 
 /**
  *
- * @author tester
  */
 public class gitExistsChecker {
 

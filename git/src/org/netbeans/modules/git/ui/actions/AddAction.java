@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 @ActionID(id = "org.netbeans.modules.git.ui.actions.AddAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_AddAction_Name")

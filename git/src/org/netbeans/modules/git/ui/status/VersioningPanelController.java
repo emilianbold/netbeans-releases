@@ -112,7 +112,6 @@ import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
- * @author ondra
  */
 class VersioningPanelController implements ActionListener, PropertyChangeListener, PreferenceChangeListener {
 

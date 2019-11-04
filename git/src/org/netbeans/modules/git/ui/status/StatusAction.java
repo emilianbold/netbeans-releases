@@ -62,7 +62,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.status.StatusAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_StatusAction_Name")

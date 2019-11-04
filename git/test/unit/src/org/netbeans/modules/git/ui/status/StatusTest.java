@@ -75,7 +75,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author ondra
  */
 public class StatusTest extends AbstractGitTestCase {
 

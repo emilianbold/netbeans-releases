@@ -56,7 +56,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author ondra
  */
 @NbBundle.Messages({
     "# {0} - context name", "# {1} - branch name", "LBL_SearchIncomingTopComponent.title=Show Incoming - {0}/{1}",

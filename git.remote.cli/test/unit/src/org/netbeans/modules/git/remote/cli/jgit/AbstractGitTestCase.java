@@ -84,7 +84,6 @@ import org.openide.util.Cancellable;
 
 /**
  *
- * @author ondra
  */
 public abstract class AbstractGitTestCase extends NbTestCase {
     private final VCSFileProxy workDir;

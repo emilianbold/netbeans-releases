@@ -59,7 +59,6 @@ import org.netbeans.modules.git.remote.ui.output.OutputLogger;
 
 /**
  *
- * @author Tomas Stupka
  */
 public abstract class WizardStepProgressSupport extends GitProgressSupport {   
 

@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.tag.CreateTagAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_CreateTagAction_Name")

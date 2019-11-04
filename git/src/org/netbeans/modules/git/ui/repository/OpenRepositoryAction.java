@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ondra Vrabec
  */
 @ActionID(id = "org.netbeans.modules.git.ui.repository.OpenRepositoryAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_OpenRepositoryAction_Name")

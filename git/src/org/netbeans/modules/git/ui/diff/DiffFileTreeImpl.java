@@ -56,7 +56,6 @@ import org.openide.nodes.PropertySupport;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 class DiffFileTreeImpl extends FileTreeView<DiffNode> implements DiffFileViewComponent<DiffNode> {
     

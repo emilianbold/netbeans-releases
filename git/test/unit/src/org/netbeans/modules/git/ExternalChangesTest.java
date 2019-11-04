@@ -67,7 +67,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * @author ondra
  */
 public class ExternalChangesTest extends AbstractGitTestCase {
 

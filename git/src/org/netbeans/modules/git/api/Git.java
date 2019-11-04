@@ -65,7 +65,6 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
 
 /**
  *
- * @author Tomas Stupka
  */
 public final class Git {
 

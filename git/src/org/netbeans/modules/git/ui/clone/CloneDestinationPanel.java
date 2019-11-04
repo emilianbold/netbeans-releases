@@ -58,7 +58,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 public final class CloneDestinationPanel extends JPanel implements ActionListener {
     private String message;

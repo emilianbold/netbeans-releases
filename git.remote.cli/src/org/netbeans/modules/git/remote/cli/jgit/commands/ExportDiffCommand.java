@@ -56,7 +56,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public class ExportDiffCommand extends GitCommand {
     private final VCSFileProxy[] roots;

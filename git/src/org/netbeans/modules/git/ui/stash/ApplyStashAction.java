@@ -53,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ondra Vrabec
  */
 @ActionID(id = "org.netbeans.modules.git.ui.stash.ApplyStashAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_ApplyStashAction_Name")

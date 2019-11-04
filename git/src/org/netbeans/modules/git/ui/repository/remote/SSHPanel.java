@@ -39,7 +39,6 @@ package org.netbeans.modules.git.ui.repository.remote;
 
 /**
  *
- * @author ondra
  */
 class SSHPanel extends javax.swing.JPanel {
 

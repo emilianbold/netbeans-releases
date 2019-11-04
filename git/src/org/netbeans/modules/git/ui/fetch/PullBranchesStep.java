@@ -71,7 +71,6 @@ import static org.netbeans.modules.git.ui.fetch.Bundle.*;
 
 /**
  *
- * @author ondra
  */
 public class PullBranchesStep extends AbstractWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
     private GitRemoteConfig remote;

@@ -108,7 +108,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Tomas Stupka
  */
 @ActionID(id = "org.netbeans.modules.git.ui.commit.CommitAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_CommitAction_Name")

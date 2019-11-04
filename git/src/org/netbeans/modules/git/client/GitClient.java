@@ -91,7 +91,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author ondra
  */
 public final class GitClient {
     

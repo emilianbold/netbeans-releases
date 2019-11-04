@@ -52,7 +52,6 @@ import org.netbeans.modules.git.ui.repository.RevisionInfoPanel;
 
 /**
  *
- * @author ondra
  */
 public class ManageTagsPanel extends javax.swing.JPanel {
     private final RevisionInfoPanel revisionInfoPanel;

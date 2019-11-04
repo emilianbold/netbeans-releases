@@ -102,7 +102,6 @@ import org.openide.windows.TopComponent;
 /**
  * Contains all components of the Search History panel.
  *
- * @author Maros Sandor
  */
 @NbBundle.Messages({
     "SearchHistoryPanel.filter.allbranches=All Branches"

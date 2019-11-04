@@ -49,7 +49,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * Provides overall information about git status of a certain resource 
  * in a git repository.
  * 
- * @author Ondra Vrabec
  */
 public final class GitStatus {
 

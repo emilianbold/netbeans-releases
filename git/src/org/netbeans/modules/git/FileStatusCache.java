@@ -75,7 +75,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author ondra
  */
 public class FileStatusCache {
 

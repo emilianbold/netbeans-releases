@@ -76,7 +76,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
- * @author ondra
  */
 public abstract class AbstractLocalGitTestCase extends NbTestCase {
 

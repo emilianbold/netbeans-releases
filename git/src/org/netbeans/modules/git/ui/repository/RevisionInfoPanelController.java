@@ -61,7 +61,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author ondra
  */
 public class RevisionInfoPanelController {
     private final RevisionInfoPanel panel;

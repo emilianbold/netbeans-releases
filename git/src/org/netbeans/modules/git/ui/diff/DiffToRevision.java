@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 class DiffToRevision  implements ActionListener, PropertyChangeListener {
     

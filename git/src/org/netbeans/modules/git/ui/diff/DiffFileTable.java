@@ -72,7 +72,6 @@ import org.openide.util.WeakListeners;
  * in the Versioning view. The table is  {@link #setTableModel populated)
  * from VersioningPanel.
  * 
- * @author Maros Sandor
  */
 class DiffFileTable extends VCSStatusTable<DiffNode> implements DiffFileViewComponent<DiffNode> {
 

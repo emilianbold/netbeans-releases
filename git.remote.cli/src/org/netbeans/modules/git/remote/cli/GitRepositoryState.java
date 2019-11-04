@@ -48,7 +48,6 @@ import org.netbeans.modules.git.remote.cli.jgit.Utils;
  * Represents th state a repository is currently in. The state implies what git commands
  * may be called on the repository and what should be the next steps to get the repository
  * into a normal state.
- * @author Ondra Vrabec
  */
 public enum GitRepositoryState {
         /** Has no work tree and cannot be used for normal editing. */

@@ -49,7 +49,6 @@ import java.util.Map;
  * repository.
  * Instance of this class is usually returned by inter-repository commands (as fetch or push).
  * 
- * @author Ondra Vrabec
  */
 public final class GitTransportUpdate {
 

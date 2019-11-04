@@ -61,7 +61,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.branch.DeleteBranchAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_DeleteBranchAction_Name")

@@ -65,7 +65,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author ondra
  */
 public abstract class AbstractGitTestCase extends NbTestCase {
 

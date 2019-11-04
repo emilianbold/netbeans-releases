@@ -147,7 +147,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * <br/>Every method representing a git command accepts as a parameter an instance of {@link ProgressMonitor}. With that class you may affect the flow of commands - it
  * has the ability to cancel running git commands - and listen for error or information messages the commands produce.</p>
  * </li>
- * @author Ondra Vrabec
  */
 public final class GitClient {
     private final DelegateListener delegateListener;

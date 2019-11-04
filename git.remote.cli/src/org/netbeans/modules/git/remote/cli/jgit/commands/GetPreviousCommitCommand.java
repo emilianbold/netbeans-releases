@@ -57,7 +57,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public class GetPreviousCommitCommand extends GitCommand {
     public static final boolean KIT = false;

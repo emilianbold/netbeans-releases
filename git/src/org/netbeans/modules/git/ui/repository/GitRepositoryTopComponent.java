@@ -58,7 +58,6 @@ import org.netbeans.modules.git.Git;
 /**
  * Top component of the Repository view.
  * 
- * @author Maros Sandor
  */
 @TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_ALWAYS, preferredID=GitRepositoryTopComponent.PREFERRED_ID)
 @TopComponent.Registration(mode="output", openAtStartup=false, position=3111)

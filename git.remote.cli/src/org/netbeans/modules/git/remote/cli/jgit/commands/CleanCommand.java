@@ -52,7 +52,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class CleanCommand extends GitCommand {
     public static final boolean KIT = false;

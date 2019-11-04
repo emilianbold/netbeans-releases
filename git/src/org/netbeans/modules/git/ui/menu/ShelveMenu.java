@@ -55,7 +55,6 @@ import org.openide.util.NbBundle;
 /**
  * Container menu for export actions.
  *
- * @author Ondra
  */
 public final class ShelveMenu extends DynamicMenu {
     private final Lookup lkp;

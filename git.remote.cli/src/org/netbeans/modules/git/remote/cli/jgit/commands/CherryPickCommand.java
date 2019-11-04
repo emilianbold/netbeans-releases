@@ -58,7 +58,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public class CherryPickCommand extends GitCommand {
 

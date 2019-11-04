@@ -63,7 +63,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public final class Utils {
     private Utils () {

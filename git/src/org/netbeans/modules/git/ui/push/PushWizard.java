@@ -65,7 +65,6 @@ import org.openide.WizardDescriptor.Panel;
 
 /**
  *
- * @author ondra
  */
 class PushWizard  implements ChangeListener {
 

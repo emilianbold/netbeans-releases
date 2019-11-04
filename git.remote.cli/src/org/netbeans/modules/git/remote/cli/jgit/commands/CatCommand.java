@@ -62,7 +62,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author ondra
  */
 public class CatCommand extends GitCommand {
     public static final boolean KIT = false;

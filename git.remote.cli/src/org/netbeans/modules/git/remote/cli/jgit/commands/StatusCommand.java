@@ -61,7 +61,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public class StatusCommand extends StatusCommandBase {
     public static final boolean KIT = false;

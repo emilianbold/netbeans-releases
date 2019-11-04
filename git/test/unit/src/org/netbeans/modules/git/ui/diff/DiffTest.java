@@ -66,7 +66,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author ondra
  */
 public class DiffTest extends AbstractGitTestCase {
 

@@ -55,7 +55,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.status.StatusAllAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_StatusAllAction_Name")

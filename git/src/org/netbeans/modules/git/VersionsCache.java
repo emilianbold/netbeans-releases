@@ -53,7 +53,6 @@ import org.netbeans.modules.versioning.util.Utils;
 
 /**
  *
- * @author ondra
  */
 public class VersionsCache {
 

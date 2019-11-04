@@ -64,7 +64,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.checkout.SwitchBranchAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_SwitchBranchAction_Name")

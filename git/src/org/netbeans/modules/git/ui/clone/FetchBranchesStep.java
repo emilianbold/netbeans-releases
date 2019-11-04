@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class FetchBranchesStep extends AbstractWizardPanel implements ChangeListener {
     private final ItemSelector<Branch> branches;

@@ -54,7 +54,6 @@ import org.netbeans.modules.versioning.util.common.VCSFileNode;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class CommitTableTest extends NbTestCase {
 

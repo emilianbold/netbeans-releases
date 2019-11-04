@@ -50,7 +50,6 @@ import java.net.URISyntaxException;
  * is used mainly in Git commands connecting to remote repositories.
  * An instance of this class is immutable meaning any setter method constructs 
  * a new instance but does not modify the original instance.
- * @author Tomas Stupka
  */
 public final class GitURI {
     private URI uri;

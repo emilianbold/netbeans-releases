@@ -71,7 +71,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author ondra
  */
 public class FilesystemInterceptorTest extends AbstractGitTestCase {
 

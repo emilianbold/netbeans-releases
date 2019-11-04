@@ -58,7 +58,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class CheckoutPaths implements ActionListener {
     private CheckoutPathsPanel panel;

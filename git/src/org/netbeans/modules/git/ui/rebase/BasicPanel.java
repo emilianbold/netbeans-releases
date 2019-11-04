@@ -43,7 +43,6 @@ package org.netbeans.modules.git.ui.rebase;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class BasicPanel extends javax.swing.JPanel {
 

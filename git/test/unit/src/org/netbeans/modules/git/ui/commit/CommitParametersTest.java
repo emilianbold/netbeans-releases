@@ -50,7 +50,6 @@ import org.netbeans.modules.git.GitTestKit;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class CommitParametersTest extends NbTestCase {
 

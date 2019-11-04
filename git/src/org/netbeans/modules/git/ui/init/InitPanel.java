@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ondra Vrabec
  */
 class InitPanel extends javax.swing.JPanel {
 

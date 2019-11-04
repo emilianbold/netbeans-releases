@@ -75,7 +75,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class RevisionDialogController implements ActionListener, DocumentListener, PropertyChangeListener, ListSelectionListener {
     private final RevisionDialog panel;

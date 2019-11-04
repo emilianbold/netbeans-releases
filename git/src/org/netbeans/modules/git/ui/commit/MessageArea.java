@@ -50,7 +50,6 @@ import org.netbeans.modules.versioning.util.UndoRedoSupport;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class MessageArea extends JTextArea {
     private UndoRedoSupport um;

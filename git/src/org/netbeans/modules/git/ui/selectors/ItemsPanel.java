@@ -51,7 +51,6 @@ import javax.swing.DefaultListModel;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class ItemsPanel extends javax.swing.JPanel {
 

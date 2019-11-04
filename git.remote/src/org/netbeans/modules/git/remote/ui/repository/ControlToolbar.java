@@ -52,7 +52,6 @@ import javax.swing.JToolBar;
 
 /**
  *
- * @author ondra
  */
 public class ControlToolbar extends JToolBar {
 

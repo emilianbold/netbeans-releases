@@ -45,7 +45,6 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
- * @author Ondra
  */
 public final class ProgressDelegate {
     

@@ -48,7 +48,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class Revision {
     private final String revision;

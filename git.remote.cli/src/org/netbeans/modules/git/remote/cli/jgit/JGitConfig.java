@@ -57,7 +57,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author alsimon
  */
 public class JGitConfig {
     public static final String CONFIG_CORE_SECTION = "core";

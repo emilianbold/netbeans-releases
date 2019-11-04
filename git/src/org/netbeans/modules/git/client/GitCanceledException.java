@@ -46,7 +46,6 @@ import org.netbeans.libs.git.GitException;
 
 /**
  *
- * @author ondra
  */
 public class GitCanceledException extends GitException {
 

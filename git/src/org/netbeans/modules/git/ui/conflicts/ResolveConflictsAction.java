@@ -57,7 +57,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author Tomas Stupka
  */
 @ActionID(id = "org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_ResolveConflictsAction_Name")

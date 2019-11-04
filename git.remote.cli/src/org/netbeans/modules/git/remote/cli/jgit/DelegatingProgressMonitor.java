@@ -44,7 +44,6 @@ package org.netbeans.modules.git.remote.cli.jgit;
 
 /**
  *
- * @author ondra
  */
 public final class DelegatingProgressMonitor {
     private final org.netbeans.modules.git.remote.cli.progress.ProgressMonitor monitor;

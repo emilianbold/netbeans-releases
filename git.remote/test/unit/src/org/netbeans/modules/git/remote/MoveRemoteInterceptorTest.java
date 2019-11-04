@@ -55,7 +55,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 @ClassForAllEnvironments(section = "remote.svn")
 public class MoveRemoteInterceptorTest extends AbstractRemoteGitTestCase {

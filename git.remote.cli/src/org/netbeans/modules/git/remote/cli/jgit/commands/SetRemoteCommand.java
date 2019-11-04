@@ -51,7 +51,6 @@ import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 
 /**
  *
- * @author ondra
  */
 public class SetRemoteCommand extends GitCommand {
     private final GitRemoteConfig remote;

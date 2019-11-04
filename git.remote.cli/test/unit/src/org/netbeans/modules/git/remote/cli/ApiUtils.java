@@ -47,7 +47,6 @@ import org.netbeans.modules.git.remote.cli.jgit.GitClassFactory;
 
 /**
  *
- * @author ondra
  */
 public final class ApiUtils {
 

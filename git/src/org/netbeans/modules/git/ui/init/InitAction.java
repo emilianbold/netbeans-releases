@@ -80,7 +80,6 @@ import org.openide.util.HelpCtx;
  * Init action for git: 
  * git init - init a new repository in the given directory
  * 
- * @author Tomas Stupka
  */
 @ActionID(id = "org.netbeans.modules.git.ui.init.InitAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_InitAction_Name", popupText="#LBL_InitAction.popupName", menuText="#LBL_InitAction_Name")

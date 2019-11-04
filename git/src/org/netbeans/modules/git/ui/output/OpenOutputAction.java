@@ -52,7 +52,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.output.OpenOutputAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_OpenOutputAction_Name")

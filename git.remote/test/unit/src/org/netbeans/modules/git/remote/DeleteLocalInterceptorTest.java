@@ -56,7 +56,6 @@ import org.openide.filesystems.FileSystem.AtomicAction;
 
 /**
  *
- * @author ondra
  */
 public class DeleteLocalInterceptorTest extends AbstractLocalGitTestCase {
 

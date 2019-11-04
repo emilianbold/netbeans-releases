@@ -48,7 +48,6 @@ import javax.swing.UIManager;
 
 /**
  *
- * @author Maros Sandor
  */
 class MultiDiffPanel extends javax.swing.JPanel {
 

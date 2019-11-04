@@ -55,7 +55,6 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author ondra
  */
 public abstract class AbstractWizardPanel implements ValidatingPanel<WizardDescriptor> {
     

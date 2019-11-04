@@ -39,7 +39,6 @@ package org.netbeans.modules.git.remote.ui.repository.remote;
 
 /**
  *
- * @author ondra
  */
 class UserPasswordPanel extends javax.swing.JPanel {
 

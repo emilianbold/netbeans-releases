@@ -51,7 +51,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public final class JGitRepository {
     private final VCSFileProxy location;

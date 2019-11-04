@@ -50,7 +50,6 @@ package org.netbeans.modules.git.ui.repository;
 
 /**
  *
- * @author ondra
  */
 public class SelectBranchPanel extends javax.swing.JPanel {
     private final RevisionDialog revisionPanel;

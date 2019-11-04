@@ -68,7 +68,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author ondra
  */
 public abstract class IgnoreUnignoreCommand extends GitCommand {
 

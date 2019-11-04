@@ -81,7 +81,6 @@ import static org.netbeans.modules.git.ui.repository.remote.Bundle.*;
 
 /**
  *
- * @author ondra
  */
 public class SelectUriStep extends AbstractWizardPanel implements ActionListener, ItemListener, ChangeListener, DocumentListener, AsynchronousValidatingPanel<WizardDescriptor> {
 

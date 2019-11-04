@@ -74,7 +74,6 @@ import org.openide.util.lookup.Lookups;
 /**
  * Container menu for export actions.
  *
- * @author Ondra
  */
 public final class RemoteMenu extends DynamicMenu {
     private static final String CLONE_ACTION = "org-netbeans-modules-git-remote-ui-clone-CloneAction.instance"; //NOI18N

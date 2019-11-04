@@ -48,7 +48,6 @@ import javax.swing.event.AncestorListener;
 
 /**
  *
- * @author ondra
  */
 public class RevisionPickerDialog extends javax.swing.JPanel {
     private final RevisionInfoPanel infoPanel;

@@ -67,7 +67,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Ondra Vrabec
  */
 @ActionID(id = "org.netbeans.modules.git.ui.diff.DiffCurrentToRepositoryAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_DiffCurrentToRepositoryAction_Name")

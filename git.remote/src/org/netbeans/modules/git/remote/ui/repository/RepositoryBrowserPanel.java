@@ -143,7 +143,6 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author ondra
  */
 public class RepositoryBrowserPanel extends JPanel implements Provider, PropertyChangeListener, ListSelectionListener,
         MouseListener {

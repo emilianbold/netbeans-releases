@@ -57,7 +57,6 @@ import org.openide.cookies.EditorCookie;
 
 /**
  *
- * @author ondra
  */
 public abstract class DiffNode<T extends GitFileNode> extends GitStatusNode<T> implements Cloneable {
 

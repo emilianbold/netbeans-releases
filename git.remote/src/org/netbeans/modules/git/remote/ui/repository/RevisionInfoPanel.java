@@ -52,7 +52,6 @@ import java.awt.Color;
 
 /**
  *
- * @author ondra
  */
 public class RevisionInfoPanel extends javax.swing.JPanel {
 

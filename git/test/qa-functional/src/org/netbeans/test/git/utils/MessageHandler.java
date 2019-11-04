@@ -46,7 +46,6 @@ import java.util.logging.LogRecord;
 
 /**
  *
- * @author pvcs
  */
 public final class MessageHandler extends Handler {
 

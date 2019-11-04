@@ -49,7 +49,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 /**
  * Provides information about the result of reverting a commit.
  * 
- * @author Ondra Vrabec
  */
 public final class GitRevertResult {
     

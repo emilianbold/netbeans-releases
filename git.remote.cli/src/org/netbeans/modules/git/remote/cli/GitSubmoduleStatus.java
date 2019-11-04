@@ -46,7 +46,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 /**
  * Describes current status of a repository's submodule
  *
- * @author Ondrej Vrabec
  * @since 1.16
  */
 public final class GitSubmoduleStatus {

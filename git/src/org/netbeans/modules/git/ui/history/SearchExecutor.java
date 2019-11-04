@@ -67,7 +67,6 @@ import org.openide.util.NbBundle;
 /**
  * Executes searches in Search History panel.
  * 
- * @author Maros Sandor
  */
 class SearchExecutor extends GitProgressSupport {
     

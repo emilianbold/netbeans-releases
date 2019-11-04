@@ -66,7 +66,6 @@ import org.openide.WizardDescriptor.Panel;
 
 /**
  *
- * @author Tomas Stupka
  */
 class CloneWizard  implements ChangeListener {
 

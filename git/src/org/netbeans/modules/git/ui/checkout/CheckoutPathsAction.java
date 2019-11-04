@@ -66,7 +66,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.checkout.CheckoutPathsAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_CheckoutPathsAction_Name")

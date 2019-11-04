@@ -55,7 +55,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class RepositoryStepPanel extends javax.swing.JPanel {
 

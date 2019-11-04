@@ -73,7 +73,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.ignore.UnignoreAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_UnignoreAction_Name")

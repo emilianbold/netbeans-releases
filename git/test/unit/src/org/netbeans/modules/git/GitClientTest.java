@@ -76,7 +76,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author ondra
  */
 public class GitClientTest extends AbstractGitTestCase {
     private Logger indexingLogger;

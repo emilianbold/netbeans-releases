@@ -47,7 +47,6 @@ import java.util.List;
 
 /**
  *
- * @author alsimon
  */
 public class RefUtils {
 

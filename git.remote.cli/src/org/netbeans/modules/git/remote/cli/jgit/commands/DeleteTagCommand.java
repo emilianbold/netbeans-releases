@@ -50,7 +50,6 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
- * @author ondra
  */
 public class DeleteTagCommand extends GitCommand {
     private final String tagName;

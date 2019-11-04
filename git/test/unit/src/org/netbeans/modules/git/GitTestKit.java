@@ -52,7 +52,6 @@ import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class GitTestKit {
     

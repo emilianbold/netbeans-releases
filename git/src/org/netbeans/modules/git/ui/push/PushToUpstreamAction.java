@@ -70,7 +70,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.push.PushToUpstreamAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_PushToUpstreamAction_Name")

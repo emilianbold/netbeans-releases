@@ -82,7 +82,6 @@ import org.openide.util.RequestProcessor;
  * Init action for git: 
  * git init - init a new repository in the given directory
  * 
- * @author Tomas Stupka
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.init.InitAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_InitAction_Name", popupText="#LBL_InitAction.popupName", menuText="#LBL_InitAction_Name")

@@ -55,7 +55,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Ondra
  */
 public class JGitUtils {
 

@@ -58,7 +58,6 @@ import org.openide.nodes.PropertySupport;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 class FileTreeViewImpl extends FileTreeView<GitStatusNodeImpl> {
     

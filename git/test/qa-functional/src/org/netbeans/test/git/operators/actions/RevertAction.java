@@ -45,7 +45,6 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  *
- * @author kanakmar
  */
 public class RevertAction extends ActionNoBlock {
 

@@ -65,7 +65,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public class ResultProcessor {
 

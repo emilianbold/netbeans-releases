@@ -55,7 +55,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_CheckoutRevisionAction_Name")

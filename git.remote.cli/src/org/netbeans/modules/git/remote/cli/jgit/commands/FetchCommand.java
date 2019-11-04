@@ -59,7 +59,6 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
- * @author ondra
  */
 public class FetchCommand extends TransportCommand {
 

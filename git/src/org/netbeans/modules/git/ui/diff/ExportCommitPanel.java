@@ -51,7 +51,6 @@ import org.netbeans.modules.git.ui.repository.RevisionDialog;
 
 /**
  *
- * @author ondra
  */
 public class ExportCommitPanel extends javax.swing.JPanel {
     private final RevisionDialog revisionPanel;

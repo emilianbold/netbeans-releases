@@ -49,7 +49,6 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
- * @author ondra
  */
 public class DeleteBranchCommand extends GitCommand {
     public static final boolean KIT = false;

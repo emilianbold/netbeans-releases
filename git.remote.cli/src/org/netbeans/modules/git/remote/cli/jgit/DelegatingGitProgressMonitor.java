@@ -47,7 +47,6 @@ import org.openide.util.Cancellable;
 
 /**
  *
- * @author ondra
  */
 public final class DelegatingGitProgressMonitor extends ProgressMonitor {
     private final ProgressMonitor monitor;

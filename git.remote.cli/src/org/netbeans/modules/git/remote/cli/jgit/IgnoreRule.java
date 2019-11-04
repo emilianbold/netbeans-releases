@@ -48,7 +48,6 @@ import java.util.regex.PatternSyntaxException;
 
 /**
  *
- * @author ondra
  */
 public class IgnoreRule /*extends org.eclipse.jgit.ignore.IgnoreRule*/ {
 

@@ -43,7 +43,6 @@ package org.netbeans.modules.git.remote.ui.rebase;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class RebasePanel extends javax.swing.JPanel {
 

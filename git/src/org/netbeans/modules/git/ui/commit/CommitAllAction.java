@@ -53,7 +53,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Ondra Vrabec
  */
 @ActionID(id = "org.netbeans.modules.git.ui.commit.CommitAllAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_CommitAllAction_Name")

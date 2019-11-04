@@ -84,7 +84,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
- * @author Alexander Simon
  */
 public abstract class AbstractRemoteGitTestCase extends RemoteFileTestBase {
     protected VCSFileProxy repositoryLocation;

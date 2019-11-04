@@ -75,7 +75,6 @@ import org.netbeans.test.git.operators.CommitOperator;
 
 /**
  *
- * @author kanakmar
  */
 public final class TestKit {
 

@@ -47,7 +47,6 @@ import org.netbeans.modules.git.remote.cli.GitClientCallback;
 
 /**
  *
- * @author ondra
  */
 public class JGitCredentialsProvider /*extends CredentialsProvider*/ {
     private final GitClientCallback callback;

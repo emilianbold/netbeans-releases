@@ -50,7 +50,6 @@ import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 
 /**
  *
- * @author ondra
  */
 abstract class TransportCommand extends GitCommand {
     private static final String PROP_ENV_GIT_SSH = "GIT_SSH"; //NOI18N

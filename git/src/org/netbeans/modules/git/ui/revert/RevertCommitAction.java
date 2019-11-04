@@ -74,7 +74,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.revert.RevertCommitAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_RevertCommitAction_Name")

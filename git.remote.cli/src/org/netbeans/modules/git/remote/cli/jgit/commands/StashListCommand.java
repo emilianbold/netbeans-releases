@@ -55,7 +55,6 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class StashListCommand extends GitCommand {
 

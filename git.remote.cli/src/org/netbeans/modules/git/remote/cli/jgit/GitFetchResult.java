@@ -46,7 +46,6 @@ import org.netbeans.modules.git.remote.cli.GitTransportUpdate;
 
 /**
  *
- * @author alsimon
  */
 public class GitFetchResult {
     public LinkedHashMap<String, GitTransportUpdate.GitTransportUpdateContainer> result = new LinkedHashMap<String, GitTransportUpdate.GitTransportUpdateContainer>();

@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
  * Open the status window. It focuses recently opened
  * view unless it's not initialized yet.
  *
- * @author Ondra Vrabec
  */
 @ActionID(id = "org.netbeans.modules.git.ui.status.OpenStatusAction", category = "Git")
 @ActionRegistration(displayName = "#CTL_MenuItem_OpenStatusAction")

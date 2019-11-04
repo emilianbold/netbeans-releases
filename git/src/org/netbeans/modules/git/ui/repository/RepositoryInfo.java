@@ -84,7 +84,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author ondra
  */
 public class RepositoryInfo {
 

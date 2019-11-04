@@ -49,7 +49,6 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class StashDropCommand extends GitCommand {
     private final int stashIndex;

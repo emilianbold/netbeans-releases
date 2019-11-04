@@ -50,7 +50,6 @@ import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 
 /**
  *
- * @author Ondrej Vrabec
  */
 public class StashSaveCommand extends GitCommand {
     private final boolean includeUntracked;

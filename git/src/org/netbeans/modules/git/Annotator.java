@@ -103,7 +103,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
- * @author ondra
  */
 public class Annotator extends VCSAnnotator implements PropertyChangeListener {
     private static final EnumSet<FileInformation.Status> STATUS_IS_IMPORTANT = EnumSet.noneOf(Status.class);

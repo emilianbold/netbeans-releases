@@ -43,7 +43,6 @@ package org.netbeans.modules.git.remote.cli.jgit;
 
 /**
  *
- * @author alsimon
  */
 public class URIish {
     private final String uri;

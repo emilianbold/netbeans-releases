@@ -54,7 +54,6 @@ import org.netbeans.modules.git.utils.GitUtils;
 
 /**
  *
- * @author ondra
  */
 public class MergeTest extends AbstractGitTestCase {
 

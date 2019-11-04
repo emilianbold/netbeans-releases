@@ -48,7 +48,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.history.SearchOutgoingWithContextAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_SearchOutgoingWithContextAction_Name", lazy = false)

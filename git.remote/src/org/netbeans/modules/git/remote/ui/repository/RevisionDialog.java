@@ -50,7 +50,6 @@ package org.netbeans.modules.git.remote.ui.repository;
 
 /**
  *
- * @author ondra
  */
 public class RevisionDialog extends javax.swing.JPanel {
     private final RevisionInfoPanel panel;

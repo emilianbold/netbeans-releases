@@ -49,7 +49,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 /**
  * Returned by a git cherry-pick command, represents its result.
  *
- * @author Ondra Vrabec
  * @since 1.27
  */
 public final class GitCherryPickResult {

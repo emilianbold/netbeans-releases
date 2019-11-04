@@ -62,7 +62,6 @@ import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  *
- * @author ondra
  */
 public abstract class GitCommand {
     private final JGitRepository repository;

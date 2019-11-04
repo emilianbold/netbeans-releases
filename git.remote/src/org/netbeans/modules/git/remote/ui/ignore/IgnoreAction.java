@@ -79,7 +79,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.ignore.IgnoreAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_IgnoreAction_Name")

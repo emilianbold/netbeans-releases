@@ -54,7 +54,6 @@ import org.netbeans.modules.git.ui.repository.RevisionDialog;
 
 /**
  *
- * @author ondra
  */
 public class ResetPanel extends JPanel {
     private final RevisionDialog revisionPanel;

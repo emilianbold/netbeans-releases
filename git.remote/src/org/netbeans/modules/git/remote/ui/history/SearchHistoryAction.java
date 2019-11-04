@@ -59,7 +59,6 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.remote.ui.history.SearchHistoryAction", category = "GitRemote")
 @ActionRegistration(displayName = "#LBL_SearchHistoryAction_Name")

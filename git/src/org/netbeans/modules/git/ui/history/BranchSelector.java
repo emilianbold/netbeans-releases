@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author ondra
  */
 public final class BranchSelector {
     protected final SelectBranchPanel panel;

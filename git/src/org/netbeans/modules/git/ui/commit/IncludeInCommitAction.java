@@ -56,7 +56,6 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author ondra
  */
 @ActionID(id = "org.netbeans.modules.git.ui.commit.IncludeInCommitAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_IncludeInCommitAction_Name")

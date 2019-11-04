@@ -57,7 +57,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
- * @author alsimon
  */
 public abstract class StatusCommandBase extends GitCommand {
     private final LinkedHashMap<VCSFileProxy, GitStatus> statuses;

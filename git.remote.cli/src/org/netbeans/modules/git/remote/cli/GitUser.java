@@ -45,8 +45,6 @@ package org.netbeans.modules.git.remote.cli;
 /**
  * Identification of a git user.
  * User is specified by a name and e-mail address.
- * @author Jan Becicka
- * @author Tomas Stupka
  */
 public final class GitUser {
 

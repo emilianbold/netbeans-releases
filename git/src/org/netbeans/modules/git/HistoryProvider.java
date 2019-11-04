@@ -72,7 +72,6 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Tomas Stupka, Ondra Vrabec
  */
 public class HistoryProvider implements VCSHistoryProvider {
     

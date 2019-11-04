@@ -55,7 +55,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author ondra
  */
 public class FilesystemLocalInterceptorTest extends AbstractLocalGitTestCase {
 

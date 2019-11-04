@@ -55,7 +55,6 @@ import org.netbeans.modules.git.GitVCS;
 
 /**
  *
- * @author Tomas Stupka
  */
 public class CommitDialogTest extends AbstractGitTestCase {
 
