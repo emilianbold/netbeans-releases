@@ -119,7 +119,7 @@ else    assertEquals("initial commit\n", com.getFullMessage());
 
     public void testSingleFileCommit () throws Exception {
         repository.getConfig().setString("user", null, "name", "John");
-        repository.getConfig().setString("user", null, "email", "john@git.com");
+        repository.getConfig().setString("user", null, "email", "");
         repository.getConfig().save();
 
         VCSFileProxy toCommit = VCSFileProxy.createFileProxy(workDir, "testnotadd.txt");
@@ -147,8 +147,8 @@ if(KIT) assertEquals("initial commit", info.getFullMessage());
 else    assertEquals("initial commit\n", info.getFullMessage());
 if(KIT) assertEquals("initial commit", com.getFullMessage());
 else    assertEquals("initial commit\n", com.getFullMessage());
-        assertEquals( "john@git.com", info.getAuthor().getEmailAddress());
-        assertEquals( "john@git.com", com.getAuthor().getEmailAddress());
+        assertEquals( "", info.getAuthor().getEmailAddress());
+        assertEquals( "", com.getAuthor().getEmailAddress());
         assertEquals(com.getRevision(), info.getRevision());
         Map<VCSFileProxy, GitFileInfo> modifiedFiles = info.getModifiedFiles();
         assertTrue(modifiedFiles.get(toCommit).getStatus().equals(Status.ADDED));
@@ -156,7 +156,7 @@ else    assertEquals("initial commit\n", com.getFullMessage());
 
     public void testMultipleFileCommit () throws Exception {
         repository.getConfig().setString("user", null, "name", "John");
-        repository.getConfig().setString("user", null, "email", "john@git.com");
+        repository.getConfig().setString("user", null, "email", "");
         repository.getConfig().save();
 
         VCSFileProxy dir = VCSFileProxy.createFileProxy(workDir, "testdir");
@@ -185,7 +185,7 @@ else    assertEquals("initial commit\n", com.getFullMessage());
         GitRevisionInfo com = log[0];
 if(KIT) assertEquals("initial commit", com.getFullMessage());
 else    assertEquals("initial commit\n", com.getFullMessage());
-        assertEquals( "john@git.com", com.getAuthor().getEmailAddress());
+        assertEquals( "", com.getAuthor().getEmailAddress());
 
         write(newOne, "!modification!");
         write(another, "another modification!");
@@ -208,7 +208,7 @@ else    assertEquals("initial commit\n", com.getFullMessage());
         com = log[0];
 if(KIT) assertEquals("second commit", com.getFullMessage());
 else    assertEquals("second commit\n", com.getFullMessage());
-        assertEquals( "john@git.com", com.getAuthor().getEmailAddress());
+        assertEquals( "", com.getAuthor().getEmailAddress());
     }
 
     public void testCommitOnlySomeOfAllFiles () throws Exception {
@@ -631,7 +631,7 @@ else    assertEquals("second commit\n", com.getFullMessage());
     
     public void testAmendCommit () throws Exception {
         repository.getConfig().setString("user", null, "name", "John");
-        repository.getConfig().setString("user", null, "email", "john@git.com");
+        repository.getConfig().setString("user", null, "email", "");
         repository.getConfig().save();
 
         VCSFileProxy dir = VCSFileProxy.createFileProxy(workDir, "testdir");
@@ -694,7 +694,7 @@ else    assertEqualsID(lastCommit.getRevision(), client.getBranches(false, NULL_
     
     public void testCherryPickCommit () throws Exception {
         repository.getConfig().setString("user", null, "name", "John");
-        repository.getConfig().setString("user", null, "email", "john@git.com");
+        repository.getConfig().setString("user", null, "email", "john");
         repository.getConfig().save();
         
         VCSFileProxy f = VCSFileProxy.createFileProxy(workDir, "f");
