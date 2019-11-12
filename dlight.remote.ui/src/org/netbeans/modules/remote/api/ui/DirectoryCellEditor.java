@@ -42,9 +42,6 @@
  * made subject to such option by the copyright holder.
  *
  */
-/*
- * Contributor(s): Soot Phengsy
- */
 
 package org.netbeans.modules.remote.api.ui;
 
