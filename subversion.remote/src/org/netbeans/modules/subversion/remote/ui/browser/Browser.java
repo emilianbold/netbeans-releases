@@ -197,7 +197,7 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
                 // not interested
             }
         }
-        if (select == null || select.length == 0) { // careful, tomas, select may be null
+        if (select == null || select.length == 0) { // careful, select may be null
             rootNode.expand(); // hack - calling panel.expandNode(...) for the root node doesn't seem to work
         }
     }

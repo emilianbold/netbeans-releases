@@ -347,7 +347,7 @@ public class InfoCommand extends SvnCommand {
 //    Repository UUID: 2daef3d9-18e1-4da2-9531-b29b2c99e754
 //    Revision: 111
 //    Node Kind: file
-//    Last Changed Author: tomas
+//    Last Changed Author:
 //    Last Changed Rev: 111
 //    Last Changed Date: 2008-04-22 18:41:05 +0200 (Tue, 22 Apr 2008)
 
