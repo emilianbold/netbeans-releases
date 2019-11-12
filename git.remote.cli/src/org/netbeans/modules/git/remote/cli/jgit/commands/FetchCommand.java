@@ -164,9 +164,9 @@ public class FetchCommand extends TransportCommand {
     }
 
     private void parseFetchOutput(String output) {
-        //From /export1/home/alsimon/cnd-main/libs.git.remote/build/test/unit/work/o.n.l.g.r.j.c.B/dtb/repo2
+        //From /export1/home/cnd-main/libs.git.remote/build/test/unit/work/o.n.l.g.r.j.c.B/dtb/repo2
         //* [new branch]      master     -> origin/master
-        //From file:///export/home/alsimon/tmp/git-upstream-repository
+        //From file:///export/home/tmp/git-upstream-repository
         // = [up to date]      master     -> refs/netbeans_tmp/master
         String url = null;
         for (String line : output.split("\n")) { //NOI18N

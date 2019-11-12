@@ -122,35 +122,35 @@ public class PushCommand extends TransportCommand {
     }
     
     private void parsePushOutput(String output, Map<String, GitTransportUpdate> remoteRepositoryUpdates, Map<String, GitTransportUpdate> localRepositoryUpdates) {
-        //To /export1/home/alsimon/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/testPushNewBranch/repo
+        //To /export1/home/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/testPushNewBranch/repo
         //*	refs/heads/master:refs/heads/master	[new branch]
         //Done
         //===================
-        //To /export1/home/alsimon/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/pdb/repo
+        //To /export1/home/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/pdb/repo
         //*	refs/heads/master:refs/heads/master	[new branch]
         //*	refs/heads/master:refs/heads/newbranch	[new branch]
         //Done
         //===================
-        //To /export1/home/alsimon/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/testPushChange/repo
+        //To /export1/home/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/testPushChange/repo
         // 	refs/heads/master:refs/heads/master	18edcc3..2d8bb8b
         //Done
         //===================
-        //To /export1/home/alsimon/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/puir/repo
+        //To /export1/home/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/puir/repo
         // 	refs/heads/master:refs/heads/master	0b40a64..f716255
         //*	refs/heads/master:refs/remotes/origin/master	[new branch]
         //Done
         //===================
-        //To /export1/home/alsimon/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/pdb/repo
+        //To /export1/home/cnd-main/git.remote.cli/build/test/unit/work/o.n.m.g.r.c.j.c.P/pdb/repo
         //-	:refs/heads/newbranch	[deleted]
         //Done
         //===================
-        //To file:///export/home/alsimon/tmp/git-upstream-repository
+        //To file:///export/home/tmp/git-upstream-repository
         //=	refs/heads/master:refs/remotes/origin/master	[up to date]
         //*	refs/heads/Release:refs/heads/Release	[new branch]
         //*	refs/heads/Release:refs/remotes/origin/Release	[new branch]
         //Done        
         //===================
-        //To file:///export/home/alsimon/tmp/git-upstream-repository
+        //To file:///export/home/tmp/git-upstream-repository
         //=	refs/heads/master:refs/remotes/origin/master	[up to date]
         // 	refs/heads/Release:refs/heads/Release	198cdfb..c4f2f6f
         // 	refs/heads/Release:refs/remotes/origin/Release	198cdfb..c4f2f6f

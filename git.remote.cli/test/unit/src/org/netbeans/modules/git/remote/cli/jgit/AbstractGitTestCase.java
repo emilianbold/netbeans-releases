@@ -106,7 +106,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         repositoryLocation = VCSFileProxy.createFileProxy(workDir, "repo");
         wc = VCSFileProxy.createFileProxy(workDir, getName() + "_wc");
         gitPath = "/usr/bin/git";
-        //gitPath = "/export/home/alsimon/projects/git/git";
+        //gitPath = "/export/home/projects/git/git";
         FileObject git = VCSFileProxySupport.getResource(workDir, gitPath).toFileObject();
         if (git == null || !git.isValid()) {
             skipTest = true;
