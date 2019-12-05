@@ -43,7 +43,6 @@ package org.netbeans.modules.git.remote.cli;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-//import org.eclipse.jgit.transport.URIish;
 
 /**
  * Representation of a supported Git URI, that denotes a remote repository and

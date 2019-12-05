@@ -60,7 +60,7 @@ public abstract class ProgressMonitor {
      * A constant indicating an unknown number of work units of a task.
      * @since 1.21
      */
-    public static final int UNKNOWN_WORK_UNITS = 0;//org.eclipse.jgit.lib.ProgressMonitor.UNKNOWN;
+    public static final int UNKNOWN_WORK_UNITS = 0;
     
     /**
      * Returns <code>true</code> if the progress should be canceled.

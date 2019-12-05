@@ -49,7 +49,7 @@ import java.util.regex.PatternSyntaxException;
 /**
  *
  */
-public class IgnoreRule /*extends org.eclipse.jgit.ignore.IgnoreRule*/ {
+public class IgnoreRule {
 
     private final String pattern;
     private Pattern compiled;

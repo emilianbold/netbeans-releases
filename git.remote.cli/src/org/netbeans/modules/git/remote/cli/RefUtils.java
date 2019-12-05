@@ -42,8 +42,6 @@
 package org.netbeans.modules.git.remote.cli;
 
 import java.util.List;
-//import org.eclipse.jgit.lib.Repository;
-//import org.eclipse.jgit.transport.RefSpec;
 
 /**
  *
