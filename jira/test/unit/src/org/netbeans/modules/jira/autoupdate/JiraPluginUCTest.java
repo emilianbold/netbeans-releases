@@ -66,7 +66,7 @@ public class JiraPluginUCTest extends AutoupdatePluginUCTestCase {
                     "distribution=\"modules/extra/org-netbeans-libs-jira.nbm\" " +
                     "downloadsize=\"2546568\" " +
                     "eager=\"false\" " +
-                    "homepage=\"http://www.netbeans.org/\" " +
+                    "homepage=\"https://netbeans.apache.org/\" " +
                     "license=\"BE94B573\" " +
                     "moduleauthor=\"\" " +
                     "needsrestart=\"false\" " +
@@ -96,7 +96,7 @@ public class JiraPluginUCTest extends AutoupdatePluginUCTestCase {
                     "distribution=\"modules/extra/org-netbeans-modules-jira.nbm\" " +
                     "downloadsize=\"192657\" " +
                     "eager=\"false\" " +
-                    "homepage=\"http://www.netbeans.org/\" " +
+                    "homepage=\"https://netbeans.apache.org/\" " +
                     "license=\"8B813426\" " +
                     "moduleauthor=\"\" " +
                     "needsrestart=\"true\" " +
