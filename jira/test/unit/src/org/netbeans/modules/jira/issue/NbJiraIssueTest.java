@@ -82,14 +82,14 @@ import org.openide.filesystems.FileUtil;
 public class NbJiraIssueTest extends NbTestCase {
 
     private static JiraRepository repository;
-    protected static final String TEST_PROJECT = "NBJIRAISSUEDEV";
-    protected static final String REPO_PASSWD = "unittest";
-    protected static final String REPO_URL = "http://bugtracking-test.cz.oracle.com:8090";
-    protected static final String REPO_USER = "unittest";
+    protected static final String TEST_PROJECT = "";
+    protected static final String REPO_PASSWD = "";
+    protected static final String REPO_URL = "";
+    protected static final String REPO_USER = "";
     private JiraConfiguration config;
     private static final String ATTACHMENTS_FOLDER = "attachments";     //NOI18N
     private static final String TAG_FIELD = "Tags:";                    //NOI18N
-    private static final String USER2 = "tester2";                      //NOI18N
+    private static final String USER2 = "";                      //NOI18N
 
     public enum JiraIssueResolutionStatus {
 
